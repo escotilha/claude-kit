@@ -1,16 +1,4 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git-autosave > /tmp/git-autosave.log 2>&1 &"
-          }
-        ]
-      }
-    ]
-  },
   "alwaysThinkingEnabled": false,
   "default_arguments": [
     "--dangerously-skip-permissions"
@@ -22,29 +10,9 @@
         "args": [
           "-y",
           "@modelcontextprotocol/server-filesystem",
-          "/Users/psm2"
+          "/Users/ps"
         ],
         "description": "Access to local filesystem"
-      },
-      "github": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-github"
-        ],
-        "env": {
-          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-        },
-        "description": "GitHub repository access"
-      },
-      "postgres": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-postgres",
-          "postgresql://localhost/mydb"
-        ],
-        "description": "PostgreSQL database access"
       },
       "sequential-thinking": {
         "command": "npx",
@@ -62,6 +30,14 @@
         ],
         "description": "Knowledge graph for persistent memory"
       },
+      "playwright": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@anthropic/mcp-playwright"
+        ],
+        "description": "Browser automation with Playwright"
+      },
       "puppeteer": {
         "command": "npx",
         "args": [
@@ -78,6 +54,45 @@
         ],
         "description": "Web content fetching"
       },
+      "git": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-git"
+        ],
+        "description": "Git repository operations"
+      },
+      "github": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-github"
+        ],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+        },
+        "description": "GitHub API integration"
+      },
+      "brave-search": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-brave-search"
+        ],
+        "env": {
+          "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+        },
+        "description": "Web search via Brave"
+      },
+      "postgres": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-postgres",
+          "postgresql://postgres:postgres@localhost:5432/postgres"
+        ],
+        "description": "PostgreSQL database access"
+      },
       "resend": {
         "command": "npx",
         "args": [
@@ -86,7 +101,8 @@
         ],
         "env": {
           "RESEND_API_KEY": "${RESEND_API_KEY}"
-        }
+        },
+        "description": "Email sending via Resend"
       },
       "slack": {
         "command": "npx",
@@ -97,18 +113,8 @@
         "env": {
           "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
           "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
-        }
-      },
-      "slack-app": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-slack-app"
-        ],
-        "env": {
-          "SLACK_APP_TOKEN": "${SLACK_APP_TOKEN}",
-          "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}"
-        }
+        },
+        "description": "Slack integration"
       },
       "notion": {
         "command": "npx",
@@ -118,31 +124,8 @@
         ],
         "env": {
           "NOTION_API_KEY": "${NOTION_API_KEY}"
-        }
-      },
-      "gmail": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-gmail"
-        ],
-        "env": {
-          "GMAIL_CLIENT_ID": "YOUR_GMAIL_CLIENT_ID",
-          "GMAIL_CLIENT_SECRET": "YOUR_GMAIL_CLIENT_SECRET",
-          "GMAIL_REFRESH_TOKEN": "YOUR_GMAIL_REFRESH_TOKEN"
         },
-        "description": "Gmail access (community server)"
-      },
-      "google-calendar": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-google-calendar"
-        ],
-        "env": {
-          "GOOGLE_CALENDAR_API_KEY": "YOUR_GOOGLE_CALENDAR_API_KEY"
-        },
-        "description": "Google Calendar access (community server)"
+        "description": "Notion integration"
       }
     }
   }
