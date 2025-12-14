@@ -1,4 +1,16 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git-autosave > /tmp/git-autosave.log 2>&1 &"
+          }
+        ]
+      }
+    ]
+  },
   "alwaysThinkingEnabled": false,
   "default_arguments": [
     "--dangerously-skip-permissions"
@@ -10,7 +22,7 @@
         "args": [
           "-y",
           "@modelcontextprotocol/server-filesystem",
-          "/Users/ps"
+          "$HOME"
         ],
         "description": "Access to local filesystem"
       },
@@ -89,7 +101,7 @@
         "args": [
           "-y",
           "@modelcontextprotocol/server-postgres",
-          "postgresql://postgres:postgres@localhost:5432/postgres"
+          "${DATABASE_URL:-postgresql://localhost/mydb}"
         ],
         "description": "PostgreSQL database access"
       },
