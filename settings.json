@@ -1,5 +1,17 @@
 {
-  "alwaysThinkingEnabled": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git-autosave > /tmp/git-autosave.log 2>&1 &"
+          }
+        ]
+      }
+    ]
+  },
+  "alwaysThinkingEnabled": false,
   "default_arguments": [
     "--dangerously-skip-permissions"
   ],

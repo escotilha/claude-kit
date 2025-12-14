@@ -1,3 +1,8 @@
+---
+name: committee-presenter
+description: Create PowerPoint presentations for M&A board approval. Generates executive dashboards, financial highlights, risk assessments in Nuvini brand style.
+---
+
 # Committee Approval Presenter
 
 ## Name

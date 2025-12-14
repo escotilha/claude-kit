@@ -1,3 +1,8 @@
+---
+name: triage-analyzer
+description: Analyze M&A opportunities and score them 0-10 against investment criteria. Use when evaluating acquisition targets, identifying red flags, or generating triage reports.
+---
+
 # M&A Triage Analyzer
 
 ## Name
