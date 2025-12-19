@@ -11,6 +11,9 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "agent-sdk-dev@claude-code-plugins": true
+  },
   "alwaysThinkingEnabled": false,
   "default_arguments": [
     "--dangerously-skip-permissions"
