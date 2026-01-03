@@ -9,91 +9,84 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"' >> ~/.claude/bash-command-log.txt"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/format-file.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude needs your input\" with title \"Claude Code\" sound name \"Ping\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Task completed\" with title \"Claude Code\" sound name \"Glass\"'"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
     "agent-sdk-dev@claude-code-plugins": true
   },
   "alwaysThinkingEnabled": false,
-  "default_arguments": [
-    "--dangerously-skip-permissions"
-  ],
+  "default_arguments": ["--dangerously-skip-permissions"],
   "mcp": {
     "mcpServers": {
-      "filesystem": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-filesystem",
-          "$HOME"
-        ],
-        "description": "Access to local filesystem"
-      },
       "sequential-thinking": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-sequential-thinking"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
         "description": "Sequential thinking and problem solving"
       },
       "memory": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-memory"
-        ],
-        "description": "Knowledge graph for persistent memory"
-      },
-      "playwright": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@anthropic/mcp-playwright"
-        ],
-        "description": "Browser automation with Playwright"
-      },
-      "puppeteer": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-puppeteer"
-        ],
-        "description": "Browser automation"
+        "args": ["-y", "@modelcontextprotocol/server-memory"],
+        "env": {
+          "MEMORY_FILE_PATH": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/Claude/memory.jsonl"
+        },
+        "description": "Knowledge graph for persistent memory (iCloud synced)"
       },
       "fetch": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-fetch"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-fetch"],
         "description": "Web content fetching"
       },
       "git": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-git"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-git"],
         "description": "Git repository operations"
-      },
-      "github": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-github"
-        ],
-        "env": {
-          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-        },
-        "description": "GitHub API integration"
       },
       "brave-search": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-brave-search"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
         "env": {
           "BRAVE_API_KEY": "${BRAVE_API_KEY}"
         },
@@ -110,10 +103,7 @@
       },
       "resend": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-resend"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-resend"],
         "env": {
           "RESEND_API_KEY": "${RESEND_API_KEY}"
         },
@@ -121,10 +111,7 @@
       },
       "slack": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-slack"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-slack"],
         "env": {
           "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
           "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
@@ -133,10 +120,7 @@
       },
       "notion": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-notion"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-notion"],
         "env": {
           "NOTION_API_KEY": "${NOTION_API_KEY}"
         },
