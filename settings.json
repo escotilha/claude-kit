@@ -55,20 +55,33 @@
     ]
   },
   "enabledPlugins": {
-    "agent-sdk-dev@claude-code-plugins": true
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "supabase@claude-plugins-official": true,
+    "ralph-wiggum@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": false,
-  "default_arguments": ["--dangerously-skip-permissions"],
+  "default_arguments": [
+    "--dangerously-skip-permissions"
+  ],
   "mcp": {
     "mcpServers": {
       "sequential-thinking": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-sequential-thinking"
+        ],
         "description": "Sequential thinking and problem solving"
       },
       "memory": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-memory"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-memory"
+        ],
         "env": {
           "MEMORY_FILE_PATH": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/Claude/memory.jsonl"
         },
@@ -76,17 +89,26 @@
       },
       "fetch": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-fetch"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-fetch"
+        ],
         "description": "Web content fetching"
       },
       "git": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-git"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-git"
+        ],
         "description": "Git repository operations"
       },
       "brave-search": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-brave-search"
+        ],
         "env": {
           "BRAVE_API_KEY": "${BRAVE_API_KEY}"
         },
@@ -103,7 +125,10 @@
       },
       "resend": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-resend"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-resend"
+        ],
         "env": {
           "RESEND_API_KEY": "${RESEND_API_KEY}"
         },
@@ -111,7 +136,10 @@
       },
       "slack": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-slack"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-slack"
+        ],
         "env": {
           "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
           "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
@@ -120,7 +148,10 @@
       },
       "notion": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-notion"],
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-notion"
+        ],
         "env": {
           "NOTION_API_KEY": "${NOTION_API_KEY}"
         },
