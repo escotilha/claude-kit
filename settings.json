@@ -5,6 +5,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "$HOME/.claude/hooks/health-check.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": "git-autosave > /tmp/git-autosave.log 2>&1 &",
             "timeout": 5000
           }
