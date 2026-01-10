@@ -156,6 +156,11 @@
           "NOTION_API_KEY": "${NOTION_API_KEY}"
         },
         "description": "Notion integration"
+      },
+      "chrome-devtools": {
+        "command": "npx",
+        "args": ["-y", "@anthropic/mcp-chrome-devtools"],
+        "description": "Browser automation and testing via Chrome DevTools"
       }
     }
   }

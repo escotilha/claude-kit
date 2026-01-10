@@ -3,24 +3,28 @@
 Before pushing to GitHub, verify these items:
 
 ## ✅ Security Check
+
 - [ ] Review `settings.json` for any hardcoded secrets (should all be `${VAR_NAME}`)
 - [ ] Verify `.gitignore` includes `.env` files
 - [ ] Check all files for sensitive information
 - [ ] Confirm agents/commands don't contain project-specific secrets
 
 ## ✅ Configuration Review
+
 - [ ] Update README.md with your GitHub username
 - [ ] Review all agent profiles are complete
 - [ ] Verify all custom commands are included
 - [ ] Check scripts are executable (`chmod +x`)
 
 ## ✅ Repository Setup
+
 - [ ] Create GitHub repository (private recommended)
 - [ ] Configure git identity
 - [ ] Review commit message
 - [ ] Test installation script locally first
 
 ## ✅ Documentation
+
 - [ ] README.md is clear and complete
 - [ ] GITHUB_SETUP.md has correct instructions
 - [ ] .env.example has all required variables
@@ -47,6 +51,7 @@ git push -u origin main
 ```
 
 ## After Pushing
+
 - [ ] Verify repository is private
 - [ ] Test clone and install on another machine/directory
 - [ ] Update README with actual GitHub URL
@@ -58,10 +63,12 @@ git push -u origin main
 Total files: 24
 
 **Configuration:**
+
 - settings.json (MCP servers, default args)
 - .env.example (template for environment variables)
 
 **Agents:** (9 files)
+
 - backend-agent.md
 - codereview-agent.md
 - database-agent.md
@@ -70,23 +77,27 @@ Total files: 24
 - flight-price-optimizer.md
 - frontend-agent.md
 - security-agent.md
-- testing-agent.md
+- fulltesting-agent.md
 
 **Scripts:** (3 files)
+
 - claude-agents (multi-agent launcher)
 - claude-snapshot (git snapshots)
 - claude-rollback (interactive rollback)
 
 **Commands:** (4 files)
+
 - analyze-deal.md
 - financial-model.md
 - generate-deck.md
 - triage.md
 
 **Skills:** (1 file)
+
 - financial-data-extractor.skill
 
 **Documentation:**
+
 - README.md
 - GITHUB_SETUP.md
 - AGENT_COORDINATION_GUIDE.md
@@ -94,5 +105,6 @@ Total files: 24
 - This checklist
 
 **Meta:**
+
 - .gitignore
 - install.sh

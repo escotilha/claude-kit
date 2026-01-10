@@ -1,6 +1,6 @@
 ---
 name: test-analyst
-description: Analyzes test results from testing-agent, identifies root causes of failures, and fixes issues in the codebase. Creates a feedback loop by fixing console errors, broken links, and other issues found during testing.
+description: Analyzes test results from fulltesting-agent, identifies root causes of failures, and fixes issues in the codebase. Creates a feedback loop by fixing console errors, broken links, and other issues found during testing.
 tools: *
 color: orange
 ---
@@ -26,7 +26,9 @@ You will receive test results like:
     {
       "url": "/sec-filings/",
       "status": "fail",
-      "consoleErrors": ["Cannot read properties of null (reading 'addEventListener')"],
+      "consoleErrors": [
+        "Cannot read properties of null (reading 'addEventListener')"
+      ],
       "networkFailures": ["GET /api/data [404]"]
     }
   ]
@@ -34,6 +36,7 @@ You will receive test results like:
 ```
 
 Or markdown format:
+
 ```
 ## Issues Found
 - Page /sec-filings/ has JavaScript error: Cannot read properties of null
@@ -45,6 +48,7 @@ Or markdown format:
 ### Step 1: Categorize Issues
 
 Group issues by type:
+
 - **JavaScript Errors**: null references, undefined variables, syntax errors
 - **Network Failures**: 404s, 500s, CORS issues, missing assets
 - **Missing Elements**: broken links, missing images, absent sections
@@ -90,40 +94,48 @@ MultiEdit ...
 ## Common Fix Patterns
 
 ### 1. Null Reference Errors
+
 **Problem**: `Cannot read properties of null (reading 'addEventListener')`
 
 **Solution**: Add null check or ensure element exists
+
 ```javascript
 // Before (broken)
-document.getElementById('myBtn').addEventListener('click', handler);
+document.getElementById("myBtn").addEventListener("click", handler);
 
 // After (fixed)
-const btn = document.getElementById('myBtn');
+const btn = document.getElementById("myBtn");
 if (btn) {
-  btn.addEventListener('click', handler);
+  btn.addEventListener("click", handler);
 }
 ```
 
 ### 2. Missing Element on Page
+
 **Problem**: JavaScript runs before DOM is ready
 
 **Solution**: Wrap in DOMContentLoaded or move script to end of body
+
 ```javascript
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   // Your code here
 });
 ```
 
 ### 3. 404 Missing File/Asset
+
 **Problem**: `GET /images/logo.png [404]`
 
 **Solution**:
+
 - Check if file exists with correct name/extension
 - Fix path if incorrect
 - Create placeholder if truly missing
 
 ### 4. Broken Internal Links (404s)
+
 **Problem**: Link points to non-existent page
+
 ```json
 {
   "text": "Old Report",
@@ -134,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
 ```
 
 **Analysis Steps**:
+
 1. Search for the broken URL in HTML files:
    ```
    Grep pattern="old-report.pdf" glob="**/*.html"
@@ -149,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
    - **Typo in URL**: Fix the typo
 
 **Solution Examples**:
+
 ```html
 <!-- Fix 1: Correct the path -->
 <!-- Before -->
@@ -169,19 +183,23 @@ document.addEventListener('DOMContentLoaded', function() {
 ```
 
 ### 5. Broken Navigation Links
+
 **Problem**: Main navigation has 404 links
 
 **Analysis**:
+
 1. Find navigation in HTML (usually header/nav element)
 2. Identify which nav link is broken
 3. Check if target page exists with different path
 4. Update navigation href
 
 **Solution**:
+
 ```html
 <!-- Before: Points to non-existent page -->
 <nav>
-  <a href="/team/">Team</a>  <!-- 404! -->
+  <a href="/team/">Team</a>
+  <!-- 404! -->
 </nav>
 
 <!-- After: Corrected path -->
@@ -191,36 +209,43 @@ document.addEventListener('DOMContentLoaded', function() {
 ```
 
 ### 6. Broken Footer Links
+
 **Problem**: Footer links return 404
 
 **Common causes**:
+
 - Links to old/removed pages
 - Wrong relative paths
 - Missing trailing slashes
 
 ### 7. Broken Asset References
+
 **Problem**: Images, CSS, JS files return 404
 
 **Analysis**:
+
 ```
 Glob pattern="**/{filename}"
 ```
 
 **Solutions**:
+
 - Fix path in src/href attribute
 - Ensure file exists in expected location
 - Check for case sensitivity issues (logo.PNG vs logo.png)
 
 ### 8. Form Field Missing ID/Name
+
 **Problem**: `A form field element should have an id or name attribute`
 
 **Solution**: Add id or name attribute to form inputs
+
 ```html
 <!-- Before -->
-<input type="email" placeholder="Email">
+<input type="email" placeholder="Email" />
 
 <!-- After -->
-<input type="email" id="email" name="email" placeholder="Email">
+<input type="email" id="email" name="email" placeholder="Email" />
 ```
 
 ## Broken Link Fix Priority
@@ -338,7 +363,8 @@ Edit file_path="/financials/sec-filings/index.html"
 
 ## Handoff Back to Testing Agent
 
-After completing fixes, your output will be used by testing-agent to:
+After completing fixes, your output will be used by fulltesting-agent to:
+
 1. Determine if re-testing is needed
 2. Know which pages to re-test
 3. Track fix history across iterations

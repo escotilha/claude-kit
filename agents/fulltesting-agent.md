@@ -1,5 +1,5 @@
 ---
-name: testing-agent
+name: fulltesting-agent
 description: Runs full E2E tests using Chrome DevTools MCP. Maps sites, spawns parallel test subagents, analyzes failures, and fixes issues in a loop until all tests pass. Use for comprehensive site testing with auto-fix capabilities.
 tools: *
 color: green

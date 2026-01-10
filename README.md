@@ -25,6 +25,7 @@ cd ~/.claude-setup
 ### MCP Servers (14 Total)
 
 **Official Servers:**
+
 - **filesystem**: Local file access (`/Users/psm2`)
 - **github**: GitHub repository integration
 - **postgres**: PostgreSQL database access
@@ -40,6 +41,7 @@ cd ~/.claude-setup
 - **google-calendar**: Google Calendar access
 
 **Custom Servers:**
+
 - **nuvini-mna**: Custom M&A analysis tools
   - `triage_deal` - Score M&A opportunities (0-10)
   - `generate_proposal` - Create financial proposals with IRR/MOIC
@@ -48,9 +50,10 @@ cd ~/.claude-setup
 See [mcp-servers/README.md](mcp-servers/README.md) for detailed documentation.
 
 ### Agents (9 Specialized)
+
 - **frontend-agent**: React, Vue, Next.js, TypeScript
 - **backend-agent**: Node.js, Python, Go, APIs
-- **testing-agent**: Unit, integration, E2E tests
+- **fulltesting-agent**: Unit, integration, E2E tests
 - **security-agent**: Security reviews and audits
 - **devops-agent**: CI/CD, Docker, infrastructure
 - **database-agent**: Schema design and optimization
@@ -59,6 +62,7 @@ See [mcp-servers/README.md](mcp-servers/README.md) for detailed documentation.
 - **flight-price-optimizer**: Flight price optimization
 
 ### Skills (3 M&A Skills)
+
 - **triage-analyzer**: Score M&A opportunities 0-10 against investment criteria
 - **mna-proposal-generator**: Generate financial proposals with IRR/MOIC calculations
 - **committee-presenter**: Create board approval presentations (5-slide or 20+ slide)
@@ -66,12 +70,14 @@ See [mcp-servers/README.md](mcp-servers/README.md) for detailed documentation.
 See [skills/README.md](skills/README.md) for detailed documentation.
 
 ### Commands (4 M&A Workflows)
+
 - **/triage**: Quick deal triage workflow
 - **/analyze-deal**: Comprehensive deal analysis
 - **/financial-model**: Financial modeling workflow
 - **/generate-deck**: Presentation generation
 
 ### Utility Scripts
+
 - **claude-agents**: Launch multiple specialized agents in tmux
 - **claude-snapshot**: Create git snapshots for rollback
 - **claude-rollback**: Interactive rollback to previous snapshots
@@ -81,32 +87,38 @@ See [skills/README.md](skills/README.md) for detailed documentation.
 If you prefer manual setup:
 
 ### 1. Settings
+
 ```bash
 cp settings.json ~/.claude/settings.json
 ```
 
 ### 2. Agents
+
 ```bash
 cp -r agents ~/.claude/
 ```
 
 ### 3. Commands
+
 ```bash
 cp -r commands ~/.claude/
 ```
 
 ### 4. Skills
+
 ```bash
 cp -r skills ~/.config/claude/
 ```
 
 ### 5. Scripts
+
 ```bash
 cp bin/* ~/bin/
 chmod +x ~/bin/claude-*
 ```
 
 ### 6. Documentation
+
 ```bash
 cp guides/AGENT_COORDINATION_GUIDE.md ~/.claude/
 ```
@@ -142,11 +154,13 @@ export GOOGLE_CALENDAR_API_KEY="your_key"
 ## 🎯 Usage
 
 ### Launch Single Agent
+
 ```bash
 claude code
 ```
 
 ### Launch Multiple Agents
+
 ```bash
 # Full-stack development (frontend, backend, testing, security)
 claude-agents . --full-stack
@@ -161,6 +175,7 @@ claude-agents . --preset review    # codereview, security, testing
 ```
 
 ### Create Snapshots
+
 ```bash
 # Before major changes
 claude-snapshot frontend "pre-refactor"
@@ -170,12 +185,14 @@ claude-snapshot backend "api-complete"
 ```
 
 ### Rollback Changes
+
 ```bash
 # Interactive rollback menu
 claude-rollback
 ```
 
 ### Custom Commands
+
 ```bash
 # M&A Analysis
 /triage
@@ -187,8 +204,10 @@ claude-rollback
 ## 🔧 Customization
 
 ### Add Your Own Agent
+
 1. Create `~/.claude/agents/your-agent.md`
 2. Follow the frontmatter format:
+
 ```markdown
 ---
 name: Your Agent
@@ -203,11 +222,14 @@ color: #FF5733
 ```
 
 ### Add Custom Commands
+
 1. Create `~/.claude/commands/your-command.md`
 2. Add instructions for the command
 
 ### Modify Settings
+
 Edit `~/.claude/settings.json` to:
+
 - Add/remove MCP servers
 - Change default arguments
 - Configure thinking mode

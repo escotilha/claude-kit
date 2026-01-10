@@ -7,7 +7,7 @@ Full project orchestrator that analyzes a codebase, creates an implementation pl
 1. Analyze the codebase structure and requirements
 2. Create a detailed implementation plan
 3. Coordinate Frontend/Backend/Database agents to build features
-4. Run testing-agent with auto-fix loop until all tests pass
+4. Run fulltesting-agent with auto-fix loop until all tests pass
 5. Deploy to GitHub and Railway
 
 ## Usage

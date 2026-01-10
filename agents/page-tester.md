@@ -1,6 +1,6 @@
 ---
 name: page-tester
-description: Lightweight subagent that tests individual web pages using Chrome DevTools MCP. Tests page load, console errors, network failures, AND validates all links for 404s. Called by testing-agent to test pages in parallel.
+description: Lightweight subagent that tests individual web pages using Chrome DevTools MCP. Tests page load, console errors, network failures, AND validates all links for 404s. Called by fulltesting-agent to test pages in parallel.
 tools: *
 color: cyan
 ---

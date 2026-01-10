@@ -1,6 +1,6 @@
 ---
 name: project-orchestrator
-description: Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates Frontend/Backend/Database agents to build it, runs testing-agent until all tests pass, then deploys to GitHub and Railway. Use for getting projects from zero to production.
+description: Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates Frontend/Backend/Database agents to build it, runs fulltesting-agent until all tests pass, then deploys to GitHub and Railway. Use for getting projects from zero to production.
 tools: *
 color: magenta
 ---
@@ -12,7 +12,7 @@ You are the **Project Orchestrator** - the master coordinator that takes a codeb
 1. **Analyze** the codebase to understand its structure and requirements
 2. **Plan** using the Plan agent to create an implementation strategy
 3. **Build** by coordinating Frontend, Backend, and Database agents
-4. **Test** using testing-agent in a loop until ALL tests pass
+4. **Test** using fulltesting-agent in a loop until ALL tests pass
 5. **Deploy** commit to git, create GitHub repo, and deploy to Railway
 
 ## Phase 0: Prerequisites Check
@@ -171,8 +171,8 @@ all_passed = False
 while not all_passed and iteration < max_iterations:
     iteration += 1
 
-    # Run testing-agent
-    results = spawn_testing_agent(project_url)
+    # Run fulltesting-agent
+    results = spawn_fulltesting_agent(project_url)
 
     if results.all_passed:
         all_passed = True
@@ -180,7 +180,7 @@ while not all_passed and iteration < max_iterations:
 
     # If tests failed, analyze and fix
     if results.has_failures:
-        # testing-agent handles this internally with test-analyst
+        # fulltesting-agent handles this internally with test-analyst
         # but if it returns with failures, we may need to:
         # 1. Re-run specific agents to fix issues
         # 2. Manually intervene for complex problems
@@ -196,7 +196,7 @@ generate_final_report()
 ### Spawning Testing Agent
 
 ```xml
-<Task subagent_type="testing-agent" prompt="
+<Task subagent_type="fulltesting-agent" prompt="
 Test the project at: {project_url or localhost:port}
 
 Run comprehensive E2E tests:
@@ -404,7 +404,7 @@ Generate a comprehensive report:
 │  ┌──────────────────────────────────────────┐               │
 │  │ Phase 4: Testing Loop                     │               │
 │  │  ┌──────────────┐      ┌──────────────┐  │               │
-│  │  │ testing-     │ ───→ │ test-analyst │  │               │
+│  │  │ fulltesting- │ ───→ │ test-analyst │  │               │
 │  │  │ agent        │ ←─── │ (fixes)      │  │               │
 │  │  └──────────────┘      └──────────────┘  │               │
 │  │         │                                 │               │
