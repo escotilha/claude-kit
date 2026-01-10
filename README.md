@@ -234,6 +234,17 @@ Edit `~/.claude/settings.json` to:
 - Change default arguments
 - Configure thinking mode
 
+### Project-Level MCP Configuration
+
+To share MCP servers with your team, use project-scoped `.mcp.json`:
+
+1. Copy the template: `cp mcp-servers/project-template.mcp.json your-project/.mcp.json`
+2. Edit to include only needed servers
+3. Set environment variables in `.env`
+4. Commit to your repo (but NOT the secrets!)
+
+The `.mcp.json` file is auto-loaded when Claude Code starts in that directory.
+
 ## 📚 Resources
 
 - [Claude Code Documentation](https://docs.claude.com)

@@ -1,6 +1,12 @@
 ---
 name: codebase-cleanup
 description: Comprehensive codebase analysis and cleanup tool that identifies unused, unnecessary, or redundant files in a project. Use when users want to clean up their codebase, remove unused files, identify dead code, reduce project size, or maintain a cleaner repository. Triggers on requests like "clean up unused files", "find unnecessary files", "remove dead code", "analyze codebase for cleanup", or "reduce project bloat".
+user-invocable: true
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
 ---
 
 # Codebase Cleanup
@@ -24,6 +30,7 @@ This skill analyzes codebases to identify unused or unnecessary files, generates
 4. Check for `.gitignore` to understand what's already considered unnecessary
 
 **Ask the user:**
+
 - "What's the root directory of your project?"
 - "Are there any specific directories or file types you want me to focus on or exclude?"
 - "Do you want me to check for unused dependencies as well?"
@@ -37,6 +44,7 @@ python ~/.claude/skills/codebase-cleanup/scripts/analyze_codebase.py <project_ro
 ```
 
 The script will:
+
 - Map all import/require statements
 - Track which files are referenced
 - Identify orphaned files (no imports pointing to them)
@@ -75,9 +83,11 @@ Create a comprehensive markdown report with:
 
 ```markdown
 # Codebase Cleanup Report
+
 Generated: [date]
 
 ## Summary
+
 - Total files analyzed: X
 - Unused files found: Y
 - Potential space savings: Z MB
@@ -86,42 +96,54 @@ Generated: [date]
 ## Categories
 
 ### 1. Orphaned Files (High Confidence)
+
 Files with no imports/references:
+
 - path/to/file1.js (120 lines)
 - path/to/file2.py (45 lines)
 
 ### 2. Temporary/Backup Files (High Confidence)
+
 - path/to/file.bak (created 6 months ago)
 - .DS_Store files (23 instances)
 
 ### 3. Empty or Near-Empty Files (Medium Confidence)
+
 - path/to/empty.js (0 lines)
 - path/to/minimal.py (3 lines, only comments)
 
 ### 4. Duplicate Files (Medium Confidence)
+
 - path/to/util1.js and path/to/util2.js (95% similar)
 
 ### 5. Old Configuration Files (Low Confidence - Review Required)
+
 - old-webpack.config.js (last modified 2 years ago)
 - legacy-tsconfig.json
 
 ### 6. Unused Dependencies (Review Required)
+
 Package.json contains but never imported:
+
 - lodash
 - moment
 
 ## Recommendations
 
 ### Safe to Delete (High Confidence)
+
 [List files that are very likely safe to delete]
 
 ### Review Before Deleting (Medium Confidence)
+
 [List files that probably can be deleted but need review]
 
 ### Manual Review Required (Low Confidence)
+
 [List files that might be unused but need careful consideration]
 
 ## Next Steps
+
 1. Review the report
 2. Confirm which files to delete
 3. Create a backup or commit current state
@@ -137,7 +159,7 @@ Present the report to the user and save it to a file for reference.
 Present the findings and ask:
 
 ```
-I've identified [X] files that appear to be unused or unnecessary. 
+I've identified [X] files that appear to be unused or unnecessary.
 
 High confidence deletions: [N] files
 Medium confidence: [M] files
@@ -173,6 +195,7 @@ python ~/.claude/skills/codebase-cleanup/scripts/safe_delete.py \
 **Option 2: Interactive deletion**
 
 For each file:
+
 1. Show file path and reason for deletion
 2. Show file preview (first 20 lines)
 3. Ask: "Delete this file? (y/n/skip remaining)"
@@ -181,6 +204,7 @@ For each file:
 **Option 3: Git-based safety**
 
 If project uses git:
+
 ```bash
 # Create a new branch for cleanup
 git checkout -b cleanup/remove-unused-files
@@ -205,17 +229,21 @@ After deletion, generate a summary:
 # Cleanup Completed
 
 ## Actions Taken
+
 - Files deleted: X
 - Space freed: Y MB
 - Backup location: [path or commit hash]
 
 ## Deleted Files
+
 [List of all deleted files]
 
 ## To Undo
+
 [Instructions for restoring files]
 
 ## Next Steps
+
 - Run tests to ensure nothing broke
 - Verify application still works
 - If all good, can remove backup after [timeframe]
@@ -247,23 +275,27 @@ After deletion, generate a summary:
 ## Language-Specific Considerations
 
 ### JavaScript/TypeScript
+
 - Check for files imported in HTML (`<script src="">`)
 - Look for webpack/rollup entry points
 - Consider dynamic imports: `import()`, `require()`
 - Check `package.json` scripts that might reference files
 
 ### Python
+
 - Check `__init__.py` files carefully
 - Look for files imported via `importlib`
 - Consider `setup.py` and `pyproject.toml` entry points
 - Check for files referenced in `MANIFEST.in`
 
 ### Java
+
 - Check for reflection-based class loading
 - Look at Spring configuration files
 - Consider resources referenced in XML configs
 
 ### General
+
 - Check CI/CD configuration files (GitHub Actions, GitLab CI, etc.)
 - Review Docker files for COPY commands
 - Check documentation for referenced examples
@@ -273,6 +305,7 @@ After deletion, generate a summary:
 **User:** "Help me clean up my Node.js project"
 
 **Response:**
+
 1. Analyze package.json and project structure
 2. Run static analysis on all .js/.ts files
 3. Generate report with unused files

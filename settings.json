@@ -2,10 +2,12 @@
   "hooks": {
     "SessionStart": [
       {
+        "once": true,
         "hooks": [
           {
             "type": "command",
-            "command": "git-autosave > /tmp/git-autosave.log 2>&1 &"
+            "command": "git-autosave > /tmp/git-autosave.log 2>&1 &",
+            "timeout": 5000
           }
         ]
       }
@@ -27,7 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/format-file.sh"
+            "command": "$HOME/.claude/hooks/format-file.sh",
+            "timeout": 10000
           }
         ]
       }
@@ -35,10 +38,12 @@
     "Notification": [
       {
         "matcher": "permission_prompt",
+        "systemMessage": "A notification was sent to the user for permission approval",
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude needs your input\" with title \"Claude Code\" sound name \"Ping\"'"
+            "command": "osascript -e 'display notification \"Claude needs your input\" with title \"Claude Code\" sound name \"Ping\"'",
+            "timeout": 3000
           }
         ]
       }
@@ -49,6 +54,46 @@
           {
             "type": "command",
             "command": "osascript -e 'display notification \"Task completed\" with title \"Claude Code\" sound name \"Glass\"'"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/session-end.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/pre-compact.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HOOK_TYPE=SubagentStart $HOME/.claude/hooks/subagent-activity.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HOOK_TYPE=SubagentStop $HOME/.claude/hooks/subagent-activity.sh"
           }
         ]
       }
@@ -63,25 +108,17 @@
     "code-simplifier@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": false,
-  "default_arguments": [
-    "--dangerously-skip-permissions"
-  ],
+  "default_arguments": ["--dangerously-skip-permissions"],
   "mcp": {
     "mcpServers": {
       "sequential-thinking": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-sequential-thinking"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
         "description": "Sequential thinking and problem solving"
       },
       "memory": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-memory"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-memory"],
         "env": {
           "MEMORY_FILE_PATH": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/Claude/memory.jsonl"
         },
@@ -89,26 +126,17 @@
       },
       "fetch": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-fetch"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-fetch"],
         "description": "Web content fetching"
       },
       "git": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-git"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-git"],
         "description": "Git repository operations"
       },
       "brave-search": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-brave-search"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
         "env": {
           "BRAVE_API_KEY": "${BRAVE_API_KEY}"
         },
@@ -125,10 +153,7 @@
       },
       "resend": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-resend"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-resend"],
         "env": {
           "RESEND_API_KEY": "${RESEND_API_KEY}"
         },
@@ -136,10 +161,7 @@
       },
       "slack": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-slack"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-slack"],
         "env": {
           "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
           "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
@@ -148,10 +170,7 @@
       },
       "notion": {
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-notion"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-notion"],
         "env": {
           "NOTION_API_KEY": "${NOTION_API_KEY}"
         },

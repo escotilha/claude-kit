@@ -1,6 +1,8 @@
 ---
 name: autonomous-agent
 description: "Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration. Use when asked to: build a feature autonomously, create a PRD, implement a feature from scratch, run an autonomous coding loop, break down a feature into user stories. Triggers on: autonomous agent, build this autonomously, autonomous mode, implement this feature, create prd, prd to json, user stories, iterative implementation, ralph."
+user-invocable: true
+context: fork
 ---
 
 # Autonomous Coding Agent

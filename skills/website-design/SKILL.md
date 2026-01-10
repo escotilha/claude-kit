@@ -1,6 +1,16 @@
 ---
 name: website-design
 description: Create professional B2B SaaS websites, dashboards, landing pages, and web applications with modern UX/UI best practices. Use when Claude needs to design marketing websites, product dashboards, admin panels, landing pages, or any B2B-focused web interface. Covers full-stack design from hero sections to pricing pages, with emphasis on conversion optimization, data visualization, and professional aesthetics using Tailwind CSS, React, and modern web standards.
+user-invocable: true
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
+  - WebFetch
+  - WebSearch
 ---
 
 # Website Design Skill
@@ -32,20 +42,20 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 
 ### Homepage Essential Elements
 
-| Element | Purpose | Best Practice |
-|---------|---------|---------------|
-| Hero Section | First impression | Clear value prop, single CTA, product visual |
-| Social Proof | Build trust | Client logos, testimonials, review badges (G2, Capterra) |
-| Feature Overview | Explain product | 3-6 key features with icons/visuals |
-| Use Cases | Show relevance | Segment by role/industry |
-| Pricing Preview | Qualify leads | Show tiers or "starts at" pricing |
-| Final CTA | Convert | Strong call-to-action above footer |
+| Element          | Purpose          | Best Practice                                            |
+| ---------------- | ---------------- | -------------------------------------------------------- |
+| Hero Section     | First impression | Clear value prop, single CTA, product visual             |
+| Social Proof     | Build trust      | Client logos, testimonials, review badges (G2, Capterra) |
+| Feature Overview | Explain product  | 3-6 key features with icons/visuals                      |
+| Use Cases        | Show relevance   | Segment by role/industry                                 |
+| Pricing Preview  | Qualify leads    | Show tiers or "starts at" pricing                        |
+| Final CTA        | Convert          | Strong call-to-action above footer                       |
 
 ### Hero Section Formula
 
 ```
 [Headline]: What you do + who it's for
-[Subheadline]: How you do it differently  
+[Subheadline]: How you do it differently
 [Primary CTA]: "Start Free Trial" / "Book Demo"
 [Secondary CTA]: "Watch Video" / "See Pricing"
 [Visual]: Product screenshot or demo animation
@@ -97,14 +107,14 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 
 ### Data Visualization Guidelines
 
-| Data Type | Best Chart | When to Use |
-|-----------|------------|-------------|
-| Trends over time | Line chart | Revenue, users, growth |
-| Comparisons | Bar chart | Category comparison |
-| Proportions | Pie/Donut | Market share, distribution |
-| KPIs | Stat cards | Single important numbers |
-| Relationships | Scatter plot | Correlation analysis |
-| Progress | Progress bars | Goals, completion rates |
+| Data Type        | Best Chart    | When to Use                |
+| ---------------- | ------------- | -------------------------- |
+| Trends over time | Line chart    | Revenue, users, growth     |
+| Comparisons      | Bar chart     | Category comparison        |
+| Proportions      | Pie/Donut     | Market share, distribution |
+| KPIs             | Stat cards    | Single important numbers   |
+| Relationships    | Scatter plot  | Correlation analysis       |
+| Progress         | Progress bars | Goals, completion rates    |
 
 ### Dashboard Color Usage
 
@@ -123,35 +133,39 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 ### B2B SaaS Color Strategies
 
 **Professional Trust (Blue-based)**
+
 ```css
---primary: #2563eb;      /* Trust blue */
+--primary: #2563eb; /* Trust blue */
 --primary-dark: #1e40af;
---accent: #f97316;       /* Orange accent */
+--accent: #f97316; /* Orange accent */
 --background: #f8fafc;
 --text: #0f172a;
 ```
 
 **Modern Tech (Purple gradient)**
+
 ```css
---primary: #7c3aed;      /* Vibrant purple */
+--primary: #7c3aed; /* Vibrant purple */
 --primary-light: #a78bfa;
---accent: #06b6d4;       /* Cyan accent */
+--accent: #06b6d4; /* Cyan accent */
 --background: #fafafa;
 --text: #18181b;
 ```
 
 **Minimal Elegance (Monochrome + accent)**
+
 ```css
---primary: #18181b;      /* Near black */
+--primary: #18181b; /* Near black */
 --primary-light: #52525b;
---accent: #f43f5e;       /* Rose accent */
+--accent: #f43f5e; /* Rose accent */
 --background: #ffffff;
 --text: #27272a;
 ```
 
 **Dark Mode Dashboard**
+
 ```css
---bg-primary: #0f172a;   /* Deep slate */
+--bg-primary: #0f172a; /* Deep slate */
 --bg-secondary: #1e293b;
 --bg-card: #334155;
 --text-primary: #f1f5f9;
@@ -172,27 +186,31 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 ### Recommended Font Pairings
 
 **Professional SaaS**
+
 ```css
---font-display: 'Plus Jakarta Sans', sans-serif;
---font-body: 'Inter', sans-serif;
+--font-display: "Plus Jakarta Sans", sans-serif;
+--font-body: "Inter", sans-serif;
 ```
 
 **Modern Tech**
+
 ```css
---font-display: 'Satoshi', sans-serif;
---font-body: 'DM Sans', sans-serif;
+--font-display: "Satoshi", sans-serif;
+--font-body: "DM Sans", sans-serif;
 ```
 
 **Editorial/Content**
+
 ```css
---font-display: 'Fraunces', serif;
---font-body: 'Source Sans Pro', sans-serif;
+--font-display: "Fraunces", serif;
+--font-body: "Source Sans Pro", sans-serif;
 ```
 
 **Distinctive/Bold**
+
 ```css
---font-display: 'Cabinet Grotesk', sans-serif;
---font-body: 'General Sans', sans-serif;
+--font-display: "Cabinet Grotesk", sans-serif;
+--font-body: "General Sans", sans-serif;
 ```
 
 ### Type Scale (Tailwind default)
@@ -217,6 +235,7 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
 ### Component Patterns
 
 **Hero Section**
+
 ```jsx
 <section className="relative min-h-[80vh] bg-gradient-to-br from-slate-50 to-blue-50">
   <div className="container mx-auto px-6 py-24">
@@ -228,11 +247,12 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
           New Feature Released
         </div>
         <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-          Automate your <span className="text-blue-600">workflow</span> in minutes
+          Automate your <span className="text-blue-600">workflow</span> in
+          minutes
         </h1>
         <p className="text-xl text-slate-600 leading-relaxed max-w-lg">
-          The all-in-one platform that helps teams collaborate, 
-          automate, and scale their operations.
+          The all-in-one platform that helps teams collaborate, automate, and
+          scale their operations.
         </p>
         <div className="flex flex-wrap gap-4">
           <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40">
@@ -244,18 +264,21 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
         </div>
         {/* Social Proof */}
         <div className="flex items-center gap-8 pt-4">
-          <div className="flex -space-x-3">
-            {/* Avatar stack */}
-          </div>
+          <div className="flex -space-x-3">{/* Avatar stack */}</div>
           <div className="text-sm text-slate-600">
-            <span className="font-semibold text-slate-900">2,500+</span> teams trust us
+            <span className="font-semibold text-slate-900">2,500+</span> teams
+            trust us
           </div>
         </div>
       </div>
       {/* Product Visual */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-3xl opacity-20"></div>
-        <img src="/dashboard-preview.png" alt="Dashboard" className="relative rounded-2xl shadow-2xl" />
+        <img
+          src="/dashboard-preview.png"
+          alt="Dashboard"
+          className="relative rounded-2xl shadow-2xl"
+        />
       </div>
     </div>
   </div>
@@ -263,6 +286,7 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
 ```
 
 **Dashboard Stats Card**
+
 ```jsx
 <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow">
   <div className="flex items-start justify-between">
@@ -272,7 +296,11 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
       <div className="flex items-center gap-1 mt-2">
         <span className="inline-flex items-center text-sm font-medium text-emerald-600">
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+              clipRule="evenodd"
+            />
           </svg>
           +12.5%
         </span>
@@ -287,14 +315,20 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
 ```
 
 **Feature Grid**
+
 ```jsx
 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
   {features.map((feature) => (
-    <div key={feature.title} className="group p-8 bg-white rounded-2xl border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all">
+    <div
+      key={feature.title}
+      className="group p-8 bg-white rounded-2xl border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all"
+    >
       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
         {feature.icon}
       </div>
-      <h3 className="text-xl font-semibold text-slate-900 mb-3">{feature.title}</h3>
+      <h3 className="text-xl font-semibold text-slate-900 mb-3">
+        {feature.title}
+      </h3>
       <p className="text-slate-600 leading-relaxed">{feature.description}</p>
     </div>
   ))}
@@ -339,6 +373,7 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
 ### CSS Animation Patterns
 
 **Fade In Up (Page Load)**
+
 ```css
 @keyframes fadeInUp {
   from {
@@ -357,19 +392,23 @@ text-6xl:  3.75rem  (60px)  - Marketing headlines
 ```
 
 **Staggered Children**
+
 ```jsx
-{items.map((item, i) => (
-  <div 
-    key={item.id}
-    className="animate-fade-in-up"
-    style={{ animationDelay: `${i * 100}ms` }}
-  >
-    {item.content}
-  </div>
-))}
+{
+  items.map((item, i) => (
+    <div
+      key={item.id}
+      className="animate-fade-in-up"
+      style={{ animationDelay: `${i * 100}ms` }}
+    >
+      {item.content}
+    </div>
+  ));
+}
 ```
 
 **Hover Effects**
+
 ```jsx
 // Scale on hover
 <button className="transform hover:scale-105 transition-transform duration-200">
@@ -433,6 +472,7 @@ xl:  1280px  /* Desktops */
 ## Quick Reference Templates
 
 See `templates/` folder for ready-to-use components:
+
 - `hero-sections.jsx` - 5 hero section variants
 - `feature-sections.jsx` - Grid, alternating, bento layouts
 - `pricing-cards.jsx` - 3-tier pricing with toggle
@@ -441,6 +481,7 @@ See `templates/` folder for ready-to-use components:
 - `data-cards.jsx` - Stats, charts, tables
 
 See `references/` folder for:
+
 - `inspiration-sites.md` - Curated B2B SaaS examples
 - `color-palettes.md` - 20+ tested color combinations
 - `typography-pairings.md` - Font combination guide
