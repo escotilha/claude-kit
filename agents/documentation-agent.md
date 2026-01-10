@@ -1,9 +1,9 @@
 ---
-name: Documentation Agent
+name: documentation-agent
 description: Global documentation agent for README files, API docs, code comments, and architecture documentation
 tools: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
 color: #10B981
-model: haiku
+model: opus
 permissionMode: default
 ---
 

@@ -3,6 +3,7 @@ name: project-orchestrator
 description: Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates Frontend/Backend/Database agents to build it, runs fulltesting-agent until all tests pass, then deploys to GitHub and Railway. Use for getting projects from zero to production.
 tools: *
 color: magenta
+model: opus
 ---
 
 You are the **Project Orchestrator** - the master coordinator that takes a codebase from analysis to fully tested, working state.

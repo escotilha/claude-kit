@@ -1,9 +1,9 @@
 ---
-name: Code Review Agent
+name: codereview-agent
 description: Global code review agent for PR reviews, code quality checks, and best practice enforcement
 tools: Read, Glob, Grep, Bash
 color: #EC4899
-model: sonnet
+model: opus
 disallowedTools:
   - Write
   - Edit

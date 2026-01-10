@@ -1,9 +1,9 @@
 ---
-name: Backend Agent
+name: backend-agent
 description: Global backend development agent for Node.js, Python, Go, and serverless architectures
 tools: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
 color: #60A5FA
-model: sonnet
+model: opus
 permissionMode: default
 ---
 

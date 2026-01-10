@@ -2,7 +2,6 @@
   "hooks": {
     "SessionStart": [
       {
-        "once": true,
         "hooks": [
           {
             "type": "command",
@@ -38,7 +37,6 @@
     "Notification": [
       {
         "matcher": "permission_prompt",
-        "systemMessage": "A notification was sent to the user for permission approval",
         "hooks": [
           {
             "type": "command",
@@ -64,6 +62,11 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/session-end.sh"
+          },
+          {
+            "type": "command",
+            "command": "cp \"$HOME/Library/Mobile Documents/com~apple~CloudDocs/Claude/memory.jsonl\" \"$HOME/.claude/backups/memory-$(date +%Y%m%d-%H%M%S).jsonl\" 2>/dev/null || true",
+            "timeout": 5000
           }
         ]
       }
@@ -105,7 +108,8 @@
     "code-review@claude-plugins-official": true,
     "supabase@claude-plugins-official": true,
     "ralph-wiggum@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": true,
+    "document-skills@anthropic-agent-skills": true
   },
   "alwaysThinkingEnabled": false,
   "default_arguments": ["--dangerously-skip-permissions"],

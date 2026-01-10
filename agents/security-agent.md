@@ -1,9 +1,9 @@
 ---
-name: Security Agent
+name: security-agent
 description: Global security testing and review agent for vulnerability scanning and security best practices
 tools: Read, Glob, Grep, Bash
 color: #F87171
-model: sonnet
+model: opus
 disallowedTools:
   - Write
   - Edit

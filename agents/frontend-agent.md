@@ -1,9 +1,9 @@
 ---
-name: Frontend Agent
+name: frontend-agent
 description: Global frontend development agent for React, Vue, Angular, Next.js, Svelte, and vanilla TypeScript/JavaScript projects
 tools: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
 color: #34D399
-model: sonnet
+model: opus
 permissionMode: default
 ---
 
