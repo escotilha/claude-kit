@@ -5,11 +5,13 @@ This directory contains custom Agent Skills for Claude Code. Skills are speciali
 ## Available Skills
 
 ### 1. **Committee Presenter**
+
 **Location:** `./committee-presenter/`
 
 Creates professional PowerPoint presentations for M&A board approval in Nuvini brand style.
 
 **Capabilities:**
+
 - Executive dashboards with key metrics
 - Financial highlights and transaction structure
 - Risk assessment matrices with mitigation strategies
@@ -17,10 +19,12 @@ Creates professional PowerPoint presentations for M&A board approval in Nuvini b
 - Exit strategy scenarios
 
 **Formats:**
+
 - **5-slide Summary** - Quick board decisions
 - **20+ slide Full Analysis** - Comprehensive review
 
 **Required Inputs:**
+
 - Company name
 - IRR (Internal Rate of Return)
 - MOIC (Multiple on Invested Capital)
@@ -28,6 +32,7 @@ Creates professional PowerPoint presentations for M&A board approval in Nuvini b
 - Current EBITDA
 
 **Brand Standards:**
+
 - Primary Blue: #1B4F8C
 - Accent Teal: #00A19C
 - Highlight Orange: #FF8C42
@@ -35,6 +40,7 @@ Creates professional PowerPoint presentations for M&A board approval in Nuvini b
 - Quality: McKinsey/BCG professional standard
 
 **Usage Example:**
+
 ```
 Create a board summary for TechBrasil:
 - IRR: 35%
@@ -46,11 +52,13 @@ Create a board summary for TechBrasil:
 ---
 
 ### 2. **M&A Proposal Generator**
+
 **Location:** `./mna-proposal-generator/`
 
 Generates comprehensive M&A financial proposals with dual-perspective analysis (acquirer + target).
 
 **Capabilities:**
+
 - IRR and MOIC calculations
 - Payment schedules with earnout structures
 - Debt financing models (PIK, amortizing)
@@ -60,10 +68,12 @@ Generates comprehensive M&A financial proposals with dual-perspective analysis (
 - Exit scenario modeling
 
 **Required Inputs:**
+
 - Company name
 - EBITDA by year (historical and projected)
 
 **Optional Inputs:**
+
 - Revenue by year
 - Purchase multiple (default: 6.0x)
 - Cash at closing % (default: 60%)
@@ -73,12 +83,14 @@ Generates comprehensive M&A financial proposals with dual-perspective analysis (
 - Exit assumptions
 
 **Hurdle Rates:**
+
 - Minimum IRR: 20%
 - Minimum MOIC: 2.5x
 - Maximum Leverage: 4.0x EBITDA
 - Minimum DSCR: 1.5x
 
 **Outputs:**
+
 - Excel financial model
 - Acquirer perspective (IRR, MOIC, payback period)
 - Target perspective (payment schedule, total consideration)
@@ -86,6 +98,7 @@ Generates comprehensive M&A financial proposals with dual-perspective analysis (
 - 7-year cash flow projections
 
 **Usage Example:**
+
 ```
 Generate a proposal for TechBrasil:
 - 2024: R$50M revenue, R$15M EBITDA
@@ -96,6 +109,7 @@ Generate a proposal for TechBrasil:
 ---
 
 ### 3. **Triage Analyzer**
+
 **Location:** `./triage-analyzer/`
 
 Analyzes M&A opportunities and scores them 0-10 against Nuvini's investment criteria.
@@ -103,26 +117,31 @@ Analyzes M&A opportunities and scores them 0-10 against Nuvini's investment crit
 **Evaluation Criteria:**
 
 #### Financial Health (35 points)
+
 - EBITDA Margin: ≥40% (15 pts), ≥30% (10 pts), ≥20% (5 pts)
 - Revenue Growth: ≥30% (10 pts), ≥20% (7 pts), ≥10% (3 pts)
 - Cash Conversion: ≥80% (10 pts), ≥60% (7 pts)
 
 #### Business Model (25 points)
+
 - Recurring Revenue: ≥95% (10 pts), ≥80% (7 pts)
 - Churn Rate: <5% (10 pts), ≤8% (7 pts)
 - Customer Base: >500 (5 pts), >100 (3 pts)
 
 #### Market Position (20 points)
+
 - Vertical focus identification (8 pts)
 - Market leadership indicators (7 pts)
 - Customer base size (5 pts)
 
 #### Strategic Fit (20 points)
+
 - Portfolio synergies (10 pts)
 - Integration complexity (5 pts)
 - Scale potential (5 pts)
 
 **Red Flags (Auto-Disqualifiers):**
+
 - Not SaaS/Software business
 - Not Brazil-focused
 - EBITDA < R$5M or > R$100M
@@ -130,6 +149,7 @@ Analyzes M&A opportunities and scores them 0-10 against Nuvini's investment crit
 - Cash conversion < 60%
 
 **Outputs:**
+
 - Overall score (0-10)
 - Recommendation: PROCEED / REVIEW / REJECT
 - Scoring breakdown by category
@@ -139,6 +159,7 @@ Analyzes M&A opportunities and scores them 0-10 against Nuvini's investment crit
 - Recommended next steps
 
 **Usage Example:**
+
 ```
 Triage this opportunity:
 - Company: TechBrasil
@@ -152,7 +173,62 @@ Triage this opportunity:
 
 ---
 
-### 4. **Financial Data Extractor** (Legacy)
+### 4. **Portfolio Reporter**
+
+**Location:** `./portfolio-reporter/`
+
+Generates comprehensive Nuvini portfolio financial reports and presentations from individual company Excel files.
+
+**Capabilities:**
+
+- Consolidates financial data from 6 portfolio companies (Mercos, Effecti, Ipê Digital, Datahub, OnClick, Leadlovers)
+- Monthly and quarterly report generation
+- Executive-ready PowerPoint presentations (16 slides)
+- AI-generated visuals using Gemini (optional)
+- Organized output folders by period
+
+**Triggers:**
+
+- "portfolio report", "portfolio update", "portfolio presentation"
+- "consolidate financials", "monthly portfolio", "quarterly portfolio"
+- `/portfolio-report`
+
+**Slide Structure:**
+
+1. Title
+2. Executive Summary
+3. Consolidated Financial Overview
+4. Month vs Previous Month Comparison
+5. Portfolio Performance Dashboard (Rule of 40)
+6. Revenue Analysis
+7. Profitability Analysis
+8. Cash Flow and Liquidity
+   9-14. Company Deep Dives (one per company)
+9. Portfolio Summary Table
+10. Strategic Outlook
+
+**Outputs:**
+
+- `Consolidated_Summary_{Period}_{Year}.xlsx` - Full financial consolidation
+- `Portfolio_Update_{Period}_{Year}.pptx` - Executive presentation
+
+**Usage Example:**
+
+```bash
+# Interactive mode
+python portfolio_reporter.py
+
+# CLI mode
+python portfolio_reporter.py --type monthly --period "July 2025" --directory /path/to/files
+
+# With AI visuals
+GEMINI_API_KEY=xxx python portfolio_reporter.py --visuals
+```
+
+---
+
+### 5. **Financial Data Extractor** (Legacy)
+
 **Location:** `./financial-data-extractor.skill`
 
 Extracts financial data from various formats (PDF, Excel, text).
@@ -178,6 +254,7 @@ The skills work together in a sequential workflow:
 ## Installation
 
 ### Global Installation
+
 Skills in this directory can be installed globally:
 
 ```bash
@@ -188,6 +265,7 @@ cp -r ./triage-analyzer ~/.claude/skills/
 ```
 
 ### Project-Specific Installation
+
 For project-specific skills:
 
 ```bash
@@ -212,27 +290,35 @@ skill-name/
 # Skill Name
 
 ## Name
+
 Short skill name
 
 ## Description
+
 Brief description of what this skill does and when to use it
 
 ## When to Use This Skill
+
 - Bullet points of use cases
 
 ## Required Inputs
+
 - List of required parameters
 
 ## Optional Inputs
+
 - List of optional parameters with defaults
 
 ## Output
+
 Description of what the skill produces
 
 ## Implementation
+
 How the skill works (MCP tools, Python modules, etc.)
 
 ## Examples
+
 Real-world usage examples
 ```
 
@@ -276,23 +362,27 @@ You can also explicitly invoke skills:
 ## Best Practices
 
 ### Skill Design
+
 1. **Single Responsibility** - Each skill should do one thing well
 2. **Clear Triggers** - Make description specific so Claude knows when to use it
 3. **Progressive Disclosure** - Start with metadata, load details as needed
 4. **Reusable** - Design for multiple contexts, not single use cases
 
 ### Skill Naming
+
 - Use kebab-case for directory names
 - Make names descriptive: `mna-proposal-generator` not `proposal`
 - Avoid generic names that might conflict
 
 ### Documentation
+
 - Clear description of when to use the skill
 - Document all inputs (required and optional)
 - Provide real-world examples
 - Include expected outputs
 
 ### Integration
+
 - Skills can call MCP tools
 - Skills can reference Python scripts
 - Skills can include templates or reference files
@@ -311,23 +401,28 @@ See `../mcp-servers/nuvini-mna/README.md` for MCP server documentation.
 ## Testing Skills
 
 ### List Available Skills
+
 In Claude Code:
+
 ```
 "What skills are available?"
 ```
 
 ### Test Skill Activation
+
 ```
 "Use the [skill-name] to [task description]"
 ```
 
 ### Check Skill Content
+
 ```bash
 # View skill definition
 cat ~/.claude/skills/skill-name/SKILL.md
 ```
 
 ### Debug Skills
+
 - Check `~/.claude/debug/` for logs
 - Verify skill SKILL.md is well-formed
 - Ensure description is specific enough for Claude to match
