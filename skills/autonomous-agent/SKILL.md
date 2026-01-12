@@ -17,8 +17,41 @@ An autonomous workflow that breaks features into small, testable user stories an
 - `progress.md` - Learnings and implementation notes
 - `AGENTS.md` - Long-term patterns for the repository
 - Git history - All code changes
+- **Memory MCP** - Cross-codebase learnings (patterns, mistakes, preferences)
 
 **Each iteration is stateless** - read these files to understand context.
+
+---
+
+## Memory Integration (Cross-Codebase Learning)
+
+The agent uses the Memory MCP server to learn across different projects. This enables:
+
+- Remembering patterns that work well
+- Avoiding mistakes made in other codebases
+- Applying user preferences consistently
+
+### Memory Entity Types
+
+| Type                    | Purpose                      | Example                              |
+| ----------------------- | ---------------------------- | ------------------------------------ |
+| `pattern`               | Reusable solutions           | `pattern:early-returns`              |
+| `mistake`               | Things to avoid              | `mistake:env-in-repo`                |
+| `preference`            | User's preferred approaches  | `preference:package-manager`         |
+| `tech-insight`          | Framework-specific knowledge | `tech-insight:supabase-rls`          |
+| `architecture-decision` | High-level design choices    | `architecture-decision:multi-tenant` |
+
+### When to Query Memory
+
+1. **Phase 1 Start** - Query preferences and patterns before asking clarifying questions
+2. **Phase 3 Start** - Load relevant tech-insights for the detected stack
+3. **Before Implementation** - Check for related mistakes/patterns
+
+### When to Save to Memory
+
+1. **After successful story** - Extract reusable patterns
+2. **After fixing a bug** - Save as mistake to avoid
+3. **When discovering codebase convention** - Save if broadly applicable
 
 ---
 
@@ -45,6 +78,25 @@ ls -la prd.json progress.md tasks/*.md 2>/dev/null
 
 **Goal:** Create a Product Requirements Document from a feature idea.
 
+### Step 1.0: Load User Preferences from Memory
+
+**First action:** Query the Memory MCP for user preferences and patterns:
+
+```
+mcp__memory__search_nodes({ query: "preference" })
+mcp__memory__search_nodes({ query: "pattern" })
+mcp__memory__search_nodes({ query: "architecture-decision" })
+```
+
+**Apply learned preferences:**
+
+- Package manager preference (pnpm vs npm vs yarn)
+- Deployment targets (Railway, Vercel, Cloudflare)
+- Code organization patterns (feature folders, etc.)
+- Testing preferences
+
+These preferences inform your clarifying questions and PRD structure.
+
 ### Step 1.1: Codebase Discovery
 
 Before asking questions, understand the existing codebase:
@@ -54,6 +106,20 @@ Before asking questions, understand the existing codebase:
 2. Find existing patterns: src/ structure, component patterns, API conventions
 3. Check for AGENTS.md for documented patterns
 4. Identify test patterns and frameworks
+5. Cross-reference with memory: tech-insights for detected stack
+```
+
+**Query stack-specific learnings:**
+
+```
+# If Next.js detected:
+mcp__memory__search_nodes({ query: "nextjs" })
+
+# If Supabase detected:
+mcp__memory__search_nodes({ query: "supabase" })
+
+# General mistakes to avoid:
+mcp__memory__search_nodes({ query: "mistake" })
 ```
 
 ### Step 1.2: Clarifying Questions
@@ -259,6 +325,24 @@ cat progress.md
 cat AGENTS.md 2>/dev/null
 ```
 
+**Load cross-codebase learnings:**
+
+```
+# Query memory for relevant insights based on detected tech stack
+mcp__memory__search_nodes({ query: "[detected-framework]" })  # e.g., "nextjs", "fastapi"
+mcp__memory__search_nodes({ query: "mistake" })               # Avoid past mistakes
+mcp__memory__search_nodes({ query: "pattern" })               # Apply known patterns
+```
+
+**Stack detection -> memory queries:**
+
+| Detected Stack | Memory Queries                         |
+| -------------- | -------------------------------------- |
+| Next.js        | `nextjs`, `react`, `server-components` |
+| Supabase       | `supabase`, `rls`, `postgres`          |
+| FastAPI        | `fastapi`, `python`, `api`             |
+| React          | `react`, `hooks`, `state-management`   |
+
 Find the next story: first `passes: false` ordered by `priority`, respecting `dependsOn`.
 
 ### Step 3.1: Announce Task
@@ -347,7 +431,45 @@ npm run lint
    ---
    ```
 
-4. Check completion and continue:
+4. **Extract and save learnings to Memory:**
+
+   After each successful story, evaluate if any learnings are broadly applicable:
+
+   ```
+   # Ask yourself:
+   # 1. Did I discover a pattern that would help in other projects?
+   # 2. Did I make a mistake that should be avoided elsewhere?
+   # 3. Did I learn something about a framework/tool?
+
+   # If yes, save to memory:
+   mcp__memory__create_entities({
+     entities: [{
+       name: "pattern:descriptive-name",
+       entityType: "pattern",
+       observations: [
+         "What the pattern is",
+         "When to apply it",
+         "Applies to: [frameworks/languages]"
+       ]
+     }]
+   })
+   ```
+
+   **Learning extraction criteria:**
+
+   | Save as                 | When                                      |
+   | ----------------------- | ----------------------------------------- |
+   | `pattern`               | Solution worked well and is reusable      |
+   | `mistake`               | Made an error, had to fix it              |
+   | `tech-insight`          | Learned something about a specific tool   |
+   | `architecture-decision` | Made a structural choice that proved good |
+
+   **Skip saving if:**
+   - Learning is project-specific (put in AGENTS.md instead)
+   - Already exists in memory (check first)
+   - Too trivial to be useful
+
+5. Check completion and continue:
 
    ```
    US-XXX complete. [N] stories remaining.
@@ -373,7 +495,24 @@ npm run lint
 
 3. If `attempts < 3`: Fix and retry step 3.3
 
-4. If `attempts >= 3`:
+4. **After fixing a failure, save the mistake to memory:**
+
+   ```
+   mcp__memory__create_entities({
+     entities: [{
+       name: "mistake:descriptive-name",
+       entityType: "mistake",
+       observations: [
+         "What went wrong: [description]",
+         "How to avoid: [prevention strategy]",
+         "Applies to: [frameworks/languages]",
+         "Severity: [low/medium/high/critical]"
+       ]
+     }]
+   })
+   ```
+
+5. If `attempts >= 3`:
 
    ```
    US-XXX failed after 3 attempts.
