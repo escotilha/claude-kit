@@ -243,6 +243,53 @@ fi
 git checkout -b feature/[feature-name]
 ```
 
+### Step 2.2a: Create Feature Worktree (Optional)
+
+If `.worktree-scaffold.json` exists in the project root, create an isolated worktree for this feature. This keeps development separate from the main working directory.
+
+**When to use worktrees:**
+- Large features with many stories
+- Features that need isolation from other work
+- Parallel feature development
+
+**How to create:**
+
+```bash
+# Check if worktree-scaffold config exists
+if [ -f .worktree-scaffold.json ]; then
+  # Read config
+  WORKTREE_DIR=$(jq -r '.worktreeDir // "../"' .worktree-scaffold.json)
+  BRANCH_PREFIX=$(jq -r '.branchPrefix // "feature/"' .worktree-scaffold.json)
+
+  # Feature name without prefix
+  FEATURE_NAME="${BRANCH_NAME#${BRANCH_PREFIX}}"
+  WORKTREE_PATH="${WORKTREE_DIR}${FEATURE_NAME}"
+
+  # Create worktree
+  git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+
+  # Run scaffolding if configured
+  SCAFFOLD_TYPE=$(jq -r '.defaultScaffold // "default"' .worktree-scaffold.json)
+  # Generate scaffold files based on config templates
+
+  echo "Worktree created at: $WORKTREE_PATH"
+  echo "Continuing autonomous loop in worktree..."
+  cd "$WORKTREE_PATH"
+fi
+```
+
+**Store worktree info in prd.json:**
+
+```json
+{
+  "worktree": {
+    "enabled": true,
+    "path": "../feature-name",
+    "mainRepoPath": "/original/repo/path"
+  }
+}
+```
+
 ### Step 2.3: Generate prd.json
 
 ```json
@@ -565,6 +612,35 @@ Would you like me to:
 A. Create a pull request
 B. Show a detailed summary
 C. Continue with more features
+D. Clean up worktree (if used)
+```
+
+### Step 3.6: Worktree Cleanup (If Used)
+
+If the feature was developed in a worktree, offer cleanup:
+
+```bash
+# Check if worktree was used
+if [ -n "$(jq -r '.worktree.path // empty' prd.json)" ]; then
+  WORKTREE_PATH=$(jq -r '.worktree.path' prd.json)
+  MAIN_REPO=$(jq -r '.worktree.mainRepoPath' prd.json)
+
+  echo "Feature developed in worktree: $WORKTREE_PATH"
+  echo ""
+  echo "Cleanup options:"
+  echo "1. Keep worktree (for future reference)"
+  echo "2. Remove worktree, keep branch"
+  echo "3. Remove worktree and merge branch to main"
+fi
+```
+
+**To remove worktree:**
+
+```bash
+# From main repo
+cd "$MAIN_REPO"
+git worktree remove "$WORKTREE_PATH"
+git worktree prune
 ```
 
 ---
@@ -604,13 +680,33 @@ If a story needs something not yet implemented:
 
 ## Key Files Reference
 
-| File             | Purpose                    | Created            |
-| ---------------- | -------------------------- | ------------------ |
-| `tasks/prd-*.md` | Human-readable PRD         | Phase 1            |
-| `prd.json`       | Machine-readable task list | Phase 2            |
-| `progress.md`    | Append-only learnings      | Phase 2+           |
-| `AGENTS.md`      | Long-term repo patterns    | Anytime            |
-| `archive/`       | Previous completed PRDs    | Before new feature |
+| File                        | Purpose                          | Created            |
+| --------------------------- | -------------------------------- | ------------------ |
+| `tasks/prd-*.md`            | Human-readable PRD               | Phase 1            |
+| `prd.json`                  | Machine-readable task list       | Phase 2            |
+| `progress.md`               | Append-only learnings            | Phase 2+           |
+| `AGENTS.md`                 | Long-term repo patterns          | Anytime            |
+| `archive/`                  | Previous completed PRDs          | Before new feature |
+| `.worktree-scaffold.json`   | Worktree config (optional)       | User creates       |
+
+---
+
+## Worktree Integration
+
+The autonomous-agent integrates with the `worktree-scaffold` skill for parallel development.
+
+**Setup worktree support:**
+
+1. Create `.worktree-scaffold.json` in project root (run `/worktree-scaffold` → `init worktree config`)
+2. The agent will detect this file in Phase 2 and offer worktree creation
+3. Each feature gets its own isolated workspace
+
+**Benefits:**
+- Isolate feature development from main repo
+- Work on multiple features in parallel
+- Keep main directory clean during development
+
+**See also:** `/worktree-scaffold` skill for standalone worktree management.
 
 ---
 
