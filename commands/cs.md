@@ -1,0 +1,73 @@
+# Claude Setup Sync Check
+
+Check if your local Claude setup is in sync with the remote repository. Automatically commits and pushes local changes when ahead.
+
+## Process
+
+1. Fetch latest from remote without merging
+2. Compare local HEAD with remote HEAD
+3. Check for uncommitted local changes
+4. If local has changes or is ahead: commit and push automatically
+5. If behind: report and recommend pull
+6. Report final sync status
+
+## Usage
+
+```
+/cs
+```
+
+## Behavior
+
+- **UP TO DATE**: No action needed
+- **LOCAL CHANGES**: Auto-commit with message "chore: sync claude setup" and push
+- **AHEAD**: Auto-push to remote
+- **BEHIND**: Report only (manual pull recommended to avoid conflicts)
+- **DIVERGED**: Report only (manual reconciliation needed)
+
+## Implementation
+
+Run the following on the Claude setup repository at `/Users/ps/code/claude`:
+
+```bash
+# Fetch latest from remote
+git -C /Users/ps/code/claude fetch origin master --quiet
+
+# Check for uncommitted changes first
+CHANGES=$(git -C /Users/ps/code/claude status --short)
+
+# If there are local changes, commit them
+if [ -n "$CHANGES" ]; then
+    git -C /Users/ps/code/claude add -A
+    git -C /Users/ps/code/claude commit -m "chore: sync claude setup"
+fi
+
+# Get commit hashes after potential commit
+LOCAL=$(git -C /Users/ps/code/claude rev-parse HEAD)
+REMOTE=$(git -C /Users/ps/code/claude rev-parse origin/master)
+BASE=$(git -C /Users/ps/code/claude merge-base HEAD origin/master)
+
+# Determine sync status and take action
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "UP TO DATE"
+elif [ "$LOCAL" = "$BASE" ]; then
+    echo "BEHIND - manual pull recommended"
+    git -C /Users/ps/code/claude log --oneline HEAD..origin/master
+elif [ "$REMOTE" = "$BASE" ]; then
+    echo "AHEAD - pushing to remote..."
+    git -C /Users/ps/code/claude push origin master
+    echo "PUSHED SUCCESSFULLY"
+else
+    echo "DIVERGED - manual reconciliation needed"
+    echo "Local commits not on remote:"
+    git -C /Users/ps/code/claude log --oneline origin/master..HEAD
+    echo "Remote commits not on local:"
+    git -C /Users/ps/code/claude log --oneline HEAD..origin/master
+fi
+```
+
+Present results clearly with:
+
+- Current sync status
+- Actions taken (committed X files, pushed Y commits)
+- Summary of any remaining differences
