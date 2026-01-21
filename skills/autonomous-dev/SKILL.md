@@ -97,30 +97,110 @@ mcp__memory__search_nodes({ query: "architecture-decision" })
 
 These preferences inform your clarifying questions and PRD structure.
 
-### Step 1.1: Codebase Discovery
+### Step 1.1: Parallel Research Phase
 
-Before asking questions, understand the existing codebase:
+Before asking questions, spawn **parallel research subagents** to gather comprehensive context. This happens in a SINGLE message with MULTIPLE Task calls for true parallelism:
 
+```xml
+<!-- Spawn these research agents IN PARALLEL -->
+<Task subagent_type="Explore" prompt="
+CODEBASE PATTERN ANALYZER
+
+Analyze this codebase to understand existing patterns:
+
+1. **Project Structure**
+   - What's the folder organization? (feature-based, layer-based, etc.)
+   - Where do components/modules live?
+   - How are tests organized?
+
+2. **Code Patterns**
+   - How are API endpoints structured?
+   - What state management is used?
+   - How is error handling done?
+   - What's the logging approach?
+
+3. **Conventions**
+   - Naming conventions (camelCase, snake_case, etc.)
+   - File naming patterns
+   - Import organization
+   - Comment/documentation style
+
+4. **Dependencies**
+   - Key libraries/frameworks in use
+   - Version patterns (pinned, ranges, etc.)
+
+Return a structured summary I can use to match existing patterns.
+"/>
+
+<Task subagent_type="Explore" prompt="
+BEST PRACTICES RESEARCHER
+
+For this codebase's detected stack, research current best practices:
+
+1. **Detect Stack**: Look at package.json, requirements.txt, go.mod, etc.
+
+2. **Query Memory** for existing learnings:
+   - mcp__memory__search_nodes({ query: '[detected-framework]' })
+   - mcp__memory__search_nodes({ query: 'pattern' })
+   - mcp__memory__search_nodes({ query: 'mistake' })
+
+3. **Check .solutions/ directory** for previously documented solutions
+
+4. **Identify Anti-Patterns** to avoid based on:
+   - Memory MCP 'mistake' entries
+   - Common pitfalls for the detected stack
+
+Return: Patterns to follow, mistakes to avoid, relevant prior solutions.
+"/>
+
+<Task subagent_type="Explore" prompt="
+FRAMEWORK DOCS RESEARCHER
+
+For the feature being built, research official documentation:
+
+1. **Identify relevant frameworks** from the codebase
+
+2. **Use Context7 MCP** to fetch current documentation:
+   - mcp__context7__resolve-library-id for each major dependency
+   - mcp__context7__query-docs for feature-relevant topics
+
+3. **Focus on**:
+   - Official recommended patterns for the feature type
+   - API references for libraries we'll use
+   - Migration guides if upgrading patterns
+
+Return: Key documentation excerpts and official recommendations.
+"/>
 ```
-1. Detect stack: package.json, requirements.txt, go.mod, etc.
-2. Find existing patterns: src/ structure, component patterns, API conventions
-3. Check for AGENTS.md for documented patterns
-4. Identify test patterns and frameworks
-5. Cross-reference with memory: tech-insights for detected stack
+
+**Research Output Integration:**
+
+After parallel research completes, synthesize findings into:
+
+```markdown
+## Research Summary
+
+### Codebase Patterns (must follow)
+- [Pattern 1 from codebase analyzer]
+- [Pattern 2]
+
+### Best Practices (should follow)
+- [Practice 1 from best practices researcher]
+- [Practice 2]
+
+### Framework Guidance (reference)
+- [Doc excerpt 1 from framework docs researcher]
+- [Doc excerpt 2]
+
+### Mistakes to Avoid
+- [Mistake 1 from Memory MCP]
+- [Mistake 2]
+
+### Relevant Prior Solutions
+- [Link to .solutions/related-feature.md if exists]
 ```
 
-**Query stack-specific learnings:**
-
-```
-# If Next.js detected:
-mcp__memory__search_nodes({ query: "nextjs" })
-
-# If Supabase detected:
-mcp__memory__search_nodes({ query: "supabase" })
-
-# General mistakes to avoid:
-mcp__memory__search_nodes({ query: "mistake" })
-```
+This research informs both the clarifying questions and the PRD structure.
 
 ### Step 1.2: Clarifying Questions
 
@@ -609,13 +689,146 @@ Next steps:
 3. Create PR when ready: gh pr create
 
 Would you like me to:
-A. Create a pull request
-B. Show a detailed summary
-C. Continue with more features
-D. Clean up worktree (if used)
+A. Run code review (spawn parallel reviewers)
+B. Create a pull request
+C. Show a detailed summary
+D. Continue with more features
+E. Clean up worktree (if used)
 ```
 
-### Step 3.6: Worktree Cleanup (If Used)
+### Step 3.6: Code Review Phase (Recommended)
+
+Before creating a PR, spawn the **code-review-agent** to get multi-perspective feedback:
+
+```xml
+<Task subagent_type="code-review-agent" prompt="
+Review the changes on branch feature/[name] before PR submission.
+
+Changed files: [list from git diff --name-only main...HEAD]
+Feature context: [brief description]
+
+Run parallel specialist reviewers and return synthesized findings.
+"/>
+```
+
+The code review agent will spawn parallel reviewers (security, performance, architecture, stack-specific) and return:
+- Critical issues (must fix before PR)
+- High priority suggestions
+- Auto-fixable improvements
+
+**If critical issues found:** Fix them before proceeding to PR.
+
+**If clean:** Proceed to PR creation.
+
+### Step 3.7: Solution Documentation (Knowledge Compounding)
+
+**Philosophy:** "First time: 30 minutes. Documented: next time is 5 minutes."
+
+After completing a non-trivial feature, document the solution for future reuse:
+
+```bash
+# Create solutions directory if it doesn't exist
+mkdir -p .solutions
+```
+
+**Create `.solutions/[feature-name].md`:**
+
+```markdown
+# Solution: [Feature Name]
+
+**Date:** [YYYY-MM-DD]
+**Branch:** feature/[name]
+**Complexity:** [Low/Medium/High]
+
+## Problem
+
+What problem did this feature solve? What was the user need?
+
+- [Problem statement]
+- [Context/constraints]
+
+## Solution
+
+How did we solve it?
+
+### Approach
+
+[2-3 paragraphs explaining the approach taken]
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `path/to/file.ts` | [What this file does] |
+| `path/to/other.ts` | [What this file does] |
+
+### Code Snippets
+
+Key implementation patterns worth remembering:
+
+```[language]
+// [Description of what this does]
+[relevant code snippet]
+```
+
+## Gotchas & Edge Cases
+
+Things that tripped us up or required special handling:
+
+1. **[Gotcha 1]**: [Description and how we handled it]
+2. **[Gotcha 2]**: [Description and how we handled it]
+
+## Testing Strategy
+
+How we verified this works:
+
+- [Test type 1]: [What it covers]
+- [Test type 2]: [What it covers]
+
+## Future Improvements
+
+Things we'd do differently or enhance later:
+
+- [ ] [Improvement 1]
+- [ ] [Improvement 2]
+
+## Related
+
+- [Link to similar solutions]
+- [Relevant Memory MCP entities]
+- [External documentation references]
+```
+
+**When to Create Solution Docs:**
+
+| Feature Type | Document? |
+|--------------|-----------|
+| New major feature | Yes |
+| Complex integration | Yes |
+| Tricky bug fix | Yes (as mini-doc) |
+| Simple CRUD | No |
+| Config change | No |
+| Minor UI tweak | No |
+
+**Also save to Memory MCP** for cross-project learning:
+
+```
+mcp__memory__create_entities({
+  entities: [{
+    name: "solution:[feature-name]",
+    entityType: "solution",
+    observations: [
+      "Problem: [brief problem statement]",
+      "Approach: [key approach taken]",
+      "Stack: [frameworks/languages used]",
+      "Gotcha: [main gotcha encountered]",
+      "Location: .solutions/[feature-name].md"
+    ]
+  }]
+})
+```
+
+### Step 3.9: Worktree Cleanup (If Used)
 
 If the feature was developed in a worktree, offer cleanup:
 
@@ -686,6 +899,7 @@ If a story needs something not yet implemented:
 | `prd.json`                  | Machine-readable task list       | Phase 2            |
 | `progress.md`               | Append-only learnings            | Phase 2+           |
 | `AGENTS.md`                 | Long-term repo patterns          | Anytime            |
+| `.solutions/`               | Documented solutions for reuse   | After feature      |
 | `archive/`                  | Previous completed PRDs          | Before new feature |
 | `.worktree-scaffold.json`   | Worktree config (optional)       | User creates       |
 

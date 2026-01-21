@@ -1,0 +1,3 @@
+# Ignore skills in this repo - they're duplicates of ~/.claude/skills
+skills/
+agents/
