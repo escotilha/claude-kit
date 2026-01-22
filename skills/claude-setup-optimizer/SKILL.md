@@ -238,33 +238,54 @@ Would you like me to:
 
 ### Step 6: Implement Improvements
 
-For approved changes:
+**IMPORTANT: iCloud is the source of truth.** All changes MUST be made directly in the iCloud path to ensure they sync across devices:
 
-1. **Back up affected files first:**
-
-```bash
-mkdir -p /Users/ps/code/claude/.backups/$(date +%Y%m%d)
-cp <file> /Users/ps/code/claude/.backups/$(date +%Y%m%d)/
+```
+/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
 ```
 
-2. **Apply changes using Edit or Write tools**
+For approved changes:
+
+1. **Back up affected files first (in iCloud):**
+
+```bash
+ICLOUD_PATH="/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+mkdir -p "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)"
+cp <file> "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)/"
+```
+
+2. **Apply changes using Edit or Write tools to the iCloud path directly**
+   - Always use the full iCloud path: `/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/...`
+   - Do NOT edit via symlinks (`~/.claude/` or `/Users/ps/code/claude/`) to ensure changes are persisted to iCloud
 
 3. **Validate changes:**
 
 - Check syntax/format is valid
 - Ensure no breaking changes to existing functionality
 
-4. **Show diff of changes:**
+4. **Verify files exist in iCloud:**
 
 ```bash
-git -C /Users/ps/code/claude diff --stat
+ls -la "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills/<skill-name>/"
 ```
 
-5. **Offer to commit:**
+5. **Sync to GitHub skills repo (escotilha/skills):**
+
+After making changes to iCloud, update the public GitHub repo:
 
 ```bash
-git -C /Users/ps/code/claude add -A
-git -C /Users/ps/code/claude commit -m "feat: optimize claude setup based on changelog vX.Y.Z"
+# Copy updated files to the skills repo
+SKILLS_REPO="/tmp/skills-repo"
+git clone https://github.com/escotilha/skills.git "$SKILLS_REPO" 2>/dev/null || (cd "$SKILLS_REPO" && git pull)
+
+# Copy the updated skill/agent
+cp -r "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills/<skill-name>" "$SKILLS_REPO/skills/"
+
+# Commit and push
+cd "$SKILLS_REPO"
+git add -A
+git commit -m "feat: update <skill-name> with latest changes"
+git push
 ```
 
 ## Example Recommendations
