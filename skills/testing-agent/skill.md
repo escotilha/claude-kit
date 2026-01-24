@@ -3,6 +3,16 @@ name: testing-agent
 description: "End-to-end testing agent for AgentCreator that uses browser automation via Chrome DevTools MCP. Identifies features, tracks testing state, tests UI/API via browser, finds and fixes bugs, generates dated reports. Triggers on: test features, run e2e tests, testing agent, qa testing, feature testing, browser testing, test agentcreator."
 user-invocable: true
 context: fork
+model: opus
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - Task
+  - mcp__memory__*
 ---
 
 # AgentCreator Testing Agent

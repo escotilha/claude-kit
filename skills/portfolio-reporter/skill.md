@@ -1,3 +1,17 @@
+---
+name: portfolio-reporter
+description: Generate comprehensive portfolio financial reports and presentations from individual company Excel files. Consolidates financial data from multiple Nuvini portfolio companies and creates executive-ready presentations with monthly and quarterly support.
+user-invocable: true
+context: fork
+model: sonnet
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - Grep
+---
+
 # Portfolio Financial Reporter
 
 Generate comprehensive portfolio financial reports and presentations from individual company Excel files. This skill consolidates financial data from multiple Nuvini portfolio companies and creates executive-ready presentations.

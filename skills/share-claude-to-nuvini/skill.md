@@ -2,6 +2,7 @@
 name: share-claude-to-nuvini
 description: Share skills or agents from Claude Code to the nuvini-claude repository. Use when the user wants to share, export, or sync a skill or agent to their nuvini-claude repo. Triggers on "share skill", "share agent", "export to nuvini", "sync to nuvini", or "/share-claude".
 user-invocable: true
+model: haiku
 allowed-tools:
   - Bash
   - Read

@@ -1,3 +1,9 @@
+---
+description: Full project orchestrator - analyze, build, test, deploy
+argument-hint: [project-path]
+allowed-tools: "*"
+---
+
 # Project Orchestrator
 
 Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates specialized agents to build it, runs comprehensive testing until all tests pass, then deploys to GitHub and Railway.

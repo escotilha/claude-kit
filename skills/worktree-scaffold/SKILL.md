@@ -1,6 +1,14 @@
 ---
 name: worktree-scaffold
 description: Parallel feature development automation using git worktrees with project scaffolding. Use when developers ask to checkout features, create feature workspaces, work on multiple features in parallel, set up worktrees, scaffold new features, list active workspaces, clean up feature branches, or manage parallel development workflows. Triggers on phrases like "checkout feature", "create workspace", "parallel features", "list workspaces", "remove workspace", "init worktree config", or any request involving git worktrees with boilerplate generation.
+user-invocable: true
+model: haiku
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Glob
+  - Grep
 ---
 
 # Worktree Scaffold

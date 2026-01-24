@@ -1,3 +1,8 @@
+---
+description: Check and sync Claude setup with remote repository
+allowed-tools: Bash
+---
+
 # Claude Setup Sync Check
 
 Check if your local Claude setup is in sync with the remote repository. Automatically commits and pushes local changes when ahead.

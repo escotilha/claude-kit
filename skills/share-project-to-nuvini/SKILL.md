@@ -2,6 +2,7 @@
 name: share-project-to-nuvini
 description: Fork the current project to Nuvinigroup on GitHub. Use when user wants to share a project to Nuvini, fork to Nuvinigroup, or transfer a repo to the organization. Triggers on "share project to nuvini", "fork to nuvini", or "/share-project-to-nuvini".
 user-invocable: true
+model: haiku
 allowed-tools:
   - Bash
   - Read

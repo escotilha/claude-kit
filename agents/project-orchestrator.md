@@ -1,7 +1,7 @@
 ---
 name: project-orchestrator
 description: Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates Frontend/Backend/Database agents to build it, runs fulltesting-agent until all tests pass, then deploys to GitHub and Railway. Use for getting projects from zero to production.
-tools: *
+allowed-tools: "*"
 color: magenta
 model: opus
 ---
@@ -151,14 +151,26 @@ Return status and any issues encountered.
 "/>
 ```
 
-### Parallel Execution Option
+### Parallel Execution (STRONGLY RECOMMENDED)
 
-For independent tasks, spawn agents in parallel (single message, multiple Task calls):
+**IMPORTANT**: For maximum efficiency, spawn agents in parallel whenever tasks are independent. Use a SINGLE message with MULTIPLE Task tool calls:
 
 ```xml
+<!-- Launch ALL independent agents in ONE message for true parallelism -->
 <Task subagent_type="Backend Agent" prompt="...backend tasks..."/>
 <Task subagent_type="Frontend Agent" prompt="...frontend tasks (using mocked API)..."/>
+<Task subagent_type="Documentation Agent" prompt="...doc tasks..."/>
 ```
+
+**When to parallelize:**
+- Backend + Frontend (when frontend can use mocked data initially)
+- Database migrations + API documentation
+- Multiple independent feature implementations
+- Security scanning + Performance profiling
+
+**When to serialize:**
+- Database setup must complete before backend needs real data
+- Backend API must be stable before frontend integration testing
 
 ## Phase 4: Testing Loop
 
@@ -234,7 +246,7 @@ Project ready for deployment
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 EOF
 )"
 ```
