@@ -4,70 +4,147 @@ When the user invokes `/maketree`, follow these steps:
 
 ## 1. Validate Environment
 
-Check that we're in the Contably repository:
+Check that we're in a git repository:
 ```bash
 git rev-parse --show-toplevel
 ```
 
-Expected: `/Volumes/AI/Code/contably`
+If not in a git repo, inform user and exit.
 
-If not in Contably repo, inform user and exit.
+Store the repo root and parent directory:
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_NAME=$(basename "$REPO_ROOT")
+PARENT_DIR=$(dirname "$REPO_ROOT")
+```
 
 ## 2. Parse Arguments
 
-- No args or `create`: Create all worktrees
+- No args or `create`: Check for local config, then create worktrees or run discovery
 - `list`: List existing worktrees and exit
 - `clean`: Remove all feature worktrees and exit
+- `discover`: Force re-discovery even if config exists
 
-## 3. Create Worktree Config (if missing)
+## 3. Check for Local Configuration
 
-If `.worktree-scaffold.json` doesn't exist, create it:
+Look for `.worktree-scaffold.json` in the repo root:
+
+```bash
+CONFIG_FILE="$REPO_ROOT/.worktree-scaffold.json"
+```
+
+**Decision tree:**
+- If config exists AND has `worktrees` array with entries → Use existing config (go to step 6)
+- If config exists but no `worktrees` array → Run discovery (go to step 4)
+- If config doesn't exist → Run discovery (go to step 4)
+- If user specified `discover` command → Run discovery (go to step 4)
+
+## 4. Discovery Phase
+
+### 4.1 Get All Feature Branches
+
+```bash
+# Get all local and remote branches, filter for feature-like patterns
+git branch -a --format='%(refname:short)' | \
+  grep -E '^(feature/|feat/|fix/|hotfix/|origin/feature/|origin/feat/|origin/fix/|origin/hotfix/)' | \
+  sed 's|^origin/||' | \
+  sort -u
+```
+
+### 4.2 Get Existing Worktrees
+
+```bash
+git worktree list --porcelain | grep "^worktree " | sed 's/^worktree //'
+```
+
+### 4.3 Build Discovery Table
+
+For each discovered branch:
+1. Extract the name (strip prefix): `feature/user-auth` → `user-auth`
+2. Determine suggested path: `$PARENT_DIR/$name`
+3. Check if worktree already exists for this branch
+4. Mark existing worktrees with `[exists]`
+
+### 4.4 Present Discovery Results
+
+Display a numbered table:
+
+```
+Discovered Feature Branches:
+
+| #  | Name                        | Branch                              | Path                    | Status   |
+|----|-----------------------------|-------------------------------------|-------------------------|----------|
+| 1  | user-auth                   | feature/user-auth                   | ../user-auth            |          |
+| 2  | payment-flow                | feature/payment-flow                | ../payment-flow         |          |
+| 3  | dark-mode                   | fix/dark-mode                       | ../dark-mode            | [exists] |
+
+Total: 3 branches found (1 already has worktree)
+```
+
+If no feature branches found:
+```
+No feature branches found in this repository.
+
+To create a new feature branch and worktree, use:
+  git worktree add ../feature-name -b feature/feature-name
+```
+
+## 5. Get User Selection
+
+Use AskUserQuestion to prompt the user:
+
+**Question:** "Which worktrees would you like to create?"
+
+**Options:**
+- "All" - Create worktrees for all discovered branches
+- "Select specific" - Let me enter numbers (e.g., 1,2,3)
+- "Skip" - Don't create any worktrees now
+
+If user selects "Select specific", ask for the numbers in a follow-up.
+
+### 5.1 Save Preferences
+
+After user selection, save to `.worktree-scaffold.json`:
+
 ```json
 {
   "worktreeDir": "../",
   "branchPrefix": "feature/",
-  "scaffolds": {
-    "default": []
-  },
-  "templates": {},
-  "hooks": {}
+  "worktrees": [
+    { "name": "user-auth", "branch": "feature/user-auth" },
+    { "name": "payment-flow", "branch": "feature/payment-flow" }
+  ]
 }
 ```
 
-## 4. Get All Feature Branches
+If config already exists, merge the `worktrees` array (preserve other fields like `scaffolds`, `templates`).
+
+## 6. Create Worktrees
+
+For each worktree in the config (or selection):
 
 ```bash
-git branch -a | grep -E "feature/" | sed 's/.*feature\//feature\//' | sort -u
-```
-
-This captures:
-- Local feature branches
-- Remote feature branches
-- Deduplicates them
-
-## 5. Create Worktrees for Each Feature
-
-For each branch found (e.g., `feature/adminconfig`):
-
-```bash
-BRANCH="feature/adminconfig"
-DIRNAME="adminconfig"  # Extract name after "feature/"
-WORKTREE_PATH="/Volumes/AI/Code/$DIRNAME"
+BRANCH="feature/user-auth"
+NAME="user-auth"
+WORKTREE_PATH="$PARENT_DIR/$NAME"
 
 # Check if worktree already exists
 if git worktree list | grep -q "$WORKTREE_PATH"; then
-  echo "⚠️  Worktree already exists: $DIRNAME"
+  echo "• $NAME already exists at $WORKTREE_PATH"
 else
-  # Try to create worktree
-  if git worktree add "$WORKTREE_PATH" "$BRANCH" 2>&1; then
-    echo "✓ Created: $DIRNAME"
+  # Check if branch exists
+  if git show-ref --verify --quiet "refs/heads/$BRANCH" || \
+     git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+    # Use existing branch
+    git worktree add "$WORKTREE_PATH" "$BRANCH" 2>&1
+    echo "✓ Created: $NAME"
   else
-    echo "✗ Failed: $DIRNAME (branch may be in use elsewhere)"
+    echo "✗ Failed: $NAME (branch $BRANCH not found)"
   fi
 fi
 ```
 
-## 6. Generate Summary Report
+## 7. Generate Summary Report
 
 Create a summary with three sections:
 
@@ -75,7 +152,7 @@ Create a summary with three sections:
 List all worktrees successfully created in this run.
 
 ### Already Existed
-List worktrees that were already set up (includes worktrees at different paths like `/Volumes/AI/Code/contably-payroll`).
+List worktrees that were already set up.
 
 ### Failed
 List any branches that couldn't be created with reason.
@@ -83,12 +160,12 @@ List any branches that couldn't be created with reason.
 ### Terminal Commands
 Provide `cd` commands for all accessible worktrees:
 ```bash
-cd /Volumes/AI/Code/adminconfig
-cd /Volumes/AI/Code/bank-reconciliation-features
+cd /path/to/projects/user-auth
+cd /path/to/projects/payment-flow
 # etc.
 ```
 
-## 7. List Command
+## 8. List Command
 
 If user runs `/maketree list`:
 
@@ -99,9 +176,20 @@ git worktree list
 Format output as a clean table showing:
 - Worktree path
 - Current branch
-- Last commit (short)
+- Status (clean / N uncommitted changes)
 
-## 8. Clean Command
+Example output:
+```
+Active Worktrees:
+
+| Path                              | Branch                  | Status            |
+|-----------------------------------|-------------------------|-------------------|
+| /path/to/projects/my-project      | main                    | clean             |
+| /path/to/projects/user-auth       | feature/user-auth       | 3 uncommitted     |
+| /path/to/projects/payment-flow    | feature/payment-flow    | clean             |
+```
+
+## 9. Clean Command
 
 If user runs `/maketree clean`:
 
@@ -109,34 +197,35 @@ If user runs `/maketree clean`:
 2. For each feature worktree:
    - Check for uncommitted changes
    - Warn if dirty
-   - Ask for confirmation
+   - Ask for confirmation using AskUserQuestion
    - Remove with `git worktree remove <path>`
 3. Run `git worktree prune` to clean up references
-
-## Known Contably Features
-
-These are the expected feature branches in Contably:
-- adminconfig
-- bank-reconciliation-features
-- dashboard-missing-features
-- payroll
-- payroll-workflow-orchestration
-- production-readiness
-- slack-feedback-automation
-- taxdocs
 
 ## Error Handling
 
 - **"fatal: 'X' is already used by worktree at 'Y'"**: Worktree exists at different location. Report this in "Already Existed" section.
-- **"fatal: a branch named 'X' already exists"**: Branch exists but worktree command needs adjustment. Use `git worktree add <path> <existing-branch>` instead of `-b`.
-- **"Not a git repository"**: User must run from within Contably repo.
+- **"fatal: invalid reference"**: Branch doesn't exist locally or remotely. Try fetching first.
+- **"Not a git repository"**: User must run from within a git repo.
+- **"Cannot remove worktree with uncommitted changes"**: Warn user, offer --force option.
 
 ## Output Format
 
-Use emojis for visual clarity:
+Use these symbols for visual clarity:
 - ✓ Success (created)
 - • Neutral (already existed)
 - ✗ Error (failed)
-- ⚠️ Warning
 
 Keep output concise and actionable. Always end with terminal commands the user can copy/paste.
+
+## Branch Pattern Recognition
+
+The skill recognizes these branch patterns:
+- `feature/*` - Feature branches
+- `feat/*` - Short feature branches
+- `fix/*` - Bug fix branches
+- `hotfix/*` - Urgent fix branches
+
+Excluded from discovery:
+- `main`, `master`, `develop`, `staging`, `production`
+- `HEAD`
+- Release branches (`release/*`)
