@@ -1,3 +1,9 @@
+---
+description: Run quick triage analysis on potential M&A target
+argument-hint: [company-name]
+allowed-tools: Read, Bash, WebFetch, TaskCreate, TaskUpdate, TaskList
+---
+
 # M&A Triage
 
 Run quick triage analysis on a potential acquisition target.

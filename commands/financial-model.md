@@ -1,3 +1,9 @@
+---
+description: Create M&A financial proposal with IRR/MOIC analysis
+argument-hint: [company-name]
+allowed-tools: Read, Write, Bash, TaskCreate, TaskUpdate, TaskList
+---
+
 # Generate Financial Model
 
 Create comprehensive M&A financial proposal with IRR/MOIC analysis.

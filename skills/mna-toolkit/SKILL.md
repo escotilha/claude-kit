@@ -10,7 +10,7 @@ description: |
   - /mna aimpact - AI cost reduction analysis for targets
   Use for end-to-end M&A deal processing from initial screening to board approval.
 user-invocable: true
-context: inherit
+context: fork
 model: opus
 allowed-tools:
   - Read
@@ -20,6 +20,9 @@ allowed-tools:
   - Grep
   - Bash
   - WebFetch
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # M&A Toolkit
@@ -338,13 +341,40 @@ Output:
 
 ---
 
+## Session Tracking for Deal Workflows
+
+The toolkit supports session tracking using `${CLAUDE_SESSION_ID}` to organize all outputs for a deal:
+
+```bash
+# Create deal directory with session ID
+DEAL_DIR="deals/CompanyName_${CLAUDE_SESSION_ID}"
+mkdir -p "$DEAL_DIR"
+
+# All outputs go to this directory
+TRIAGE_FILE="$DEAL_DIR/triage.json"
+EXTRACTION_FILE="$DEAL_DIR/extraction.json"
+PROPOSAL_FILE="$DEAL_DIR/proposal.xlsx"
+ANALYSIS_FILE="$DEAL_DIR/analysis.pdf"
+DECK_FILE="$DEAL_DIR/board_deck.pptx"
+```
+
+**Benefits:**
+- Complete audit trail per deal analysis
+- Easy handoff between team members
+- Cross-reference all documents by session ID
+- Support for parallel deal evaluation
+
 ## Complete Deal Workflow
 
 ### Phase 1: Initial Screening
 
 ```bash
-# 1. Triage the deal
-/mna triage CompanyName revenue=50 ebitda=15 growth=25
+# 1. Set up deal tracking
+DEAL_DIR="deals/CompanyName_${CLAUDE_SESSION_ID}"
+mkdir -p "$DEAL_DIR"
+
+# 2. Triage the deal
+/mna triage CompanyName revenue=50 ebitda=15 growth=25 > "$DEAL_DIR/triage.json"
 
 # If score >= 7, proceed
 ```

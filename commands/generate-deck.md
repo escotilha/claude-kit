@@ -1,3 +1,9 @@
+---
+description: Create professional M&A board presentation deck
+argument-hint: [company-name]
+allowed-tools: Read, Write, Bash, TaskCreate, TaskUpdate, TaskList
+---
+
 # Generate Board Presentation
 
 Create professional M&A board presentation deck.

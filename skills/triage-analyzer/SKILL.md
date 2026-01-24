@@ -1,9 +1,33 @@
 ---
 name: triage-analyzer
 description: Analyze M&A opportunities and score them 0-10 against investment criteria. Use when evaluating acquisition targets, identifying red flags, or generating triage reports.
+user-invocable: true
+model: sonnet
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Glob
+  - Grep
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # M&A Triage Analyzer
+
+## Session Tracking
+
+Use `${CLAUDE_SESSION_ID}` to track triage analyses for audit purposes:
+
+```bash
+# Save triage results with session tracking
+TRIAGE_OUTPUT="triage_${CLAUDE_SESSION_ID}.json"
+echo '{"session": "${CLAUDE_SESSION_ID}", "company": "...", "score": N}' > "$TRIAGE_OUTPUT"
+```
 
 ## Name
 M&A Triage Analyzer
@@ -110,7 +134,25 @@ Invoke through:
 When this skill is invoked in Claude Code, use the Read, Grep, and Bash tools to:
 1. Locate or gather company financial data
 2. Call the MCP tool `mcp__nuvini-mna__triage_deal` with the parameters
-3. Present the results to the user with clear recommendations
+3. Save results with session tracking: `triage_${CLAUDE_SESSION_ID}.json`
+4. Present the results to the user with clear recommendations
+
+### Session Tracking
+Use `${CLAUDE_SESSION_ID}` for output files to track analysis sessions:
+
+```bash
+# Save triage results with session ID
+OUTPUT_FILE="triage_results_${CLAUDE_SESSION_ID}.json"
+echo "$TRIAGE_JSON" > "$OUTPUT_FILE"
+
+# Generate report with session reference
+REPORT_FILE="triage_report_${CLAUDE_SESSION_ID}.md"
+```
+
+This enables:
+- Tracking multiple deal analyses in the same workspace
+- Cross-referencing with proposals and analyses
+- Audit trail for investment decisions
 
 ## Examples
 

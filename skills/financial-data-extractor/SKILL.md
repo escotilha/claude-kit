@@ -2,6 +2,13 @@
 name: financial-data-extractor
 description: |
   Advanced financial data extraction and analysis from PDFs and Excel files with intelligent model selection (Sonnet 4.5 vs Opus 4.1). Use when Claude needs to extract financial metrics, tables, or structured data from M&A documents like CIMs, financial statements, pitch decks, due diligence materials, Excel financial models, reports, or data exports. Extracts revenue, EBITDA, valuation metrics, and other financial figures. Outputs structured JSON/CSV data ready for analysis, modeling, or import into other systems. Automatically recommends optimal model based on task complexity, deal size, and quality requirements.
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # Financial Data Extractor
@@ -57,10 +64,32 @@ See **references/model_selection_strategy.md** for comprehensive decision framew
 ### Extract Financial Figures from PDF (CIM, Report)
 
 ```bash
-python scripts/extract_pdf_financials.py document.pdf --mode figures
+# Extract with session tracking
+python scripts/extract_pdf_financials.py document.pdf --mode figures > "figures_${CLAUDE_SESSION_ID}.json"
 ```
 
 Returns JSON with extracted metrics like revenue, EBITDA, employees, valuation.
+
+### Session Tracking
+Use `${CLAUDE_SESSION_ID}` to track extractions across related analyses:
+
+```bash
+# Create session-specific output directory
+SESSION_DIR="extractions_${CLAUDE_SESSION_ID}"
+mkdir -p "$SESSION_DIR"
+
+# Extract with session tracking
+python scripts/extract_pdf_financials.py cim.pdf --mode all > "$SESSION_DIR/cim_data.json"
+python scripts/extract_excel_financials.py model.xlsx > "$SESSION_DIR/model_data.json"
+
+# Generate combined report for the session
+echo "Session: ${CLAUDE_SESSION_ID}" > "$SESSION_DIR/analysis_summary.md"
+```
+
+This enables:
+- Organizing multiple document extractions per deal
+- Cross-referencing extraction sessions with triage/proposals
+- Audit trail for due diligence work
 
 ### Extract Tables from PDF
 

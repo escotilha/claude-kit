@@ -1,6 +1,16 @@
 ---
 name: committee-presenter
 description: Create PowerPoint presentations for M&A board approval. Generates executive dashboards, financial highlights, risk assessments in Nuvini brand style.
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # Committee Approval Presenter

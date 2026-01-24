@@ -1,3 +1,9 @@
+---
+description: Run complete end-to-end M&A analysis on a company opportunity
+argument-hint: [company-name or PDF path]
+allowed-tools: Read, Write, Bash, WebFetch, TaskCreate, TaskUpdate, TaskList, Task
+---
+
 # Analyze M&A Deal
 
 Run complete end-to-end M&A analysis on a company opportunity.

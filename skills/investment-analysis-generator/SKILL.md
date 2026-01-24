@@ -1,6 +1,17 @@
 ---
 name: investment-analysis-generator
 description: Generate professional 18-page Investment Analysis PDFs for M&A deals. Use when creating comprehensive investment reports, preparing board presentations, or documenting acquisition opportunities.
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # Investment Analysis Generator

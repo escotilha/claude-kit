@@ -2,6 +2,16 @@
 name: ma-board-presentation
 description: "Create executive-quality M&A board presentations and investment committee decks. Use when creating acquisition recommendation summaries, investment committee presentations, deal analysis board decks, M&A financial highlights presentations, risk assessment slides, or any board-level M&A documentation. Produces polished presentations with large metric callouts, financial tables, risk matrices, and recommendation sections."
 license: Proprietary
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # M&A Board Presentation Skill

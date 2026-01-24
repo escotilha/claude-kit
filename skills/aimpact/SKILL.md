@@ -1,6 +1,17 @@
 ---
 name: aimpact
 description: Comprehensive AI cost reduction analysis for B2B SaaS companies. Use when analyzing financial data to identify AI implementation opportunities, model cost savings scenarios, calculate ROI, and create implementation roadmaps. Triggers on requests like "analyze costs for AI savings", "AI cost reduction analysis", "identify AI opportunities", "create AI implementation model", or when given financial Excel files (DRE, P&L, KPIs) with requests to find automation/AI savings potential. Produces Excel models with three scenarios (Conservative/Moderate/Aggressive), NPV calculations, and Word document recommendations.
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # AI Cost Reduction Analysis

@@ -1,6 +1,15 @@
 ---
 name: mna-proposal-generator
 description: Generate M&A financial proposals with IRR/MOIC calculations, payment schedules, earnouts, and debt modeling. Use for qualified deals needing financial analysis.
+context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # M&A Proposal Generator
