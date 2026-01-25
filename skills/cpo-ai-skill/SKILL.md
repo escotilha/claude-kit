@@ -37,6 +37,117 @@ A comprehensive orchestration skill that transforms product ideas into productio
 
 ```
 /cpo-go <project-name> <description>
+/cpo-go help
+/cpo-go status
+```
+
+### `/cpo-go help` - Quick Reference
+
+When user types `/cpo-go help`, display:
+
+```markdown
+# CPO AI Skill - Quick Reference
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/cpo-go <name> <description>` | Start new product build |
+| `/cpo-go help` | Show this help |
+| `/cpo-go status` | Show current project progress |
+| `go` | Use defaults and start immediately |
+| `approved` | Approve current phase and continue |
+| `pause` | Pause execution |
+| `resume` | Resume from last checkpoint |
+
+## Quick Start
+
+```bash
+/cpo-go myapp build a task management app
+```
+
+Then reply `go` for defaults or answer the quick questions.
+
+## What Happens
+
+1. **Creates GitHub repo** (public by default)
+2. **Research phase** - Analyzes competitors, collects design refs
+3. **CTO planning** - Recommends tech stack, architecture
+4. **Stage-by-stage build** - Implements, tests, commits each stage
+5. **Documentation** - Generates user guide
+6. **Go live** - Final push to GitHub
+
+## Defaults (when you reply "go")
+
+| Setting | Default |
+|---------|---------|
+| GitHub | Public repo |
+| Scope | MVP |
+| Tech | Next.js + Supabase |
+| Priority | Speed |
+
+## Models Used
+
+| Task | Model |
+|------|-------|
+| Planning | opus |
+| Research | sonnet |
+| Frontend | opus |
+| Backend | sonnet |
+| Docs | haiku |
+
+## Key Files Generated
+
+| File | Purpose |
+|------|---------|
+| `master-project.json` | Project state |
+| `cpo-progress.md` | Progress log |
+| `competitor-analysis.md` | Research output |
+| `design-references.md` | UI inspiration |
+| `tech-stack-recommendation.md` | CTO decisions |
+| `docs/user-guide.md` | End-user docs |
+
+## Need More Help?
+
+See full documentation: [SKILL.md](./SKILL.md)
+```
+
+### `/cpo-go status` - Project Status
+
+When user types `/cpo-go status`, check for `master-project.json` and display:
+
+```markdown
+# Project Status: {project-name}
+
+**Phase:** {current phase}
+**Stage:** {current stage} of {total stages}
+
+## Progress
+
+| Epic | Status | Stages |
+|------|--------|--------|
+| E1: Foundation | Completed | 2/2 |
+| E2: Core Features | In Progress | 1/4 |
+| E3: User Experience | Pending | 0/3 |
+
+## Current Stage: S3 - User Dashboard
+
+**Status:** In Progress
+**Started:** {timestamp}
+**Stories:** 2/5 completed
+
+## Next Actions
+
+- Complete remaining 3 stories in S3
+- Run stage tests
+- Commit and push
+- Move to S4
+
+## Commands
+
+- `continue` - Resume implementation
+- `skip stage` - Skip current stage
+- `replan` - Adjust the plan
 ```
 
 ### Examples

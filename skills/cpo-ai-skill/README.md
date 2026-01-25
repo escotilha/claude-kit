@@ -5,7 +5,9 @@
 ## Quick Start: `/cpo-go`
 
 ```bash
-/cpo-go <project-name> <description>
+/cpo-go <project-name> <description>   # Start new product
+/cpo-go help                            # Show quick reference
+/cpo-go status                          # Show project progress
 ```
 
 ### Examples
@@ -21,8 +23,19 @@
 Reply `"go"` to use defaults and start immediately:
 - Creates **public GitHub repo** with project name
 - **MVP** scope
-- **Web app** (Next.js)
+- **Web app** (Next.js + Supabase)
 - **Speed** priority
+
+### Commands During Execution
+
+| Command | Action |
+|---------|--------|
+| `go` | Use defaults, start immediately |
+| `approved` | Approve phase, continue |
+| `pause` | Stop execution |
+| `resume` | Continue from checkpoint |
+| `skip stage` | Skip current stage |
+| `replan` | Go back and adjust plan |
 
 ---
 
