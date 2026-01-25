@@ -97,110 +97,30 @@ mcp__memory__search_nodes({ query: "architecture-decision" })
 
 These preferences inform your clarifying questions and PRD structure.
 
-### Step 1.1: Parallel Research Phase
+### Step 1.1: Codebase Discovery
 
-Before asking questions, spawn **parallel research subagents** to gather comprehensive context. This happens in a SINGLE message with MULTIPLE Task calls for true parallelism:
+Before asking questions, understand the existing codebase:
 
-```xml
-<!-- Spawn these research agents IN PARALLEL -->
-<Task subagent_type="Explore" prompt="
-CODEBASE PATTERN ANALYZER
-
-Analyze this codebase to understand existing patterns:
-
-1. **Project Structure**
-   - What's the folder organization? (feature-based, layer-based, etc.)
-   - Where do components/modules live?
-   - How are tests organized?
-
-2. **Code Patterns**
-   - How are API endpoints structured?
-   - What state management is used?
-   - How is error handling done?
-   - What's the logging approach?
-
-3. **Conventions**
-   - Naming conventions (camelCase, snake_case, etc.)
-   - File naming patterns
-   - Import organization
-   - Comment/documentation style
-
-4. **Dependencies**
-   - Key libraries/frameworks in use
-   - Version patterns (pinned, ranges, etc.)
-
-Return a structured summary I can use to match existing patterns.
-"/>
-
-<Task subagent_type="Explore" prompt="
-BEST PRACTICES RESEARCHER
-
-For this codebase's detected stack, research current best practices:
-
-1. **Detect Stack**: Look at package.json, requirements.txt, go.mod, etc.
-
-2. **Query Memory** for existing learnings:
-   - mcp__memory__search_nodes({ query: '[detected-framework]' })
-   - mcp__memory__search_nodes({ query: 'pattern' })
-   - mcp__memory__search_nodes({ query: 'mistake' })
-
-3. **Check .solutions/ directory** for previously documented solutions
-
-4. **Identify Anti-Patterns** to avoid based on:
-   - Memory MCP 'mistake' entries
-   - Common pitfalls for the detected stack
-
-Return: Patterns to follow, mistakes to avoid, relevant prior solutions.
-"/>
-
-<Task subagent_type="Explore" prompt="
-FRAMEWORK DOCS RESEARCHER
-
-For the feature being built, research official documentation:
-
-1. **Identify relevant frameworks** from the codebase
-
-2. **Use Context7 MCP** to fetch current documentation:
-   - mcp__context7__resolve-library-id for each major dependency
-   - mcp__context7__query-docs for feature-relevant topics
-
-3. **Focus on**:
-   - Official recommended patterns for the feature type
-   - API references for libraries we'll use
-   - Migration guides if upgrading patterns
-
-Return: Key documentation excerpts and official recommendations.
-"/>
+```
+1. Detect stack: package.json, requirements.txt, go.mod, etc.
+2. Find existing patterns: src/ structure, component patterns, API conventions
+3. Check for AGENTS.md for documented patterns
+4. Identify test patterns and frameworks
+5. Cross-reference with memory: tech-insights for detected stack
 ```
 
-**Research Output Integration:**
+**Query stack-specific learnings:**
 
-After parallel research completes, synthesize findings into:
-
-```markdown
-## Research Summary
-
-### Codebase Patterns (must follow)
-- [Pattern 1 from codebase analyzer]
-- [Pattern 2]
-
-### Best Practices (should follow)
-- [Practice 1 from best practices researcher]
-- [Practice 2]
-
-### Framework Guidance (reference)
-- [Doc excerpt 1 from framework docs researcher]
-- [Doc excerpt 2]
-
-### Mistakes to Avoid
-- [Mistake 1 from Memory MCP]
-- [Mistake 2]
-
-### Relevant Prior Solutions
-- [Link to .solutions/related-feature.md if exists]
 ```
+# If Next.js detected:
+mcp__memory__search_nodes({ query: "nextjs" })
 
-This research informs both the clarifying questions and the PRD structure.
+# If Supabase detected:
+mcp__memory__search_nodes({ query: "supabase" })
+
+# General mistakes to avoid:
+mcp__memory__search_nodes({ query: "mistake" })
+```
 
 ### Step 1.2: Clarifying Questions
 
@@ -270,6 +190,24 @@ Brief description of the feature and its value.
 How we'll know this feature is working correctly.
 ```
 
+**Complexity Scoring:**
+
+Assign each story a complexity score (1-10) during PRD creation:
+
+| Score | Description | Example |
+|-------|-------------|---------|
+| 1-3 | Simple, single-file change | Add a config option, fix a typo |
+| 4-6 | Moderate, 2-4 files, clear path | Add API endpoint, create component |
+| 7-8 | Complex, multiple concerns | Database + API + UI changes |
+| 9-10 | Very complex, consider splitting | Full authentication system |
+
+**Scoring factors:**
+- Number of files likely touched
+- Number of systems involved (DB, API, UI, etc.)
+- Unfamiliarity with the area
+- External dependencies or integrations
+- Risk of breaking existing functionality
+
 **Story Sizing Rules:**
 
 | Right-sized (1 iteration)         | Too big (split)             |
@@ -281,20 +219,56 @@ How we'll know this feature is working correctly.
 
 **Rule:** If you can't describe the change in 2-3 sentences, split it.
 
-### Step 1.4: Get Approval
+### Step 1.4: Generate Complexity Report
+
+After creating the PRD, generate a complexity report to identify potential issues early:
+
+```
+## Complexity Report
+
+**Total stories:** [N]
+**Total complexity points:** [sum of all scores]
+
+### Distribution
+- Simple (1-3):  [X] stories
+- Moderate (4-6): [Y] stories
+- Complex (7-10): [Z] stories
+
+### High-Risk Stories (complexity ≥ 7)
+| ID | Title | Score | Risk Factors |
+|----|-------|-------|--------------|
+| US-005 | Add OAuth login | 8 | External API, security, multi-layer |
+| US-008 | Database migration | 7 | Data integrity, downtime risk |
+
+### Recommendations
+- **US-005:** Consider splitting into: token handling, UI flow, callback endpoint
+- **US-008:** Add rollback plan to acceptance criteria
+
+### Estimated Iterations
+Based on complexity: [N-M] iterations (assuming ~1 iteration per 3-4 complexity points)
+```
+
+**When to flag for splitting:**
+- Any story with complexity ≥ 8
+- More than 3 stories with complexity ≥ 7
+- Total complexity points > (story count × 5)
+
+### Step 1.5: Get Approval
 
 ```
 I've created the PRD at `tasks/prd-[feature-name].md`.
 
 Summary:
 - [N] user stories identified
-- Estimated complexity: [Low/Medium/High]
+- Total complexity: [X] points ([Low/Medium/High] average)
+- High-risk stories: [list any ≥7]
 - Key dependencies: [list]
 
 Please review the PRD. Reply with:
 - "approved" - Convert to prd.json and begin implementation
 - "edit [story]" - Modify a specific story
 - "add [story]" - Add a new story
+- "expand [story]" - Break a complex story into smaller pieces
 - "questions" - Ask me anything about the approach
 ```
 
@@ -378,6 +352,28 @@ fi
   "branchName": "feature/[feature-name]",
   "description": "[Feature description]",
   "createdAt": "2024-01-15T10:00:00Z",
+  "delegation": {
+    "enabled": false,
+    "fallbackToDirect": true
+  },
+  "delegationMetrics": {
+    "totalStories": 0,
+    "delegatedCount": 0,
+    "directCount": 0,
+    "successRate": 0,
+    "avgAttempts": 0,
+    "byAgent": {},
+    "byType": {},
+    "detectionAccuracy": null
+  },
+  "optimization": {
+    "progressSummary": {
+      "enabled": true,
+      "recentStoriesCount": 3,
+      "maxLearnings": 15,
+      "autoGenerate": true
+    }
+  },
   "userStories": [
     {
       "id": "US-001",
@@ -389,13 +385,168 @@ fi
         "Tests pass"
       ],
       "priority": 1,
+      "complexity": 4,
+      "complexityFactors": ["API endpoint", "database query"],
       "dependsOn": [],
+      "status": "pending",
       "passes": false,
       "attempts": 0,
-      "notes": ""
+      "notes": "",
+      "detectedType": null,
+      "delegatedTo": null
     }
   ]
 }
+```
+
+**Story Fields:**
+
+- `complexity`: Score 1-10 indicating implementation difficulty
+- `complexityFactors`: Brief list of what makes it complex (for context)
+- `status`: One of `pending`, `blocked`, `in_progress`, `completed`, `skipped`
+- `dependsOn`: Array of story IDs that must complete first
+
+**Status Values:**
+
+| Status | Meaning |
+|--------|---------|
+| `pending` | Ready to start (no blockers) |
+| `blocked` | Waiting on dependencies |
+| `in_progress` | Currently being implemented |
+| `completed` | Passed all verification |
+| `skipped` | Manually skipped by user |
+
+**Blocked Detection:**
+
+A story is blocked when any story in its `dependsOn` array has `passes: false`:
+
+```javascript
+function isBlocked(story, allStories) {
+  if (!story.dependsOn || story.dependsOn.length === 0) return false;
+  return story.dependsOn.some(depId => {
+    const dep = allStories.find(s => s.id === depId);
+    return dep && !dep.passes;
+  });
+}
+```
+```
+
+**Delegation Configuration:**
+
+- `delegation.enabled`: Set to `true` to enable smart delegation to specialized agents
+- `delegation.fallbackToDirect`: If `true`, falls back to direct implementation when delegation fails
+- `detectedType`: Automatically populated with story type (frontend, api, database, devops, fullstack, general)
+- `delegatedTo`: Records which agent implemented the story (e.g., "frontend-agent", "api-agent", or null for direct implementation)
+
+**Delegation Metrics:**
+
+Automatically tracked performance metrics:
+
+- `totalStories`: Total number of stories completed
+- `delegatedCount`: Number of stories delegated to agents
+- `directCount`: Number of stories implemented directly
+- `successRate`: Percentage of stories that passed on first attempt (0-100)
+- `avgAttempts`: Average number of attempts per story
+- `byAgent`: Breakdown by agent type:
+  ```json
+  {
+    "frontend-agent": { "count": 3, "successRate": 100, "avgAttempts": 1.0 },
+    "api-agent": { "count": 2, "successRate": 50, "avgAttempts": 1.5 },
+    "direct": { "count": 1, "successRate": 100, "avgAttempts": 1.0 }
+  }
+  ```
+- `byType`: Breakdown by detected story type:
+  ```json
+  {
+    "frontend": 3,
+    "api": 2,
+    "database": 1,
+    "general": 1
+  }
+  ```
+- `detectionAccuracy`: Manual validation results (optional, set by user review)
+
+**Optimization Configuration:**
+
+Token optimization settings for reducing context size:
+
+- `optimization.progressSummary.enabled`: Enable progress.md summarization (default: `true`)
+- `optimization.progressSummary.recentStoriesCount`: How many recent stories to include in full detail (default: `3`)
+- `optimization.progressSummary.maxLearnings`: Maximum extracted learnings to include (default: `15`)
+- `optimization.progressSummary.autoGenerate`: Auto-regenerate summary after each story (default: `true`)
+
+**Disable Progress Summarization:**
+
+To load full progress.md instead of summary:
+
+```json
+{
+  "optimization": {
+    "progressSummary": {
+      "enabled": false
+    }
+  }
+}
+```
+
+**Updating Metrics:**
+
+After each story completion, update delegationMetrics:
+
+```javascript
+function updateDelegationMetrics(prd, story) {
+  const metrics = prd.delegationMetrics || {
+    totalStories: 0, delegatedCount: 0, directCount: 0,
+    successRate: 0, avgAttempts: 0, byAgent: {}, byType: {}
+  };
+
+  // Update totals
+  metrics.totalStories++;
+  if (story.delegatedTo) {
+    metrics.delegatedCount++;
+  } else {
+    metrics.directCount++;
+  }
+
+  // Update by-agent breakdown
+  const agentKey = story.delegatedTo || 'direct';
+  if (!metrics.byAgent[agentKey]) {
+    metrics.byAgent[agentKey] = { count: 0, successRate: 0, avgAttempts: 0 };
+  }
+  metrics.byAgent[agentKey].count++;
+
+  // Update by-type breakdown
+  if (story.detectedType) {
+    metrics.byType[story.detectedType] = (metrics.byType[story.detectedType] || 0) + 1;
+  }
+
+  // Calculate overall success rate (first attempt pass)
+  const allStories = prd.userStories.filter(s => s.passes);
+  const firstAttemptSuccess = allStories.filter(s => s.attempts === 1).length;
+  metrics.successRate = Math.round((firstAttemptSuccess / allStories.length) * 100);
+
+  // Calculate average attempts
+  const totalAttempts = allStories.reduce((sum, s) => sum + s.attempts, 0);
+  metrics.avgAttempts = (totalAttempts / allStories.length).toFixed(2);
+
+  prd.delegationMetrics = metrics;
+}
+```
+
+**Querying Metrics with jq:**
+
+```bash
+# Overall delegation rate
+jq '.delegationMetrics | "Delegation: \(.delegatedCount)/\(.totalStories) (\((.delegatedCount/.totalStories*100)|round)%)"' prd.json
+
+# Agent performance
+jq '.delegationMetrics.byAgent | to_entries | .[] | "\(.key): \(.value.count) stories, \(.value.successRate)% success"' prd.json
+
+# Most common story types
+jq '.delegationMetrics.byType | to_entries | sort_by(-.value) | .[] | "\(.key): \(.value)"' prd.json
+
+# Success rate trend
+jq '.delegationMetrics | "Success rate: \(.successRate)% | Avg attempts: \(.avgAttempts)"' prd.json
 ```
 
 ### Step 2.4: Initialize Progress File
@@ -441,16 +592,52 @@ Store in prd.json:
 
 **Goal:** Implement one story per iteration until complete.
 
-### Step 3.0: Load Context
+### Step 3.0: Load Context (with Token Optimization)
 
-At the start of EVERY iteration:
+At the start of EVERY iteration, load context efficiently:
 
 ```bash
 # Read current state
 cat prd.json
-cat progress.md
 cat AGENTS.md 2>/dev/null
+
+# Use optimized progress loading (see below)
 ```
+
+**Optimized Progress Loading:**
+
+To reduce token usage, prefer `progress-summary.md` over full `progress.md`:
+
+```javascript
+function loadProgressContext(prd) {
+  const optimization = prd.optimization?.progressSummary ?? { enabled: true };
+
+  // 1. Check if summary exists and optimization is enabled
+  if (optimization.enabled && fileExists('progress-summary.md')) {
+    const summaryMtime = getModifiedTime('progress-summary.md');
+    const progressMtime = getModifiedTime('progress.md');
+
+    // Use summary if it's fresh (newer than progress.md)
+    if (summaryMtime >= progressMtime) {
+      return readFile('progress-summary.md');  // ~400-800 tokens
+    }
+  }
+
+  // 2. Fallback: Extract recent entries from progress.md
+  const recentCount = optimization.recentStoriesCount || 3;
+  return extractRecentEntries(readFile('progress.md'), recentCount);
+}
+```
+
+**Token Savings:**
+
+| Stories | Full progress.md | progress-summary.md | Savings |
+|---------|------------------|---------------------|---------|
+| 5 | ~1,500 tokens | ~500 tokens | 67% |
+| 10 | ~3,000 tokens | ~700 tokens | 77% |
+| 20 | ~6,000 tokens | ~900 tokens | 85% |
+
+The summary grows logarithmically (learnings deduplicate) while full log grows linearly.
 
 **Load cross-codebase learnings:**
 
@@ -470,7 +657,207 @@ mcp__memory__search_nodes({ query: "pattern" })               # Apply known patt
 | FastAPI        | `fastapi`, `python`, `api`             |
 | React          | `react`, `hooks`, `state-management`   |
 
-Find the next story: first `passes: false` ordered by `priority`, respecting `dependsOn`.
+**Find the next story** using proper dependency and blocking logic:
+
+```javascript
+function getNextStory(prd) {
+  const stories = prd.userStories;
+
+  // Update blocked status for all stories
+  stories.forEach(story => {
+    if (story.passes || story.status === 'skipped') return;
+
+    const blocked = story.dependsOn?.some(depId => {
+      const dep = stories.find(s => s.id === depId);
+      return dep && !dep.passes;
+    });
+
+    story.status = blocked ? 'blocked' : 'pending';
+  });
+
+  // Find first non-blocked, non-completed story by priority
+  return stories
+    .filter(s => !s.passes && s.status !== 'blocked' && s.status !== 'skipped')
+    .sort((a, b) => a.priority - b.priority)[0] || null;
+}
+
+const nextStory = getNextStory(prd);
+
+if (!nextStory) {
+  const blocked = prd.userStories.filter(s => s.status === 'blocked');
+  if (blocked.length > 0) {
+    console.log(`⚠ ${blocked.length} stories are blocked:`);
+    blocked.forEach(s => {
+      const deps = s.dependsOn.filter(id =>
+        !prd.userStories.find(x => x.id === id)?.passes
+      );
+      console.log(`  - ${s.id}: waiting on ${deps.join(', ')}`);
+    });
+  }
+}
+```
+
+**Blocked story output:**
+```
+⚠ 2 stories are blocked:
+  - US-004: waiting on US-002, US-003
+  - US-006: waiting on US-005
+
+Next available: US-002 (priority 2, complexity 5)
+```
+
+### Step 3.0a: Analyze Story Type (Smart Delegation)
+
+Before implementing, detect the story type to enable smart delegation.
+
+**Story Type Detection:**
+
+Analyze the story to determine its primary type:
+
+```javascript
+function detectStoryType(story) {
+  const fullText = [
+    story.title,
+    story.description,
+    ...story.acceptanceCriteria,
+    story.notes || ''
+  ].join(' ').toLowerCase();
+
+  const signals = {
+    frontend: 0,
+    backend: 0,
+    api: 0,
+    database: 0,
+    devops: 0,
+    fullstack: 0
+  };
+
+  // Frontend patterns
+  const frontendPatterns = [
+    /\b(component|ui|page|form|button|modal|dropdown|layout|widget)\b/,
+    /\b(react|vue|angular|svelte|next\.js|nuxt)\b/,
+    /\b(css|style|theme|responsive|mobile|desktop)\b/,
+    /\b(click|hover|animation|transition|render)\b/,
+    /\/(components|pages|app|views|layouts)\//,
+    /\.(tsx|jsx|vue|svelte)$/
+  ];
+
+  // API patterns
+  const apiPatterns = [
+    /\b(endpoint|route|api|rest|graphql)\b/,
+    /\b(get|post|put|delete|patch)\s+(request|endpoint)/,
+    /\b(middleware|authentication|authorization)\b/,
+    /\b(controller|service|handler)\b/,
+    /\/(api|routes|controllers|services)\//,
+    /\b(express|fastapi|flask|django|nestjs)\b/
+  ];
+
+  // Database patterns
+  const databasePatterns = [
+    /\b(database|schema|migration|table|column|index)\b/,
+    /\b(query|sql|postgres|mysql|mongodb|supabase)\b/,
+    /\b(orm|prisma|drizzle|sequelize|mongoose)\b/,
+    /\b(rls|row level security|foreign key|constraint)\b/,
+    /\/(migrations|schema|models|entities)\//,
+    /\b(create table|alter table|add column)\b/
+  ];
+
+  // DevOps patterns
+  const devopsPatterns = [
+    /\b(deploy|deployment|ci\/cd|docker|kubernetes|container)\b/,
+    /\b(github actions|gitlab ci|jenkins|vercel|railway)\b/,
+    /\b(environment variable|config|secrets|env)\b/,
+    /\b(build|bundle|webpack|vite|rollup)\b/,
+    /\.(dockerfile|yaml|yml|\.github\/workflows)$/,
+    /\b(nginx|apache|load balancer|cdn)\b/
+  ];
+
+  // Fullstack patterns (touches multiple layers)
+  const fullstackPatterns = [
+    /\b(end.to.end|e2e|full.stack|complete feature)\b/,
+    /\b(authentication system|oauth flow|signup flow)\b/,
+    /\b(frontend.*backend|backend.*frontend)\b/,
+    /\b(database.*ui|ui.*database)\b/
+  ];
+
+  // Score each category
+  frontendPatterns.forEach(p => { if (p.test(fullText)) signals.frontend++; });
+  apiPatterns.forEach(p => { if (p.test(fullText)) signals.api++; });
+  databasePatterns.forEach(p => { if (p.test(fullText)) signals.database++; });
+  devopsPatterns.forEach(p => { if (p.test(fullText)) signals.devops++; });
+  fullstackPatterns.forEach(p => { if (p.test(fullText)) signals.fullstack++; });
+
+  // API is subset of backend
+  if (signals.api > 0) signals.backend = signals.api;
+
+  // Determine primary type
+  const maxScore = Math.max(...Object.values(signals));
+
+  if (signals.fullstack >= 2) return 'fullstack';
+  if (maxScore === 0) return 'general'; // No clear signals
+
+  // Return highest scoring type (priority order if tied)
+  const priority = ['database', 'api', 'backend', 'frontend', 'devops'];
+  for (const type of priority) {
+    if (signals[type] === maxScore) {
+      return type;
+    }
+  }
+
+  return 'general';
+}
+```
+
+**Detection Implementation:**
+
+When Step 3.0a runs during autonomous loop execution:
+
+1. **Run Detection:**
+   ```javascript
+   const detectedType = detectStoryType(currentStory);
+   ```
+
+2. **Log to Console:**
+   ```
+   Story type detected: api
+   Detection signals: { api: 3, backend: 3, frontend: 0, database: 0, devops: 0 }
+   ```
+
+3. **Store in prd.json:**
+   ```javascript
+   currentStory.detectedType = detectedType;
+   savePRD(prd);
+   ```
+
+4. **Update progress.md:**
+   ```markdown
+   ## Story Analysis
+
+   - Detected type: api
+   - Confidence signals: { api: 3, backend: 3, frontend: 0 }
+   ```
+
+**Important:** Detection runs automatically but does **NOT** trigger delegation unless `delegation.enabled = true` in prd.json. This allows testing detection accuracy before enabling delegation.
+
+**Example Output:**
+
+```
+## Starting: US-003 - Add user profile API endpoint
+
+Story type detected: api
+Detection signals: { api: 3, backend: 3, frontend: 0, database: 0, devops: 0 }
+
+**Goal:** Create GET /api/users/:id endpoint
+
+**Acceptance Criteria:**
+- [ ] Returns user object with id, name, email
+- [ ] Returns 404 if not found
+- [ ] Returns 401 if not authenticated
+- [ ] Typecheck passes
+- [ ] Tests pass
+
+**Approach:** Create new API route handler in app/api/users/[id]/route.ts...
+```
 
 ### Step 3.1: Announce Task
 
@@ -487,7 +874,409 @@ Find the next story: first `passes: false` ordered by `priority`, respecting `de
 **Approach:** [2-3 sentences on how you'll implement this]
 ```
 
-### Step 3.2: Implement Code
+### Step 3.2: Implement Code (with Smart Delegation)
+
+**Check Delegation Status:**
+
+```javascript
+const delegationEnabled = prd.delegation?.enabled === true;
+const fallbackToDirect = prd.delegation?.fallbackToDirect !== false;
+```
+
+**Option A: Delegation Enabled**
+
+If `delegationEnabled === true`:
+
+1. **Select Specialized Agent:**
+
+   ```javascript
+   // Agent type mapping: story type → specialized agent skill
+   const AGENT_MAP = {
+     'frontend': 'frontend-agent',      // UI/component work
+     'backend': 'backend-agent',        // Server-side logic (alias for api)
+     'api': 'api-agent',                // REST/GraphQL endpoints
+     'database': 'database-agent',      // Schema, migrations, queries
+     'devops': 'devops-agent',          // CI/CD, deployment, infrastructure
+     'fullstack': 'orchestrator-fullstack', // Multi-layer features
+     'general': 'general-purpose'       // Catch-all for unclear stories
+   };
+
+   const storyType = detectStoryType(story); // From Step 3.0a
+   const agentType = AGENT_MAP[storyType] || 'general-purpose';
+
+   // Note: Agent availability is checked when Task tool is invoked
+   // If agent skill is not installed, Task will fail and trigger fallback
+   ```
+
+   **Log agent selection:**
+   ```
+   Detected story type: ${storyType}
+   Selected agent: ${agentType}
+
+   Delegating to ${agentType}...
+   ```
+
+2. **Generate Subagent Context:**
+
+   Create a detailed prompt for the subagent:
+
+   ```markdown
+   # Story Implementation Task
+
+   You are implementing a single user story for the autonomous-dev orchestrator.
+
+   ## Scope Constraints
+   **ONLY implement this specific story.** Do not:
+   - Implement other stories from the PRD
+   - Refactor unrelated code
+   - Add features beyond acceptance criteria
+   - Create unnecessary abstractions
+   - Create documentation unless explicitly required by acceptance criteria
+
+   ## Story Details
+   **ID:** ${story.id}
+   **Title:** ${story.title}
+   **Priority:** ${story.priority}
+
+   **Description:**
+   ${story.description}
+
+   **Acceptance Criteria:**
+   ${story.acceptanceCriteria.map(c => `- [ ] ${c}`).join('\n')}
+
+   ## Project Context
+   **Tech Stack:** ${detectStack()}
+   **Branch:** ${prd.branchName}
+   **Working Directory:** ${process.cwd()}
+
+   **Verification Commands:**
+   ${Object.entries(prd.verification || {})
+     .map(([type, cmd]) => `- ${type}: \`${cmd}\``)
+     .join('\n')}
+
+   ## Repository Patterns
+   ${readFile('AGENTS.md') || 'No documented patterns yet'}
+
+   ## Recent Implementation Context
+   ${extractRecentProgress(3)} // Last 3 entries from progress.md
+
+   ## Memory Insights
+   Patterns to apply:
+   ${queryMemoryPatterns(detectStack())}
+
+   Mistakes to avoid:
+   ${queryMemoryMistakes()}
+
+   ## Dependencies from Previous Stories
+   ${story.dependsOn.map(id => `- ${id}: ${getPreviousStoryNotes(id)}`).join('\n')}
+
+   ## Your Task
+   1. Read relevant existing code
+   2. Implement ONLY what's needed for this story
+   3. Run verification commands
+   4. Report structured results
+
+   ## Required Output Format
+   ```
+   RESULT: [SUCCESS|FAILURE]
+
+   Files changed:
+   - path/to/file1.ts (new/modified)
+   - path/to/file2.ts (modified)
+
+   Verification:
+   - Typecheck: [PASS|FAIL]
+   - Tests: [PASS|FAIL - X/Y passed]
+   - Lint: [PASS|FAIL]
+
+   Implementation notes:
+   [2-3 sentences describing key decisions]
+
+   Learnings:
+   [Patterns discovered or issues encountered]
+   ```
+   ```
+
+3. **Invoke Subagent:**
+
+   ```javascript
+   const result = await Task({
+     subagent_type: agentType,
+     description: `Implement ${story.id}: ${story.title}`,
+     prompt: subagentPrompt
+   });
+   ```
+
+4. **Parse Subagent Result:**
+
+   ```javascript
+   function parseSubagentResult(output) {
+     // Extract RESULT line
+     const resultMatch = output.match(/RESULT:\s*(SUCCESS|FAILURE)/i);
+
+     // Extract files changed
+     const filesMatch = output.match(/Files changed:\n((?:- .+\n?)+)/);
+     const filesChanged = filesMatch?.[1]
+       ?.split('\n')
+       .filter(l => l.trim())
+       .map(l => l.replace(/^- /, '').trim()) || [];
+
+     // Extract verification results
+     const verificationMatch = output.match(/Verification:\n((?:- .+\n?)+)/);
+     const verification = {};
+     if (verificationMatch) {
+       verificationMatch[1].split('\n').forEach(line => {
+         const match = line.match(/- (\w+): (PASS|FAIL)/i);
+         if (match) verification[match[1].toLowerCase()] = match[2].toUpperCase();
+       });
+     }
+
+     // Extract notes
+     const notesMatch = output.match(/Implementation notes:\n(.+?)(?=\n\n|Learnings:|$)/s);
+     const notes = notesMatch?.[1]?.trim() || '';
+
+     const learningsMatch = output.match(/Learnings:\n(.+?)$/s);
+     const learnings = learningsMatch?.[1]?.trim() || '';
+
+     return {
+       success: resultMatch?.[1]?.toUpperCase() === 'SUCCESS',
+       filesChanged,
+       verification,
+       notes,
+       learnings
+     };
+   }
+
+   const parsed = parseSubagentResult(result);
+   ```
+
+   **Validate Parsed Result:**
+
+   ```javascript
+   function validateSubagentResult(parsed, story) {
+     const errors = [];
+
+     // 1. Check required fields present
+     if (parsed.success === undefined) {
+       errors.push('Missing RESULT status');
+     }
+
+     if (!parsed.filesChanged || parsed.filesChanged.length === 0) {
+       errors.push('No files changed reported');
+     }
+
+     if (!parsed.verification || Object.keys(parsed.verification).length === 0) {
+       errors.push('No verification results reported');
+     }
+
+     // 2. Validate verification results format
+     for (const [key, value] of Object.entries(parsed.verification)) {
+       if (value !== 'PASS' && value !== 'FAIL') {
+         errors.push(`Invalid verification status for ${key}: ${value}`);
+       }
+     }
+
+     // 3. Check files changed are reasonable
+     const suspiciousFiles = parsed.filesChanged.filter(file =>
+       file.includes('node_modules/') ||
+       file.includes('.git/') ||
+       file.includes('package-lock.json') ||
+       file.match(/\.(env|secret|key)$/)
+     );
+
+     if (suspiciousFiles.length > 0) {
+       errors.push(`Suspicious files modified: ${suspiciousFiles.join(', ')}`);
+     }
+
+     // 4. Validate file paths exist or are new
+     for (const file of parsed.filesChanged) {
+       const isNew = file.includes('(new)');
+       const filePath = file.replace(/\s*\(new\|modified\)/, '').trim();
+       // Note: File existence check would happen here
+       // if (!isNew && !fileExists(filePath)) {
+       //   errors.push(`File not found: ${filePath}`);
+       // }
+     }
+
+     return {
+       valid: errors.length === 0,
+       errors
+     };
+   }
+
+   function allVerificationsPassed(verification) {
+     return Object.values(verification).every(status => status === 'PASS');
+   }
+
+   // Validate result
+   const validation = validateSubagentResult(parsed, story);
+
+   if (!validation.valid) {
+     console.error('⚠ Subagent result validation failed:');
+     validation.errors.forEach(err => console.error(`  - ${err}`));
+     // Treat as delegation failure
+     parsed.success = false;
+   }
+   ```
+
+   **Error Handling for Malformed Output:**
+
+   ```javascript
+   try {
+     const parsed = parseSubagentResult(result);
+     const validation = validateSubagentResult(parsed, story);
+
+     if (!validation.valid) {
+       throw new Error(`Validation failed: ${validation.errors.join('; ')}`);
+     }
+   } catch (error) {
+     console.error(`✗ Failed to parse subagent output: ${error.message}`);
+
+     // Log raw output for debugging
+     console.log('Raw subagent output:');
+     console.log(result.substring(0, 500)); // First 500 chars
+
+     // Trigger fallback
+     if (fallbackToDirect) {
+       console.log('⚠ Falling back to direct implementation...');
+       // Proceed to Option B
+     } else {
+       throw error;
+     }
+   }
+   ```
+
+5. **Handle Delegation Result:**
+
+   If delegation **succeeds**:
+   ```javascript
+   if (parsed.success && allVerificationsPassed(parsed.verification)) {
+     // Update story in prd.json
+     story.passes = true;
+     story.delegatedTo = agentType;
+     story.completedAt = new Date().toISOString();
+
+     // Log success
+     console.log(`✓ ${story.id} completed via ${agentType}`);
+
+     // Continue to Step 3.3 (verification)
+   }
+   ```
+
+   If delegation **fails** and `fallbackToDirect === true`:
+
+   **Common failure reasons:**
+   - Agent skill not installed/available
+   - Agent returned FAILURE result
+   - Verification commands failed
+   - Task tool error
+
+   ```
+   ⚠ Delegation to ${agentType} failed.
+   Reason: ${getFailureReason(result)}
+
+   Falling back to direct implementation...
+   ```
+   → Proceed to Option B (Direct Implementation)
+
+   **Note:** The fallback mechanism provides automatic recovery when:
+   - Selected agent is not installed (`general-purpose` always available as ultimate fallback)
+   - Agent fails to implement the story correctly
+   - Verification fails after delegation
+
+   If delegation **fails** and `fallbackToDirect === false`:
+   ```
+   ✗ Delegation failed and fallback is disabled.
+
+   Options:
+   1. Enable fallback: Set delegation.fallbackToDirect = true
+   2. Try different agent (manual override)
+   3. Skip this story
+   4. Pause autonomous mode
+
+   What would you like to do?
+   ```
+
+   **Fallback Tracking:**
+
+   When fallback occurs, story metadata reflects direct implementation:
+   ```json
+   {
+     "id": "US-007",
+     "delegatedTo": null,
+     "notes": "Delegation to api-agent failed: agent not available. Fell back to direct implementation."
+   }
+   ```
+
+   **Error Scenario Examples:**
+
+   **Scenario 1: Agent Not Available**
+   ```
+   ## Starting: US-002 - Add user profile endpoint
+
+   Story type detected: api
+   Selected agent: api-agent
+
+   Delegating to api-agent...
+   ✗ Error: Skill 'api-agent' not found
+   ⚠ Delegation to api-agent failed.
+   Reason: Agent skill not installed
+
+   Falling back to direct implementation...
+   ```
+
+   **Scenario 2: Agent Returns FAILURE**
+   ```
+   ## Starting: US-003 - Add email column to users table
+
+   Delegating to database-agent...
+
+   RESULT: FAILURE
+
+   Verification:
+   - Migration up: FAIL - Syntax error on line 12
+
+   ⚠ Delegation to database-agent failed.
+   Reason: Agent returned FAILURE result
+
+   Falling back to direct implementation...
+   ```
+
+   **Scenario 3: Verification Fails**
+   ```
+   ## Starting: US-001 - Add dark mode toggle
+
+   Delegating to frontend-agent...
+
+   RESULT: SUCCESS
+
+   Verification:
+   - Typecheck: FAIL - Type error in ThemeToggle.tsx
+
+   ⚠ Delegation to frontend-agent failed.
+   Reason: Verification commands failed (typecheck: FAIL)
+
+   Falling back to direct implementation...
+   ```
+
+   **Scenario 4: Malformed Output**
+   ```
+   ## Starting: US-005 - Set up CI/CD
+
+   Delegating to devops-agent...
+
+   [Agent output doesn't match expected format]
+
+   ✗ Failed to parse subagent output: Missing RESULT status
+   Raw subagent output:
+   [First 500 characters shown...]
+
+   ⚠ Falling back to direct implementation...
+   ```
+
+**Option B: Direct Implementation (Default)**
+
+If `delegationEnabled === false` OR delegation failed with fallback:
 
 1. Read relevant existing files first
 2. Follow patterns from `AGENTS.md` and existing code
@@ -558,7 +1347,130 @@ npm run lint
    ---
    ```
 
-4. **Extract and save learnings to Memory:**
+4. **Generate progress-summary.md** (Token Optimization):
+
+   After updating progress.md, regenerate the compact summary:
+
+   ```javascript
+   function generateProgressSummary(prd, progressMd) {
+     const optimization = prd.optimization?.progressSummary ?? { enabled: true };
+     if (!optimization.enabled) return;
+
+     const recentCount = optimization.recentStoriesCount || 3;
+     const maxLearnings = optimization.maxLearnings || 15;
+
+     const summary = `# Progress Summary: ${prd.project}
+
+Branch: \`${prd.branchName}\`
+Started: ${prd.createdAt?.split('T')[0] || 'Unknown'}
+Last updated: ${new Date().toISOString().split('T')[0]}
+
+## Completion Status
+
+${generateCompletionStatus(prd)}
+
+## Story Status
+
+${generateStoryTable(prd)}
+
+## Key Learnings (Extracted)
+
+${extractKeyLearnings(progressMd, maxLearnings)}
+
+## Recent Context (Last ${recentCount} Stories)
+
+${extractRecentEntries(progressMd, recentCount)}
+
+---
+
+*Auto-generated from progress.md. Full history preserved in progress.md.*
+`;
+
+     writeFile('progress-summary.md', summary);
+   }
+   ```
+
+   **Helper Functions:**
+
+   ```javascript
+   function generateCompletionStatus(prd) {
+     const total = prd.userStories.length;
+     const complete = prd.userStories.filter(s => s.passes).length;
+     const inProgress = prd.userStories.find(s => !s.passes && s.attempts > 0);
+     const pct = Math.round((complete / total) * 100);
+
+     return `Stories: ${complete}/${total} complete (${pct}%)
+Current: ${inProgress ? `${inProgress.id} (attempt ${inProgress.attempts})` : 'None'}
+Blocked: None`;
+   }
+
+   function generateStoryTable(prd) {
+     const header = '| ID | Title | C | Status | Attempts |\n|----|-------|---|--------|----------|';
+     const rows = prd.userStories.map(s => {
+       const statusIcon = s.passes ? '✓' :
+                          s.status === 'blocked' ? '⊘' :
+                          s.status === 'expanded' ? '↳' :
+                          s.attempts > 0 ? '→' : '○';
+       const complexity = s.complexity || '-';
+       const title = s.title.length > 25 ? s.title.slice(0, 22) + '...' : s.title;
+       return `| ${s.id} | ${title} | ${complexity} | ${statusIcon} | ${s.attempts} |`;
+     });
+     return [header, ...rows].join('\n') + '\n\nLegend: ✓ done, → active, ○ pending, ⊘ blocked, ↳ expanded\nC = Complexity (1-10)';
+   }
+
+   function extractKeyLearnings(progressMd, maxLearnings) {
+     const learnings = { patterns: [], gotchas: [], dependencies: [] };
+
+     // Extract from **Learnings:** sections
+     const learningBlocks = progressMd.match(/\*\*Learnings:\*\*\n((?:- .+\n?)+)/g) || [];
+     learningBlocks.forEach(block => {
+       const lines = block.match(/- .+/g) || [];
+       lines.forEach(line => {
+         const text = line.replace(/^- /, '').trim();
+         if (/gotcha|warning|careful|must|don't|avoid/i.test(text)) {
+           learnings.gotchas.push(text);
+         } else {
+           learnings.patterns.push(text);
+         }
+       });
+     });
+
+     // Deduplicate and limit
+     const uniquePatterns = [...new Set(learnings.patterns)].slice(0, maxLearnings);
+     const uniqueGotchas = [...new Set(learnings.gotchas)].slice(0, 5);
+
+     let output = '### Repository Patterns\n';
+     output += uniquePatterns.map(p => `- ${p}`).join('\n') || '- No patterns extracted yet';
+     output += '\n\n### Gotchas & Warnings\n';
+     output += uniqueGotchas.map(g => `- ${g}`).join('\n') || '- No gotchas recorded';
+
+     return output;
+   }
+
+   function extractRecentEntries(progressMd, count) {
+     // Split by story headers (## YYYY-MM-DD or ## timestamp)
+     const entries = progressMd.split(/(?=^## \d{4}-\d{2}-\d{2}|\n---\n\n## )/m);
+
+     // Take last N entries (skip header)
+     const recent = entries.filter(e => e.match(/^## \d/)).slice(-count);
+
+     if (recent.length === 0) return 'No completed stories yet.';
+
+     // Compress each entry (keep first 10 lines max)
+     return recent.map(entry => {
+       const lines = entry.trim().split('\n');
+       if (lines.length <= 12) return entry.trim();
+       return lines.slice(0, 12).join('\n') + '\n[...]';
+     }).join('\n\n');
+   }
+   ```
+
+   **When to Generate:**
+   - After each story completion (Step 3.4)
+   - When `status summarize` command is run
+   - Automatically on next iteration if progress.md is newer
+
+5. **Extract and save learnings to Memory:**
 
    After each successful story, evaluate if any learnings are broadly applicable:
 
@@ -639,18 +1551,35 @@ npm run lint
    })
    ```
 
-5. If `attempts >= 3`:
+5. If `attempts >= 2` and `complexity >= 6`, suggest expansion:
+
+   ```
+   US-XXX failed on attempt 2 (complexity: 7).
+
+   This story may be too complex for a single iteration.
+
+   **Suggested:** Run `expand US-XXX` to break it into smaller pieces.
+
+   Options:
+   1. expand - Break into 2-4 smaller stories (recommended)
+   2. retry - Try one more time
+   3. skip - Move to next story
+   4. pause - Stop and get help
+   ```
+
+6. If `attempts >= 3`:
 
    ```
    US-XXX failed after 3 attempts.
 
    Last error: [message]
+   Complexity: [N] | Factors: [list]
 
    Options:
-   1. Split this story into smaller pieces
-   2. Get user help with the blockers
-   3. Skip and continue with next story
-   4. Pause autonomous mode
+   1. expand - Break into smaller stories (recommended for complexity ≥ 6)
+   2. help - Get user assistance with blockers
+   3. skip - Continue with next story
+   4. pause - Stop autonomous mode
 
    What would you like to do?
    ```
@@ -689,146 +1618,13 @@ Next steps:
 3. Create PR when ready: gh pr create
 
 Would you like me to:
-A. Run code review (spawn parallel reviewers)
-B. Create a pull request
-C. Show a detailed summary
-D. Continue with more features
-E. Clean up worktree (if used)
+A. Create a pull request
+B. Show a detailed summary
+C. Continue with more features
+D. Clean up worktree (if used)
 ```
 
-### Step 3.6: Code Review Phase (Recommended)
-
-Before creating a PR, spawn the **code-review-agent** to get multi-perspective feedback:
-
-```xml
-<Task subagent_type="code-review-agent" prompt="
-Review the changes on branch feature/[name] before PR submission.
-
-Changed files: [list from git diff --name-only main...HEAD]
-Feature context: [brief description]
-
-Run parallel specialist reviewers and return synthesized findings.
-"/>
-```
-
-The code review agent will spawn parallel reviewers (security, performance, architecture, stack-specific) and return:
-- Critical issues (must fix before PR)
-- High priority suggestions
-- Auto-fixable improvements
-
-**If critical issues found:** Fix them before proceeding to PR.
-
-**If clean:** Proceed to PR creation.
-
-### Step 3.7: Solution Documentation (Knowledge Compounding)
-
-**Philosophy:** "First time: 30 minutes. Documented: next time is 5 minutes."
-
-After completing a non-trivial feature, document the solution for future reuse:
-
-```bash
-# Create solutions directory if it doesn't exist
-mkdir -p .solutions
-```
-
-**Create `.solutions/[feature-name].md`:**
-
-```markdown
-# Solution: [Feature Name]
-
-**Date:** [YYYY-MM-DD]
-**Branch:** feature/[name]
-**Complexity:** [Low/Medium/High]
-
-## Problem
-
-What problem did this feature solve? What was the user need?
-
-- [Problem statement]
-- [Context/constraints]
-
-## Solution
-
-How did we solve it?
-
-### Approach
-
-[2-3 paragraphs explaining the approach taken]
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `path/to/file.ts` | [What this file does] |
-| `path/to/other.ts` | [What this file does] |
-
-### Code Snippets
-
-Key implementation patterns worth remembering:
-
-```[language]
-// [Description of what this does]
-[relevant code snippet]
-```
-
-## Gotchas & Edge Cases
-
-Things that tripped us up or required special handling:
-
-1. **[Gotcha 1]**: [Description and how we handled it]
-2. **[Gotcha 2]**: [Description and how we handled it]
-
-## Testing Strategy
-
-How we verified this works:
-
-- [Test type 1]: [What it covers]
-- [Test type 2]: [What it covers]
-
-## Future Improvements
-
-Things we'd do differently or enhance later:
-
-- [ ] [Improvement 1]
-- [ ] [Improvement 2]
-
-## Related
-
-- [Link to similar solutions]
-- [Relevant Memory MCP entities]
-- [External documentation references]
-```
-
-**When to Create Solution Docs:**
-
-| Feature Type | Document? |
-|--------------|-----------|
-| New major feature | Yes |
-| Complex integration | Yes |
-| Tricky bug fix | Yes (as mini-doc) |
-| Simple CRUD | No |
-| Config change | No |
-| Minor UI tweak | No |
-
-**Also save to Memory MCP** for cross-project learning:
-
-```
-mcp__memory__create_entities({
-  entities: [{
-    name: "solution:[feature-name]",
-    entityType: "solution",
-    observations: [
-      "Problem: [brief problem statement]",
-      "Approach: [key approach taken]",
-      "Stack: [frameworks/languages used]",
-      "Gotcha: [main gotcha encountered]",
-      "Location: .solutions/[feature-name].md"
-    ]
-  }]
-})
-```
-
-### Step 3.9: Worktree Cleanup (If Used)
+### Step 3.6: Worktree Cleanup (If Used)
 
 If the feature was developed in a worktree, offer cleanup:
 
@@ -897,9 +1693,9 @@ If a story needs something not yet implemented:
 | --------------------------- | -------------------------------- | ------------------ |
 | `tasks/prd-*.md`            | Human-readable PRD               | Phase 1            |
 | `prd.json`                  | Machine-readable task list       | Phase 2            |
-| `progress.md`               | Append-only learnings            | Phase 2+           |
+| `progress.md`               | Append-only learnings (full)     | Phase 2+           |
+| `progress-summary.md`       | Compact context (auto-generated) | Phase 3 (auto)     |
 | `AGENTS.md`                 | Long-term repo patterns          | Anytime            |
-| `.solutions/`               | Documented solutions for reuse   | After feature      |
 | `archive/`                  | Previous completed PRDs          | Before new feature |
 | `.worktree-scaffold.json`   | Worktree config (optional)       | User creates       |
 
@@ -961,14 +1757,318 @@ When you discover patterns, add them to AGENTS.md:
 
 ## Quick Commands
 
-| Command         | What it does                         |
-| --------------- | ------------------------------------ |
-| "status"        | Show current progress and next story |
-| "skip"          | Skip current story, move to next     |
-| "pause"         | Stop autonomous mode, wait for input |
-| "split [story]" | Break a story into smaller pieces    |
-| "retry"         | Retry the current story              |
-| "complete"      | Force-mark current story as done     |
+| Command          | What it does                                    |
+| ---------------- | ----------------------------------------------- |
+| "status"         | Show current progress and next story            |
+| "skip"           | Skip current story, move to next                |
+| "pause"          | Stop autonomous mode, wait for input            |
+| "split [story]"  | Break a story into smaller pieces (manual)      |
+| "expand [story]" | Smart-expand a complex story into 2-4 substories |
+| "retry"          | Retry the current story                         |
+| "complete"       | Force-mark current story as done                |
+| "summarize"      | Regenerate progress-summary.md from full log    |
+
+### Status Command
+
+The `status` command shows progress with complexity and blocking information:
+
+```
+> status
+
+## Progress: User Settings Feature
+
+Branch: feature/user-settings
+Stories: 4/8 complete (50%)
+
+| ID      | Title                    | C | Status | Attempts |
+|---------|--------------------------|---|--------|----------|
+| US-001  | Create settings page     | 3 | ✓      | 1        |
+| US-002  | Add profile form         | 4 | ✓      | 1        |
+| US-003  | Add avatar upload        | 5 | ✓      | 2        |
+| US-004  | Connect to API           | 4 | ✓      | 1        |
+| US-005  | Add email preferences    | 3 | →      | 1        |
+| US-006  | Add notification settings| 6 | ○      | 0        |
+| US-007  | Add OAuth connections    | 8 | ⊘      | 0        |
+| US-008  | Add delete account       | 5 | ○      | 0        |
+
+Legend: ✓ done, → active, ○ pending, ⊘ blocked
+C = Complexity (1-10)
+
+**Blocked stories:**
+- US-007: waiting on US-005, US-006
+
+**Complexity summary:**
+- Remaining: 22 points across 4 stories
+- Avg complexity: 5.5
+- High-risk: US-007 (8) - consider `expand US-007`
+
+**Next:** US-005 - Add email preferences (complexity: 3)
+```
+
+### Expand Command
+
+The `expand` command intelligently breaks a complex story into smaller, implementable pieces:
+
+```
+> expand US-005
+
+Analyzing US-005: "Add OAuth login flow" (complexity: 8)
+
+Complexity factors:
+- External API integration (Google OAuth)
+- Multiple routes (callback, logout)
+- Session management
+- UI components (login button, user menu)
+
+Expanding into 4 stories...
+
+## Proposed Expansion
+
+**US-005.1: Add OAuth callback endpoint** (complexity: 3)
+- Create /api/auth/callback route
+- Handle token exchange
+- Store session in cookie
+- Acceptance: Returns user data on success, 401 on failure
+
+**US-005.2: Add OAuth initiation endpoint** (complexity: 2)
+- Create /api/auth/login route
+- Redirect to Google OAuth URL
+- Include proper scopes and state
+- Acceptance: Redirects to Google, state validated on return
+
+**US-005.3: Add login button component** (complexity: 3)
+- Create LoginButton component
+- Handle loading/error states
+- Redirect to OAuth initiation
+- Acceptance: Button visible when logged out, triggers OAuth flow
+
+**US-005.4: Add user session context** (complexity: 4)
+- Create AuthContext provider
+- Add useAuth hook
+- Fetch session on app load
+- Acceptance: Components can access user state, logout works
+
+**Dependencies:** US-005.1 → US-005.2 → US-005.3, US-005.4
+
+Original complexity: 8 → Expanded total: 12 (but each piece is manageable)
+
+Apply this expansion? (yes/no/edit)
+```
+
+**When expansion is triggered:**
+- User runs `expand [story-id]`
+- Story fails 2+ times (suggested automatically)
+- Complexity ≥ 8 detected during Phase 3
+
+**Expansion rules:**
+- Create 2-4 new stories (never more)
+- Each new story should be complexity ≤ 5
+- Preserve the original story's intent
+- Set up proper `dependsOn` relationships
+- New IDs use parent.1, parent.2 format
+
+**After expansion:**
+```javascript
+// Original story marked as expanded
+{
+  "id": "US-005",
+  "status": "expanded",
+  "expandedInto": ["US-005.1", "US-005.2", "US-005.3", "US-005.4"]
+}
+
+// New stories added to prd.json
+{
+  "id": "US-005.1",
+  "title": "Add OAuth callback endpoint",
+  "complexity": 3,
+  "dependsOn": [],
+  "expandedFrom": "US-005"
+}
+```
+
+### Summarize Command
+
+The `summarize` command regenerates `progress-summary.md` from the full `progress.md`:
+
+```
+> summarize
+
+Regenerating progress-summary.md...
+
+Summary generated:
+- Stories: 12/14 complete (86%)
+- Learnings extracted: 15 patterns, 4 gotchas
+- Recent context: Last 3 stories included
+- Token savings: ~3,200 tokens (78% reduction)
+
+Summary written to progress-summary.md
+```
+
+Use this command to:
+- Force regenerate after manual edits to progress.md
+- View token savings statistics
+- Verify extracted learnings are correct
+
+---
+
+## Enabling Delegation (Beta)
+
+**⚠️ BETA FEATURE:** Smart delegation is currently in beta. Automatic fallback to direct implementation ensures reliable operation.
+
+### How to Enable
+
+1. **Update prd.json:**
+   ```json
+   {
+     "delegation": {
+       "enabled": true,
+       "fallbackToDirect": true
+     }
+   }
+   ```
+
+2. **Install specialized agents** (optional but recommended):
+   ```bash
+   # Frontend agent for UI/component work
+   git clone https://github.com/org/frontend-agent ~/.claude/skills/frontend-agent
+
+   # API agent for endpoint implementation
+   git clone https://github.com/org/api-agent ~/.claude/skills/api-agent
+
+   # Database agent for schema/migrations
+   git clone https://github.com/org/database-agent ~/.claude/skills/database-agent
+
+   # DevOps agent for CI/CD and deployment
+   git clone https://github.com/org/devops-agent ~/.claude/skills/devops-agent
+   ```
+
+   **Note:** If agents aren't installed, delegation falls back to direct implementation automatically.
+
+3. **Run autonomous-dev as normal:**
+   - Story type detection runs automatically (Step 3.0a)
+   - Delegation attempts if enabled and agent available (Step 3.2)
+   - Falls back to direct implementation on any failure
+   - Tracks metrics in `prd.json` (delegationMetrics)
+
+### What to Expect
+
+**With delegation enabled:**
+- Each story is analyzed to detect type (frontend, api, database, etc.)
+- Appropriate specialized agent is selected
+- Agent implements the story with domain-specific expertise
+- Fallback to direct implementation if agent unavailable or fails
+- Metrics tracked for performance analysis
+
+**Logging output:**
+```
+## Starting: US-003 - Add dark mode toggle
+
+Story type detected: frontend
+Selected agent: frontend-agent
+
+Delegating to frontend-agent...
+
+✓ Created app/components/ThemeToggle.tsx
+✓ Typecheck passed
+✓ Tests passed (2/2)
+
+RESULT: SUCCESS
+
+✓ US-003 complete (attempt 1)
+  Implemented by: frontend-agent
+```
+
+### How to Disable
+
+Set `delegation.enabled` to `false` in prd.json:
+```json
+{
+  "delegation": {
+    "enabled": false
+  }
+}
+```
+
+The autonomous loop continues with direct implementation.
+
+### Beta Testing Checklist
+
+- [ ] Enable delegation in a test PRD (non-production project)
+- [ ] Run autonomous loop on 5-10 stories
+- [ ] Review delegationMetrics in prd.json
+- [ ] Check which agents performed well vs. needed fallback
+- [ ] Review progress.md for delegation logs
+- [ ] Verify fallback mechanism works (try without agents installed)
+- [ ] Analyze metrics with jq queries (see examples.md)
+- [ ] Report any issues or unexpected behavior
+
+### Troubleshooting
+
+**Issue: "Agent not found" error**
+- **Cause:** Specialized agent skill not installed
+- **Solution:** Either install the agent or rely on automatic fallback
+- **Expected:** Delegation falls back to direct implementation automatically
+
+**Issue: Delegation fails repeatedly for specific story type**
+- **Cause:** Agent may not handle this pattern well
+- **Solution:** Review progress.md logs, consider disabling delegation for that agent type
+- **Temporary fix:** Implement story directly, file issue with agent maintainer
+
+**Issue: Detection classifies story incorrectly**
+- **Cause:** Story description lacks clear technical keywords
+- **Solution:** Add specific keywords (e.g., "component", "endpoint", "migration")
+- **Alternative:** Set `detectedType` manually in prd.json before running
+
+**Issue: Metrics not updating**
+- **Cause:** delegationMetrics object missing from prd.json
+- **Solution:** Add empty metrics object (see schema in Phase 2 documentation)
+
+**Issue: Want to force direct implementation for one story**
+- **Solution:** Set `delegation.enabled = false` temporarily, or
+- **Better:** Let delegation attempt and fallback if needed (no manual intervention required)
+
+### Migration Guide: Enabling in Existing Projects
+
+If you have an existing prd.json without delegation:
+
+1. **Add delegation configuration:**
+   ```json
+   {
+     "delegation": {
+       "enabled": true,
+       "fallbackToDirect": true
+     },
+     "delegationMetrics": {
+       "totalStories": 0,
+       "delegatedCount": 0,
+       "directCount": 0,
+       "successRate": 0,
+       "avgAttempts": 0,
+       "byAgent": {},
+       "byType": {},
+       "detectionAccuracy": null
+     }
+   }
+   ```
+
+2. **Add story-level fields** (optional - will be populated automatically):
+   ```json
+   {
+     "id": "US-001",
+     "detectedType": null,
+     "delegatedTo": null
+   }
+   ```
+
+3. **Run autonomous loop** - delegation activates automatically for remaining stories
+
+### See Also
+
+- [Detection validation](references/detection-validation.md) - Detection accuracy testing
+- [Agent prompts](references/agent-prompts.md) - Subagent prompt templates
+- [Examples](references/examples.md) - Complete delegation flow examples
+- [Design doc](references/smart-delegation-design.md) - Architecture details
+- [Progress summarization](references/progress-summarization-design.md) - Token optimization design
 
 ---
 
@@ -979,4 +2079,4 @@ See [references/examples.md](references/examples.md) for:
 - Story splitting patterns
 - Acceptance criteria templates
 - Complete prd.json examples
-- progress.md format
+- progress.md and progress-summary.md formats
