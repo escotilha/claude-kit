@@ -94,6 +94,54 @@ Parallel feature development automation using git worktrees with project scaffol
 
 ---
 
+### 5. **CTO Advisor** (`cto`)
+
+Universal AI CTO advisor for any project. Provides full technical leadership: architecture, code quality, security, performance, and testing strategy.
+
+**Features:**
+- Architecture review and ADR creation
+- Code quality assessment and refactoring recommendations
+- Security audit (OWASP Top 10)
+- Performance analysis and optimization
+- Tech stack evaluation with scoring
+- Technical roadmap planning
+
+**Usage:**
+```
+/cto
+"Review this codebase as a CTO"
+"Do a security audit"
+"Should we migrate to microservices?"
+```
+
+**Configuration:**
+Create `cto-requirements.md` in your project to focus reviews on specific areas.
+
+---
+
+### 6. **CPO AI** (`cpo-ai-skill`)
+
+Chief Product Officer AI that orchestrates entire product lifecycles. Goes from idea to production-ready application.
+
+**Features:**
+- Product discovery with strategic questions
+- Strategic planning with epics and stages
+- Stage-by-stage implementation with testing
+- Full project validation
+- Documentation and deployment
+
+**Usage:**
+```
+/cpo-go my-app Create a task management application
+"Build this product from scratch"
+```
+
+**Dependencies:**
+- autonomous-dev, fulltest-skill
+- Specialized subagents: product-research, cto-advisor, frontend-design, backend-api, database-setup, deployment
+
+---
+
 ## 🤖 Agents Included
 
 ### Core Agents
@@ -292,9 +340,18 @@ claude-code-skills/
 ├── skills/                             # Skills directory
 │   ├── autonomous-dev/                 # Autonomous coding agent
 │   │   ├── SKILL.md                    # Skill definition
+│   │   ├── README.md                   # Documentation
 │   │   └── references/                 # Examples and docs
 │   ├── claude-setup-optimizer/         # Setup optimizer
 │   │   └── SKILL.md
+│   ├── cto/                            # CTO technical advisor
+│   │   ├── SKILL.md
+│   │   └── README.md
+│   ├── cpo-ai-skill/                   # Chief Product Officer AI
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── subagents/                  # Specialized subagents
+│   │   └── references/                 # Templates and docs
 │   ├── fulltest-skill/                 # Full-spectrum testing
 │   │   └── SKILL.md
 │   └── worktree-scaffold/              # Worktree management
