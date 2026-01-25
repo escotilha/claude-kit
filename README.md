@@ -119,7 +119,27 @@ Create `cto-requirements.md` in your project to focus reviews on specific areas.
 
 ---
 
-### 6. **CPO AI** (`cpo-ai-skill`)
+### 6. **Skill Loader** (`skill-loader`)
+
+Load and manage Claude Code skills from external GitHub repositories.
+
+**Features:**
+- Load skills from any GitHub repository
+- Save repositories as persistent skill sources
+- Update skills from all configured sources
+- Smart detection of skills and agents
+
+**Usage:**
+```
+"Load skills from https://github.com/escotilha/skills"
+"Always load skills from github.com/owner/repo"
+"Update my skills"
+"List skill sources"
+```
+
+---
+
+### 7. **CPO AI** (`cpo-ai-skill`)
 
 Chief Product Officer AI that orchestrates entire product lifecycles. Goes from idea to production-ready application.
 
@@ -347,6 +367,10 @@ claude-code-skills/
 │   ├── cto/                            # CTO technical advisor
 │   │   ├── SKILL.md
 │   │   └── README.md
+│   ├── skill-loader/                   # External skill loader
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   └── skill-sources.example.json
 │   ├── cpo-ai-skill/                   # Chief Product Officer AI
 │   │   ├── SKILL.md
 │   │   ├── README.md

@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "sources": [
+    {
+      "url": "https://github.com/escotilha/skills",
+      "name": "escotilha-skills",
+      "description": "Official Escotilha skills collection - autonomous dev, testing, CTO advisor, and more",
+      "added": "2026-01-25T00:00:00Z",
+      "lastUpdated": null,
+      "enabled": true,
+      "branch": "main"
+    }
+  ],
+  "settings": {
+    "autoUpdate": false,
+    "backupBeforeUpdate": true,
+    "installLocation": "~/.claude"
+  }
+}
