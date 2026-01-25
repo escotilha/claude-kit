@@ -37,6 +37,16 @@ Product Idea → Discovery Questions → Strategic Plan → Stage Implementation
 | `docs/user-guide.md` | End-user documentation |
 | `docs/technical-docs.md` | Developer documentation |
 
+## Specialized Subagents
+
+The CPO AI orchestrates three specialized agents for best-in-class results:
+
+| Agent | Purpose | Based On |
+|-------|---------|----------|
+| **Product Research Agent** | Market research, competitor analysis, design references | [Anthropic Research Agent](https://github.com/anthropics/claude-agent-sdk-demos) |
+| **CTO Advisor Agent** | Tech stack selection, architecture, deployment strategy | Best practices from [wshobson/agents](https://github.com/wshobson/agents) |
+| **Frontend Design Agent** | Distinctive, production-grade UI | [Anthropic Frontend Design Plugin](https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design) |
+
 ## Integration
 
 Works with:
@@ -51,21 +61,36 @@ User: "Build a task management app for small teams"
 
 CPO AI:
 1. Asks discovery questions about users, scope, tech stack
-2. Creates strategic plan with 5 epics, 12 stages
-3. Implements Stage 1: Project Setup
-4. Tests Stage 1
-5. Commits and moves to Stage 2
-6. ... continues until complete
-7. Generates user guide
-8. Pushes to GitHub
+2. [Research Agent] Analyzes Asana, Linear, Notion for best practices
+3. [Research Agent] Collects design references and UI patterns
+4. [CTO Agent] Recommends Next.js + Supabase stack with deployment guide
+5. Creates strategic plan with 5 epics, 12 stages
+6. Implements Stage 1: Project Setup
+7. [Frontend Agent] Creates distinctive dashboard UI (not generic AI look)
+8. Tests Stage 1
+9. Commits and moves to Stage 2
+10. ... continues until complete
+11. Generates user guide
+12. Pushes to GitHub and goes live
 ```
 
 ## Documentation
 
 - [SKILL.md](./SKILL.md) - Full skill specification
+- [subagents/](./subagents/) - Specialized agent definitions
+  - [product-research-agent.md](./subagents/product-research-agent.md)
+  - [cto-advisor-agent.md](./subagents/cto-advisor-agent.md)
+  - [frontend-design-agent.md](./subagents/frontend-design-agent.md)
 - [templates/](./templates/) - Project and documentation templates
 - [references/examples.md](./references/examples.md) - Comprehensive examples
 
+## Sources
+
+- [Anthropic Skills Repository](https://github.com/anthropics/skills)
+- [Anthropic Frontend Design Plugin](https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design)
+- [Claude Agent SDK Demos](https://github.com/anthropics/claude-agent-sdk-demos)
+- [VoltAgent Awesome Subagents](https://github.com/VoltAgent/awesome-claude-code-subagents)
+
 ## Version
 
-1.0.0
+1.1.0

@@ -18,6 +18,10 @@ dependencies:
   skills:
     - autonomous-dev
     - fulltest-skill
+  subagents:
+    - product-research-agent
+    - cto-advisor-agent
+    - frontend-design-agent
 ---
 
 # Chief Product Officer AI Skill
@@ -30,7 +34,9 @@ A comprehensive orchestration skill that transforms product ideas into productio
 
 The CPO AI acts as a virtual Chief Product Officer, combining:
 - **Product Strategy**: Qualifying ideas, defining scope, identifying MVP
-- **Technical Architecture**: Breaking down into implementable stages
+- **Market Research**: Analyzing competitors, design patterns, and best practices
+- **Technical Architecture**: Expert tech stack and deployment recommendations
+- **World-Class Design**: Production-grade UI avoiding generic AI aesthetics
 - **Project Management**: Sequential execution with quality gates
 - **Quality Assurance**: Testing each stage before progression
 - **Documentation**: Creating user guides and deployment docs
@@ -62,6 +68,90 @@ The CPO AI acts as a virtual Chief Product Officer, combining:
 │  └──────────────────┘       └──────────────────┘                             │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Specialized Subagents
+
+The CPO AI orchestrates three specialized subagents for best-in-class results:
+
+### 1. Product Research Agent
+**Purpose:** Market intelligence, competitor analysis, and design inspiration
+**When Used:** Phase 1 (Discovery) and Phase 2 (Planning)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PRODUCT RESEARCH AGENT                                      │
+├─────────────────────────────────────────────────────────────┤
+│  • Competitor analysis & feature benchmarking               │
+│  • Design pattern research (UI/UX best practices)           │
+│  • Market trends and opportunities                          │
+│  • Visual references with sources                           │
+│  • Technology landscape analysis                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Invocation:**
+```xml
+<Task subagent_type="product-research-agent" prompt="
+Research [topic] for [product].
+Focus on: [specific areas]
+Deliverables: [expected outputs]
+"/>
+```
+
+### 2. CTO Advisor Agent
+**Purpose:** Tech stack selection, architecture design, deployment strategy
+**When Used:** Phase 2 (Planning) and Phase 3 (Stage 1 - Foundation)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CTO ADVISOR AGENT                                           │
+├─────────────────────────────────────────────────────────────┤
+│  • Tech stack recommendation with trade-off analysis        │
+│  • Architecture design (scalability, security)              │
+│  • Deployment strategy & CI/CD pipeline                     │
+│  • Infrastructure planning & cost estimation                │
+│  • Architecture Decision Records (ADRs)                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Invocation:**
+```xml
+<Task subagent_type="cto-advisor-agent" prompt="
+Recommend tech stack for [product].
+Requirements: [scale, constraints, team]
+Deliverables: [stack recommendation, deployment guide]
+"/>
+```
+
+### 3. Frontend Design Agent
+**Purpose:** Distinctive, production-grade UI that avoids generic AI aesthetics
+**When Used:** Phase 3 (UI-related stages)
+
+*Based on [Anthropic's Frontend Design Skill](https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design)*
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  FRONTEND DESIGN AGENT                                       │
+├─────────────────────────────────────────────────────────────┤
+│  • Bold aesthetic direction (not cookie-cutter)             │
+│  • Distinctive typography & color palettes                  │
+│  • High-impact animations & interactions                    │
+│  • Production-ready, responsive code                        │
+│  • Dark mode & accessibility support                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Invocation:**
+```xml
+<Task subagent_type="frontend-design-agent" prompt="
+Create [component/page] for [product].
+Aesthetic direction: [style]
+Design references: [from research]
+Tech stack: [framework, styling]
+"/>
 ```
 
 ---
@@ -205,10 +295,54 @@ After receiving answers, create the product definition:
 - **Assumption**: [what we're assuming is true]
 ```
 
-### Step 1.4: Get Product Definition Approval
+### Step 1.4: Research Phase (Product Research Agent)
+
+Before finalizing the product definition, invoke the research agent:
+
+```xml
+<Task subagent_type="product-research-agent" prompt="
+## Product Research Request
+
+**Product Idea:** [Product name and description]
+**Target Market:** [From Q1]
+**Core Problem:** [From Q2]
+
+### Research Objectives
+
+1. **Competitor Analysis**
+   - Identify top 5 competitors in this space
+   - Analyze their features, pricing, and positioning
+   - Find gaps and opportunities
+
+2. **Design Inspiration**
+   - Find best-in-class UI/UX examples for this product type
+   - Collect 5-10 visual references with sources
+   - Identify design patterns that work well
+
+3. **Market Validation**
+   - Assess market size and trends
+   - Identify target user expectations
+   - Note any industry-specific requirements
+
+### Deliverables
+- competitor-analysis.md
+- design-references.md
+- market-insights.md
+"/>
+```
+
+**Incorporate Research Findings:**
+- Add competitor insights to product definition
+- Include design references for planning phase
+- Adjust scope based on market expectations
+
+### Step 1.5: Get Product Definition Approval
 
 ```
-I've synthesized your product definition above.
+I've synthesized your product definition above, informed by:
+- Competitor analysis: [key findings]
+- Design research: [reference products]
+- Market insights: [opportunities identified]
 
 Please review and reply with:
 - "approved" - Proceed to strategic planning
@@ -221,6 +355,61 @@ Please review and reply with:
 ## Phase 2: Strategic Planning
 
 **Goal:** Create a comprehensive, staged implementation plan.
+
+### Step 2.0: Tech Stack & Architecture (CTO Advisor Agent)
+
+Before epic decomposition, get CTO-level technical guidance:
+
+```xml
+<Task subagent_type="cto-advisor-agent" prompt="
+## Tech Stack Recommendation Request
+
+**Product:** [Product name]
+**Scope:** [MVP/Feature-complete/Enterprise]
+**Target Scale:** [Expected users, growth trajectory]
+
+### Product Requirements
+- [Key features from product definition]
+- [Data requirements]
+- [Real-time needs]
+- [Integration requirements]
+
+### Constraints
+- Team size: [N developers]
+- Timeline: [Target launch]
+- Budget: [If relevant]
+- Required technologies: [If any]
+
+### Deliverables Required
+
+1. **Tech Stack Recommendation**
+   - Frontend framework with rationale
+   - Backend/API approach
+   - Database selection
+   - Authentication solution
+   - Hosting platform
+
+2. **Architecture Overview**
+   - High-level system design
+   - Key architectural decisions (ADRs)
+   - Scalability considerations
+
+3. **Deployment Strategy**
+   - Environment structure (dev/staging/prod)
+   - CI/CD pipeline configuration
+   - Infrastructure as Code templates
+
+4. **Cost Estimation**
+   - First year infrastructure costs
+   - Scaling cost projections
+"/>
+```
+
+**Output Files Generated:**
+- `tech-stack-recommendation.md`
+- `architecture-overview.md`
+- `deployment-guide.md`
+- `adr/` (Architecture Decision Records)
 
 ### Step 2.1: Epic Decomposition
 
@@ -448,7 +637,45 @@ Find the next stage: first with `status: "pending"` ordered by dependencies.
 Delegating to autonomous-dev for implementation...
 ```
 
-### Step 3.2: Delegate to Autonomous Dev
+### Step 3.2: Delegate Implementation
+
+**For UI/Frontend Stages** - Use Frontend Design Agent first:
+
+```xml
+<Task subagent_type="frontend-design-agent" prompt="
+## Frontend Design: Stage [N] - [Name]
+
+**Product:** [Product name]
+**Stage Objective:** [What this stage delivers]
+
+### Design Context
+- **Aesthetic Direction:** [From Phase 2 design decisions]
+- **Design References:** [From research agent output]
+- **Tech Stack:** [Frontend framework, styling approach]
+
+### Components/Pages to Build
+1. [Component/Page 1] - [Purpose]
+2. [Component/Page 2] - [Purpose]
+
+### Design Requirements
+- Dark mode support: [Yes/No]
+- Mobile responsive: [Yes/No]
+- Accessibility: WCAG 2.1 AA
+
+### Avoid
+- Generic AI aesthetics
+- Cookie-cutter layouts
+- Overused color schemes (purple gradients)
+
+Create production-ready code with distinctive design choices.
+"/>
+```
+
+**For Backend/API Stages** - Proceed directly to autonomous-dev.
+
+**For Full-Stack Stages** - Run frontend-design-agent first, then autonomous-dev for integration.
+
+### Step 3.3: Delegate to Autonomous Dev
 
 Create stage-specific `prd.json` and invoke autonomous-dev:
 
@@ -1058,7 +1285,34 @@ Options:
 
 ---
 
-## Integration with Other Skills
+## Integration with Other Skills & Agents
+
+### Specialized Subagents (New)
+
+| Agent | Phase | Purpose |
+|-------|-------|---------|
+| **Product Research Agent** | 1, 2 | Competitor analysis, design references, market insights |
+| **CTO Advisor Agent** | 2, 3.1 | Tech stack, architecture, deployment strategy |
+| **Frontend Design Agent** | 3 (UI stages) | Distinctive, production-grade interfaces |
+
+### Product Research Agent
+- Invoked during Discovery to validate product idea
+- Provides design references for planning
+- Sources: Competitor products, Dribbble, Behance, case studies
+- Output: `competitor-analysis.md`, `design-references.md`
+
+### CTO Advisor Agent
+- Invoked at start of Planning phase
+- Recommends complete tech stack with rationale
+- Creates deployment guide and CI/CD configuration
+- Output: `tech-stack-recommendation.md`, `deployment-guide.md`, `adr/`
+
+### Frontend Design Agent
+*Based on [Anthropic's Frontend Design Plugin](https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design)*
+- Invoked for UI-focused stages
+- Creates distinctive designs avoiding AI clichés
+- Bold aesthetic choices, intentional typography
+- Output: Production-ready component code
 
 ### Autonomous Dev
 - Receives stage-scoped `prd.json`
