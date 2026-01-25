@@ -2,6 +2,26 @@
 
 **Chief Product Officer AI** - Transform product ideas into production-ready applications.
 
+## Quick Start: `/cpo-go`
+
+```bash
+/cpo-go <project-name> <description>
+```
+
+### Examples
+
+```bash
+/cpo-go game create an interactive tic-tac-toe game
+/cpo-go taskflow build a task management app for small teams
+/cpo-go artmarket create a marketplace where artists can sell digital art
+```
+
+### Fast Mode
+
+Reply `"go"` to use defaults (MVP, Web app, Speed priority) and start immediately.
+
+---
+
 ## Overview
 
 The CPO AI Skill orchestrates the entire product development lifecycle:
@@ -12,9 +32,9 @@ The CPO AI Skill orchestrates the entire product development lifecycle:
 4. **Validation** - Full project integration testing
 5. **Delivery** - Documentation and go-live
 
-## Quick Start
+## Alternative Triggers
 
-Activate the skill by saying:
+You can also activate with:
 - "cpo mode"
 - "build this product"
 - "chief product officer"
@@ -57,21 +77,23 @@ Works with:
 ## Example
 
 ```
-User: "Build a task management app for small teams"
+User: /cpo-go taskflow build a task management app for small teams
+
+CPO AI: Quick Discovery for "taskflow"...
+User: go
 
 CPO AI:
-1. Asks discovery questions about users, scope, tech stack
-2. [Research Agent] Analyzes Asana, Linear, Notion for best practices
-3. [Research Agent] Collects design references and UI patterns
-4. [CTO Agent] Recommends Next.js + Supabase stack with deployment guide
-5. Creates strategic plan with 5 epics, 12 stages
-6. Implements Stage 1: Project Setup
-7. [Frontend Agent] Creates distinctive dashboard UI (not generic AI look)
-8. Tests Stage 1
-9. Commits and moves to Stage 2
-10. ... continues until complete
-11. Generates user guide
-12. Pushes to GitHub and goes live
+1. [Research Agent] Analyzes Asana, Linear, Notion for best practices
+2. [Research Agent] Collects design references and UI patterns
+3. [CTO Agent] Recommends Next.js + Supabase stack with deployment guide
+4. Creates strategic plan with 5 epics, 12 stages
+5. Implements Stage 1: Project Setup
+6. [Frontend Agent] Creates distinctive dashboard UI (not generic AI look)
+7. Tests Stage 1
+8. Commits and moves to Stage 2
+9. ... continues until complete
+10. Generates user guide
+11. Pushes to GitHub and goes live
 ```
 
 ## Documentation

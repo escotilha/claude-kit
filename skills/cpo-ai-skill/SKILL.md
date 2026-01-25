@@ -8,6 +8,7 @@ tools: Task
 model: opus
 color: "#6366f1"
 triggers:
+  - "/cpo-go"
   - "cpo mode"
   - "build this product"
   - "chief product officer"
@@ -27,6 +28,97 @@ dependencies:
 # Chief Product Officer AI Skill
 
 A comprehensive orchestration skill that transforms product ideas into production-ready applications through structured discovery, strategic planning, iterative implementation, and rigorous testing.
+
+---
+
+## Quick Start: `/cpo-go` Command
+
+### Command Syntax
+
+```
+/cpo-go <project-name> <description>
+```
+
+### Examples
+
+```bash
+# Create a game
+/cpo-go game create an interactive tic-tac-toe game
+
+# Create a SaaS product
+/cpo-go taskflow build a task management app for small teams
+
+# Create an e-commerce site
+/cpo-go artmarket create a marketplace where artists can sell digital art
+
+# Create a dashboard
+/cpo-go metrics build a team productivity dashboard with real-time updates
+```
+
+### Command Parsing
+
+When `/cpo-go` is detected, parse the input:
+
+```
+/cpo-go <name> <description...>
+        │       │
+        │       └── Everything after the name = product description
+        └── First word after /cpo-go = project name (lowercase, no spaces)
+```
+
+**Parsing Logic:**
+```javascript
+const input = "/cpo-go game create an interactive tic-tac-toe game";
+const parts = input.replace("/cpo-go ", "").split(" ");
+const projectName = parts[0];                    // "game"
+const description = parts.slice(1).join(" ");   // "create an interactive tic-tac-toe game"
+```
+
+### On Command Detection
+
+When `/cpo-go` is invoked:
+
+1. **Parse** the project name and description
+2. **Create** project directory: `./{project-name}/`
+3. **Initialize** `master-project.json` with parsed name
+4. **Skip** to streamlined discovery (fewer questions since context is provided)
+5. **Begin** Phase 1 with the description as the product idea
+
+### Streamlined Discovery
+
+When invoked via `/cpo-go`, use a shorter discovery flow:
+
+```markdown
+## Quick Discovery: {project-name}
+
+I'll build "{description}" for you. A few quick questions:
+
+**1. Scope** (pick one)
+   A. MVP - Core functionality, ship fast
+   B. Full - All features, production quality
+   C. Enterprise - Full + security, scalability
+
+**2. Tech Preference** (or skip for my recommendation)
+   A. Web app (Next.js)
+   B. Mobile (React Native)
+   C. API only
+   D. Recommend for me
+
+**3. Priority** (pick one)
+   A. Speed to launch
+   B. Design quality
+   C. Scalability
+   D. Balanced
+
+Reply like: "1A, 2D, 3A" or just "go" for defaults (MVP, Web, Speed)
+```
+
+**Default Mode ("go"):**
+- Scope: MVP
+- Tech: Next.js + Supabase (or appropriate for project type)
+- Priority: Speed to launch
+
+---
 
 ## Core Philosophy
 
