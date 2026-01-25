@@ -1,0 +1,178 @@
+{
+  "$schema": "./master-project.schema.json",
+  "project": {
+    "name": "{PROJECT_NAME}",
+    "description": "{PROJECT_DESCRIPTION}",
+    "version": "0.1.0",
+    "createdAt": "{CREATED_AT}",
+    "status": "planning",
+    "cpoSkillVersion": "1.0.0"
+  },
+  "productDefinition": {
+    "vision": "{VISION_STATEMENT}",
+    "targetUser": "{TARGET_USER_PERSONA}",
+    "problemStatement": "{CORE_PROBLEM}",
+    "scope": "{SCOPE_LEVEL}",
+    "techStack": {
+      "frontend": "{FRONTEND_FRAMEWORK}",
+      "backend": "{BACKEND_FRAMEWORK}",
+      "database": "{DATABASE}",
+      "hosting": "{HOSTING_PLATFORM}",
+      "additional": []
+    },
+    "successMetrics": [],
+    "nonGoals": [],
+    "risks": [],
+    "assumptions": []
+  },
+  "epics": [
+    {
+      "id": "E1",
+      "name": "Foundation",
+      "description": "Project setup, core infrastructure, and initial configuration",
+      "priority": 0,
+      "status": "pending",
+      "dependsOn": [],
+      "stages": ["S1", "S2"]
+    },
+    {
+      "id": "E2",
+      "name": "Core Features",
+      "description": "Primary product functionality",
+      "priority": 1,
+      "status": "pending",
+      "dependsOn": ["E1"],
+      "stages": []
+    },
+    {
+      "id": "E3",
+      "name": "User Experience",
+      "description": "UI/UX enhancements and polish",
+      "priority": 2,
+      "status": "pending",
+      "dependsOn": ["E2"],
+      "stages": []
+    },
+    {
+      "id": "E4",
+      "name": "Integration & Extensions",
+      "description": "Third-party integrations and additional features",
+      "priority": 3,
+      "status": "pending",
+      "dependsOn": ["E2"],
+      "stages": []
+    },
+    {
+      "id": "E5",
+      "name": "Production Readiness",
+      "description": "Testing, documentation, and deployment preparation",
+      "priority": 4,
+      "status": "pending",
+      "dependsOn": ["E3", "E4"],
+      "stages": []
+    }
+  ],
+  "stages": [
+    {
+      "id": "S1",
+      "epicId": "E1",
+      "name": "Project Initialization",
+      "description": "Create project structure, install dependencies, configure tooling",
+      "status": "pending",
+      "dependsOn": [],
+      "stories": [
+        {
+          "id": "S1-US-001",
+          "title": "Initialize project with chosen framework",
+          "description": "As a developer, I want a properly initialized project so that I can start building features",
+          "acceptanceCriteria": [
+            "Project created with correct framework",
+            "Package.json/dependencies configured",
+            "Basic folder structure exists",
+            "Dev server starts without errors"
+          ],
+          "priority": 1,
+          "dependsOn": [],
+          "passes": false,
+          "attempts": 0,
+          "notes": ""
+        },
+        {
+          "id": "S1-US-002",
+          "title": "Configure development tooling",
+          "description": "As a developer, I want linting, formatting, and type checking configured so that code quality is maintained",
+          "acceptanceCriteria": [
+            "ESLint/linter configured",
+            "Prettier/formatter configured",
+            "TypeScript/type checking configured",
+            "All tools run without errors on clean project"
+          ],
+          "priority": 2,
+          "dependsOn": ["S1-US-001"],
+          "passes": false,
+          "attempts": 0,
+          "notes": ""
+        }
+      ],
+      "startedAt": null,
+      "completedAt": null,
+      "testedAt": null,
+      "branch": null,
+      "commits": []
+    },
+    {
+      "id": "S2",
+      "epicId": "E1",
+      "name": "Database & Authentication Setup",
+      "description": "Configure database connection and basic authentication",
+      "status": "pending",
+      "dependsOn": ["S1"],
+      "stories": [],
+      "startedAt": null,
+      "completedAt": null,
+      "testedAt": null,
+      "branch": null,
+      "commits": []
+    }
+  ],
+  "currentStage": null,
+  "verification": {
+    "typecheck": "npm run typecheck",
+    "test": "npm run test",
+    "lint": "npm run lint",
+    "build": "npm run build",
+    "e2e": "npm run test:e2e"
+  },
+  "repository": {
+    "name": "{PROJECT_NAME}",
+    "url": "https://github.com/{GITHUB_USER}/{PROJECT_NAME}",
+    "visibility": "public",
+    "branch": "main",
+    "lastCommit": null,
+    "stageBranches": [],
+    "createdAt": "{CREATED_AT}",
+    "initialized": false
+  },
+  "progress": {
+    "phase": "planning",
+    "completedEpics": 0,
+    "completedStages": 0,
+    "completedStories": 0,
+    "totalEpics": 5,
+    "totalStages": 2,
+    "totalStories": 2,
+    "lastUpdated": null
+  },
+  "documentation": {
+    "userGuide": null,
+    "technicalDocs": null,
+    "apiDocs": null,
+    "changelog": null
+  },
+  "metadata": {
+    "discoveryAnswers": {},
+    "planApprovedAt": null,
+    "planApprovedBy": "user",
+    "notes": []
+  }
+}
