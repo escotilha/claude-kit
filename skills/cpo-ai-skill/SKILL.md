@@ -80,9 +80,70 @@ When `/cpo-go` is invoked:
 
 1. **Parse** the project name and description
 2. **Create** project directory: `./{project-name}/`
-3. **Initialize** `master-project.json` with parsed name
-4. **Skip** to streamlined discovery (fewer questions since context is provided)
-5. **Begin** Phase 1 with the description as the product idea
+3. **Initialize** Git and GitHub repository
+4. **Initialize** `master-project.json` with parsed name
+5. **Skip** to streamlined discovery (fewer questions since context is provided)
+6. **Begin** Phase 1 with the description as the product idea
+
+### GitHub Repository Creation
+
+Automatically create a GitHub repo for the project:
+
+```bash
+# Create project directory
+mkdir -p {project-name}
+cd {project-name}
+
+# Initialize git
+git init
+
+# Create initial files
+echo "# {Project Name}\n\n{description}\n\n*Built with CPO AI Skill*" > README.md
+echo "node_modules/\n.env\n.env.local\ndist/\n.next/\n*.log" > .gitignore
+
+# Initial commit
+git add -A
+git commit -m "chore: initialize {project-name} project"
+
+# Create GitHub repository (requires gh CLI)
+gh repo create {project-name} --public --source=. --remote=origin --push
+
+# Or for private repo:
+# gh repo create {project-name} --private --source=. --remote=origin --push
+```
+
+**Repository Options:**
+
+```markdown
+## Quick Discovery: {project-name}
+
+I'll build "{description}" for you.
+
+**0. Repository** (pick one)
+   A. Public GitHub repo
+   B. Private GitHub repo
+   C. Skip (I'll set up repo myself)
+
+**1. Scope** (pick one)
+   ...
+```
+
+**GitHub CLI Check:**
+
+```bash
+# Verify gh is installed and authenticated
+gh auth status
+```
+
+If `gh` is not available:
+```
+GitHub CLI not found. To auto-create repos, install it:
+  brew install gh && gh auth login
+
+Continuing without GitHub integration...
+You can manually create the repo later and run:
+  git remote add origin https://github.com/{user}/{project-name}.git
+```
 
 ### Streamlined Discovery
 
@@ -92,6 +153,11 @@ When invoked via `/cpo-go`, use a shorter discovery flow:
 ## Quick Discovery: {project-name}
 
 I'll build "{description}" for you. A few quick questions:
+
+**0. GitHub Repo**
+   A. Create public repo
+   B. Create private repo
+   C. Skip (I'll handle it)
 
 **1. Scope** (pick one)
    A. MVP - Core functionality, ship fast
@@ -110,10 +176,11 @@ I'll build "{description}" for you. A few quick questions:
    C. Scalability
    D. Balanced
 
-Reply like: "1A, 2D, 3A" or just "go" for defaults (MVP, Web, Speed)
+Reply like: "0A, 1A, 2D, 3A" or just "go" for defaults (Public repo, MVP, Web, Speed)
 ```
 
 **Default Mode ("go"):**
+- GitHub: Public repository
 - Scope: MVP
 - Tech: Next.js + Supabase (or appropriate for project type)
 - Priority: Speed to launch

@@ -18,7 +18,11 @@
 
 ### Fast Mode
 
-Reply `"go"` to use defaults (MVP, Web app, Speed priority) and start immediately.
+Reply `"go"` to use defaults and start immediately:
+- Creates **public GitHub repo** with project name
+- **MVP** scope
+- **Web app** (Next.js)
+- **Speed** priority
 
 ---
 

@@ -144,10 +144,14 @@
     "e2e": "npm run test:e2e"
   },
   "repository": {
-    "url": null,
+    "name": "{PROJECT_NAME}",
+    "url": "https://github.com/{GITHUB_USER}/{PROJECT_NAME}",
+    "visibility": "public",
     "branch": "main",
     "lastCommit": null,
-    "stageBranches": []
+    "stageBranches": [],
+    "createdAt": "{CREATED_AT}",
+    "initialized": false
   },
   "progress": {
     "phase": "planning",
