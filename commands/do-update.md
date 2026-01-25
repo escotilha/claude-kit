@@ -1,7 +1,7 @@
 ---
 description: Smart diff-based deployment to DigitalOcean
-argument-hint: [--dry-run|--force|--services api,admin|status|logs|info]
-allowed-tools: Bash, Read
+argument-hint: [--dry-run|--force|--services api,admin|status|logs|info|diagnose|rollback]
+allowed-tools: Bash, Read, Task
 ---
 
 # DigitalOcean Smart Update
@@ -20,6 +20,9 @@ Smart, diff-based deployment to DigitalOcean App Platform. Detects what changed 
 - `status` - Check current deployment status
 - `logs [service]` - View application logs (api, admin, client-portal)
 - `info` - Show app info and URLs
+- `diagnose` - **[Uses devops-agent]** Diagnose deployment issues and failures
+- `rollback` - **[Uses devops-agent]** Roll back to a previous deployment
+- `optimize` - **[Uses devops-agent]** Analyze and suggest deployment optimizations
 
 ### Options
 
@@ -39,6 +42,9 @@ Smart, diff-based deployment to DigitalOcean App Platform. Detects what changed 
 /do-update status             # Check deployment status
 /do-update logs api           # View API logs
 /do-update info               # Show app URLs
+/do-update diagnose           # Diagnose deployment failures (uses devops-agent)
+/do-update rollback           # Roll back to previous deployment (uses devops-agent)
+/do-update optimize           # Get deployment optimization suggestions (uses devops-agent)
 ```
 
 ## How It Works
@@ -58,6 +64,51 @@ Smart, diff-based deployment to DigitalOcean App Platform. Detects what changed 
 
 **Important**: No local Docker builds are required. DigitalOcean builds directly from GitHub.
 
+## DevOps Agent Integration
+
+This skill uses the **devops-agent** for complex infrastructure tasks. The devops-agent is automatically spawned for:
+
+### When devops-agent is used:
+
+| Command | Description | When Agent is Spawned |
+|---------|-------------|----------------------|
+| `diagnose` | Analyze deployment failures | Always |
+| `rollback` | Roll back to previous deployment | Always |
+| `optimize` | Suggest deployment optimizations | Always |
+| Regular deploy | Normal deployment | Only if deployment fails |
+
+### Automatic Failure Handling
+
+When a deployment fails, the assistant will:
+1. Automatically spawn the devops-agent to diagnose the issue
+2. The devops-agent will analyze:
+   - Recent deployment logs
+   - Build logs for failed services
+   - App spec configuration
+   - Recent git changes that may have caused the issue
+3. Provide a diagnosis with recommended fixes
+4. Offer to attempt automated remediation if safe
+
+### Example: diagnose command
+
+When you run `/do-update diagnose`, the devops-agent will:
+1. Fetch recent deployment history
+2. Check for ERROR or CANCELED deployments
+3. Analyze build and runtime logs
+4. Review the app.yaml configuration
+5. Check for common issues (resource limits, env vars, dependencies)
+6. Provide a detailed report with recommendations
+
+### Example: rollback command
+
+When you run `/do-update rollback`, the devops-agent will:
+1. List recent successful deployments with their tags
+2. Show what changed between current and target deployment
+3. Confirm the rollback target with the user
+4. Execute the rollback safely
+5. Verify the rollback was successful
+6. Send Slack notification about the rollback
+
 ## Process
 
 When invoked, the assistant will:
@@ -74,6 +125,57 @@ When invoked, the assistant will:
 5. **Confirm services** - Show which services will be deployed
 6. **Execute deployment** via the do-update.sh script
 7. **Report results** - Show deployment status, URLs, and any errors
+8. **On failure** - Automatically spawn devops-agent to diagnose and suggest fixes
+
+### Handling Special Commands
+
+For `diagnose`, `rollback`, or `optimize` commands:
+
+```
+Use the Task tool with subagent_type="devops-agent" to handle these commands.
+```
+
+**diagnose** prompt:
+```
+Diagnose deployment issues for the Contably DigitalOcean App Platform deployment.
+
+1. Check recent deployment status: doctl apps list-deployments <app-id>
+2. Get deployment logs for any failed deployments
+3. Review the app.yaml configuration at .do/app.yaml
+4. Check for common issues:
+   - Build failures (missing dependencies, Dockerfile issues)
+   - Runtime errors (env vars, database connections)
+   - Resource limits (memory, CPU)
+   - Network/ingress issues
+5. Provide a detailed diagnosis with specific recommendations
+```
+
+**rollback** prompt:
+```
+Roll back the Contably deployment to a previous version.
+
+1. List deployment tags: git tag -l "deploy/do/*" --sort=-creatordate | head -10
+2. Show the user the available rollback targets with their commit messages
+3. Ask which deployment to roll back to
+4. Execute: git checkout <tag> -- . && commit && push
+5. Trigger new deployment
+6. Verify rollback success
+7. Send Slack notification
+```
+
+**optimize** prompt:
+```
+Analyze the Contably DigitalOcean deployment for optimization opportunities.
+
+Review:
+1. .do/app.yaml - resource sizing, scaling, caching
+2. Dockerfile configurations - multi-stage builds, layer caching
+3. Build times and patterns
+4. Cost analysis based on current resource allocation
+5. Security best practices
+
+Provide recommendations with estimated impact.
+```
 
 ### Pre-flight Check Details
 
