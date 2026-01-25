@@ -731,7 +731,18 @@ Delegating to autonomous-dev for implementation...
 
 ### Step 3.2: Delegate Implementation
 
-**For UI/Frontend Stages** - Use Frontend Design Agent first:
+**For UI/Frontend Stages** - Use Frontend Design Agent with Research Input:
+
+**CRITICAL:** Always pass research findings to the frontend agent. Read research files first:
+
+```bash
+# Load research from Phase 1
+cat design-references.md
+cat competitor-analysis.md
+cat market-insights.md
+```
+
+Then invoke with research context:
 
 ```xml
 <Task subagent_type="frontend-design-agent" prompt="
@@ -740,32 +751,57 @@ Delegating to autonomous-dev for implementation...
 **Product:** [Product name]
 **Stage Objective:** [What this stage delivers]
 
-### Design Context
-- **Aesthetic Direction:** [From Phase 2 design decisions]
-- **Design References:** [From research agent output]
-- **Tech Stack:** [Frontend framework, styling approach]
+### Research Input (from Product Research Agent)
+
+**Competitor Analysis Summary:**
+[Paste key findings from competitor-analysis.md]
+- [Competitor 1]: [What they do well/poorly]
+- [Competitor 2]: [What they do well/poorly]
+- **Opportunity:** [Gap to exploit]
+
+**Design References Collected:**
+[Paste from design-references.md]
+1. **[Reference 1]** ([URL]) - [Why it's relevant]
+2. **[Reference 2]** ([URL]) - [Why it's relevant]
+3. **[Reference 3]** ([URL]) - [Why it's relevant]
+
+**Market Insights:**
+[Paste from market-insights.md]
+- User preference: [Finding]
+- Industry norm: [Finding]
+- Pain point to solve: [Finding]
+
+### Design Direction (derived from research)
+
+- **Aesthetic:** [Direction based on references]
+- **Differentiator:** [What makes us unique vs competitors]
+- **Typography:** [Fonts inspired by research]
+- **Colors:** [Palette differentiated from competitors]
+
+### Tech Stack
+[Frontend framework, styling approach from CTO agent]
 
 ### Components/Pages to Build
 1. [Component/Page 1] - [Purpose]
 2. [Component/Page 2] - [Purpose]
 
-### Design Requirements
-- Dark mode support: [Yes/No]
+### Requirements
+- Dark mode support: [Yes/No - based on research]
 - Mobile responsive: [Yes/No]
 - Accessibility: WCAG 2.1 AA
 
-### Avoid
+### Avoid (from competitor analysis)
+- [Pattern competitor overuses]
 - Generic AI aesthetics
-- Cookie-cutter layouts
-- Overused color schemes (purple gradients)
+- [Specific anti-pattern from research]
 
-Create production-ready code with distinctive design choices.
+Create production-ready code. Use research for inspiration but make it distinctive.
 "/>
 ```
 
 **For Backend/API Stages** - Proceed directly to autonomous-dev.
 
-**For Full-Stack Stages** - Run frontend-design-agent first, then autonomous-dev for integration.
+**For Full-Stack Stages** - Run frontend-design-agent first (with research), then autonomous-dev for integration.
 
 ### Step 3.3: Delegate to Autonomous Dev
 

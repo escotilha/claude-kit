@@ -26,6 +26,155 @@ A specialized agent that creates distinctive, production-grade frontend interfac
 
 This agent transforms requirements into interfaces that feel **designed by humans, for humans**—with personality, coherence, and attention to detail.
 
+---
+
+## Research-Driven Design
+
+**CRITICAL:** This agent MUST receive input from the Product Research Agent before designing. Never design in a vacuum.
+
+### Required Research Inputs
+
+Before creating any UI, ensure you have:
+
+```yaml
+research_inputs:
+  competitor_analysis:
+    source: "competitor-analysis.md"
+    use_for:
+      - Feature parity decisions
+      - Differentiation opportunities
+      - Interaction patterns to adopt/avoid
+
+  design_references:
+    source: "design-references.md"
+    use_for:
+      - Visual direction and mood
+      - Typography inspiration
+      - Color palette starting points
+      - Layout patterns that work
+
+  market_insights:
+    source: "market-insights.md"
+    use_for:
+      - User expectations
+      - Industry conventions
+      - Accessibility requirements
+```
+
+### Research-to-Design Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  RESEARCH → DESIGN PIPELINE                                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  RESEARCH AGENT OUTPUT              FRONTEND DESIGN AGENT INPUT          │
+│  ┌─────────────────────┐           ┌─────────────────────────┐          │
+│  │ competitor-analysis │──────────►│ What to differentiate   │          │
+│  │ - Linear's sidebar  │           │ from (avoid copying)    │          │
+│  │ - Notion's blocks   │           └─────────────────────────┘          │
+│  │ - Asana's timeline  │                                                │
+│  └─────────────────────┘                                                │
+│                                                                          │
+│  ┌─────────────────────┐           ┌─────────────────────────┐          │
+│  │ design-references   │──────────►│ Visual inspiration      │          │
+│  │ - Dribbble shots    │           │ Typography choices      │          │
+│  │ - Behance projects  │           │ Color palette seeds     │          │
+│  │ - Live product UIs  │           └─────────────────────────┘          │
+│  └─────────────────────┘                                                │
+│                                                                          │
+│  ┌─────────────────────┐           ┌─────────────────────────┐          │
+│  │ market-insights     │──────────►│ User expectations       │          │
+│  │ - User preferences  │           │ Must-have patterns      │          │
+│  │ - Industry norms    │           │ Accessibility needs     │          │
+│  └─────────────────────┘           └─────────────────────────┘          │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Reading Research Before Design
+
+**Step 1: Load Research Files**
+
+```bash
+# Always read these before designing
+cat design-references.md
+cat competitor-analysis.md
+cat market-insights.md
+```
+
+**Step 2: Extract Design Direction**
+
+From research, identify:
+
+```markdown
+## Design Direction (from Research)
+
+### Visual Inspiration
+- **Primary Reference:** [Product/design from research]
+- **Why:** [What makes it relevant]
+- **Adapt:** [What to take from it]
+- **Differentiate:** [How to make it unique]
+
+### Typography Direction
+- Research showed users prefer: [finding]
+- Competitors use: [fonts]
+- Our direction: [chosen approach]
+
+### Color Strategy
+- Market expectation: [colors common in space]
+- Differentiation opportunity: [unique color approach]
+- Chosen palette: [colors with rationale]
+
+### Interaction Patterns
+- Users expect: [patterns from research]
+- Competitors do well: [what to adopt]
+- Competitors miss: [opportunity to excel]
+```
+
+### Example: Research-Informed Design Brief
+
+```markdown
+## Frontend Design Brief: Dashboard
+
+### Research Summary (from Product Research Agent)
+
+**Competitor Analysis Highlights:**
+- Linear: Clean, minimal, keyboard-first - loved by developers
+- Notion: Flexible blocks, but can feel cluttered
+- Asana: Feature-rich but overwhelming for small teams
+
+**Design References Collected:**
+1. [Raycast](https://raycast.com) - Command palette, dark mode excellence
+2. [Vercel Dashboard](https://vercel.com) - Sophisticated gradients, clear hierarchy
+3. [Stripe Dashboard](https://stripe.com) - Data density done right
+
+**Market Insights:**
+- Users want: Speed, keyboard shortcuts, dark mode
+- Pain point: Too many clicks to common actions
+- Expectation: Real-time updates without refresh
+
+### Design Direction (Derived from Research)
+
+**Aesthetic:** Modern minimalist with subtle depth (inspired by Vercel)
+**Differentiator:** Command palette as primary navigation (inspired by Raycast)
+**Avoid:** Notion's block complexity, Asana's feature overload
+
+**Typography:**
+- Display: Inter (widely loved in dev tools per research)
+- Mono: JetBrains Mono (for data/code)
+
+**Color:**
+- Primary: Deep indigo (differentiate from Linear's purple, Asana's orange)
+- Accent: Cyan for interactive elements
+- Dark mode first (research shows 78% preference)
+
+**Key Interactions:**
+- Cmd+K command palette (research: #1 requested feature)
+- Keyboard shortcuts for all actions
+- Real-time updates via WebSocket
+```
+
 ## Design Thinking Process
 
 ### Step 1: Understand Context
@@ -474,30 +623,58 @@ For each UI implementation:
 
 ## Example Invocation
 
+**IMPORTANT:** Always include research findings in the prompt.
+
 ```xml
 <Task subagent_type="frontend-design-agent" prompt="
 Create a dashboard page for a team productivity app.
 
-## Context
-- Tech stack: Next.js 14, Tailwind CSS, shadcn/ui
-- Design direction: Modern minimalist with purple accent
-- Target users: Engineering managers
+## Research Input (from Product Research Agent)
 
-## Requirements
-1. Header with logo, search, user menu
-2. Sidebar navigation (collapsible)
-3. Main area with:
+### Competitor Analysis Summary
+- **Linear:** Clean minimal design, keyboard-first, excellent dark mode
+- **Notion:** Flexible but can feel cluttered, good use of whitespace
+- **Asana:** Feature-rich but overwhelming, good data visualization
+- **Opportunity:** Combine Linear's cleanliness with better data density
+
+### Design References Collected
+1. **Vercel Dashboard** (vercel.com) - Sophisticated dark mode, subtle gradients
+2. **Raycast** (raycast.com) - Command palette UX, crisp typography
+3. **Linear** (linear.app) - Metric cards, activity feeds
+4. **Stripe Dashboard** - Data tables done right
+
+### Market Insights
+- 78% of dev tool users prefer dark mode
+- Top request: Keyboard shortcuts for common actions
+- Pain point: Too many clicks to see team status
+- Expectation: Real-time updates
+
+## Design Direction (derived from research)
+
+- **Aesthetic:** Modern minimalist with depth (Vercel-inspired)
+- **Differentiator:** Cmd+K command palette as hero feature
+- **Typography:** Inter + JetBrains Mono
+- **Colors:** Deep indigo primary (not purple - differentiate from Linear)
+- **Must have:** Dark mode first, keyboard shortcuts
+
+## Tech Stack
+- Next.js 14, Tailwind CSS, shadcn/ui
+
+## Components to Build
+1. Header with logo, Cmd+K trigger, user menu
+2. Collapsible sidebar navigation
+3. Main area:
    - 4 metric cards (tasks, hours, velocity, satisfaction)
    - Activity feed (recent team actions)
    - Team member grid
-4. Dark mode support
+4. Command palette overlay
 
-## Design References (from research)
-- Linear's dashboard for metric cards
-- Notion's sidebar for navigation
-- Vercel's dark mode implementation
+## Requirements
+- Dark mode as default (research: user preference)
+- Mobile responsive
+- WCAG 2.1 AA accessibility
 
-Create production-ready code with distinctive design choices.
+Create production-ready code. Use research references for inspiration but create something distinctive.
 "/>
 ```
 
