@@ -115,7 +115,13 @@ Complete structure for the master project file:
       ],
       "startedAt": null,
       "completedAt": null,
-      "testedAt": null
+      "testedAt": null,
+      "feedbackLoop": {
+        "iterations": 0,
+        "status": "pending",
+        "history": [],
+        "approvedAt": null
+      }
     },
     {
       "id": "S2",
@@ -127,7 +133,13 @@ Complete structure for the master project file:
       "stories": [],
       "startedAt": null,
       "completedAt": null,
-      "testedAt": null
+      "testedAt": null,
+      "feedbackLoop": {
+        "iterations": 0,
+        "status": "pending",
+        "history": [],
+        "approvedAt": null
+      }
     }
   ],
   "currentStage": null,

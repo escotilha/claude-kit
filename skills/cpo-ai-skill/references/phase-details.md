@@ -715,7 +715,94 @@ If using fulltest-skill with a web UI, test at the configured URL.
    - [Patterns discovered]
    ```
 
-5. Continue to next stage (Step 3.0)
+5. Enter User Feedback Loop (Step 3.7b)
+
+#### Step 3.7b: User Feedback Loop
+
+After committing the stage, enter the feedback loop to ensure user satisfaction:
+
+**1. Run Full Testing**
+
+Invoke fulltesting-agent to verify the complete app state:
+
+```
+Run /fulltesting-agent on the current application.
+Focus on Stage [N] functionality but include regression tests for previous stages.
+```
+
+**2. Handle Test Results**
+
+- If tests FAIL:
+  - Analyze failures and determine fixes
+  - Invoke autonomous-dev with fix requirements
+  - Commit: `fix(stage-[N]): address test failures`
+  - Loop back to step 1 (re-run fulltesting-agent)
+
+- If tests PASS:
+  - Continue to step 3
+
+**3. Request User Review**
+
+```markdown
+## Stage [N]: [Name] - Ready for Review
+
+The stage has been implemented and all tests pass.
+
+**Please review the app:**
+- [URL or local instructions to view the app]
+- [Key features to test in this stage]
+
+**Your feedback:**
+- Reply "done" to approve and continue to the next stage
+- Reply with feedback to request changes (I'll implement and re-test)
+```
+
+**4. Process User Response**
+
+**If user says "done" (or equivalent: "approved", "looks good", "move on"):**
+
+- Update master-project.json:
+  ```json
+  {
+    "stages": [{
+      "feedbackLoop": {
+        "status": "user_approved",
+        "approvedAt": "[timestamp]"
+      }
+    }]
+  }
+  ```
+- Proceed to Step 3.8 (Stage Completion Check)
+
+**If user provides feedback:**
+
+- Record feedback in master-project.json:
+  ```json
+  {
+    "stages": [{
+      "feedbackLoop": {
+        "iterations": [N+1],
+        "history": [{
+          "iteration": [N],
+          "userFeedback": "[feedback text]",
+          "timestamp": "[ISO timestamp]"
+        }]
+      }
+    }]
+  }
+  ```
+- Invoke autonomous-dev with user feedback:
+  ```
+  Implement the following user feedback for Stage [N]:
+
+  [User's feedback]
+
+  Make the requested changes and ensure existing tests still pass.
+  ```
+- Commit changes: `fix(stage-[N]): incorporate user feedback - [summary]`
+- Loop back to step 1 (run fulltesting-agent again)
+
+**This loop continues until the user approves the stage.**
 
 #### If tests fail:
 
