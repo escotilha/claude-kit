@@ -231,13 +231,88 @@ The CPO AI acts as a virtual Chief Product Officer, combining:
 
 ---
 
+## Model Strategy & Parallel Execution
+
+### Model Selection by Task
+
+| Task Type | Model | Rationale |
+|-----------|-------|-----------|
+| **Strategic Planning** | `opus` | Complex reasoning, architecture decisions |
+| **Epic/Stage Design** | `opus` | Requires holistic product understanding |
+| **Research** | `sonnet` | Web search, content synthesis |
+| **Tech Stack** | `opus` | Critical decisions with trade-offs |
+| **Frontend Design** | `opus` | Creative decisions, design quality |
+| **Code Implementation** | `sonnet` | Standard implementation tasks |
+| **Testing** | `sonnet` | Test execution and analysis |
+| **Documentation** | `haiku` | Straightforward content generation |
+| **Git Operations** | `haiku` | Simple command execution |
+
+### Parallel Execution Strategy
+
+**CRITICAL:** Launch independent agents in parallel whenever possible.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PARALLEL EXECUTION OPPORTUNITIES                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  PHASE 1: Discovery (run in parallel)                                   │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │
+│  │ Competitor      │  │ Design          │  │ Market          │         │
+│  │ Research        │  │ References      │  │ Insights        │         │
+│  │ (sonnet)        │  │ (sonnet)        │  │ (sonnet)        │         │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘         │
+│           └──────────────┬─────┴───────────────────┘                    │
+│                          ▼                                               │
+│                   [Synthesize Results]                                   │
+│                                                                          │
+│  PHASE 2: Planning (sequential - needs research)                        │
+│  ┌─────────────────┐                                                     │
+│  │ CTO Advisor     │ ──► Tech Stack + Architecture                      │
+│  │ (opus)          │                                                     │
+│  └─────────────────┘                                                     │
+│           │                                                              │
+│           ▼                                                              │
+│  ┌─────────────────┐                                                     │
+│  │ Epic Planning   │ ──► Stages + Stories                               │
+│  │ (opus)          │                                                     │
+│  └─────────────────┘                                                     │
+│                                                                          │
+│  PHASE 3: Stage Execution (parallel where possible)                     │
+│  ┌─────────────────┐  ┌─────────────────┐                               │
+│  │ Frontend Design │  │ Backend/API     │  (if independent)             │
+│  │ (opus)          │  │ (sonnet)        │                               │
+│  └────────┬────────┘  └────────┬────────┘                               │
+│           └──────────────┬─────┘                                         │
+│                          ▼                                               │
+│                   [Integration]                                          │
+│                          │                                               │
+│                          ▼                                               │
+│                   ┌─────────────────┐                                    │
+│                   │ Testing         │                                    │
+│                   │ (sonnet)        │                                    │
+│                   └─────────────────┘                                    │
+│                                                                          │
+│  PHASE 5: Documentation (all parallel)                                  │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │
+│  │ User Guide      │  │ Technical Docs  │  │ API Docs        │         │
+│  │ (haiku)         │  │ (haiku)         │  │ (haiku)         │         │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘         │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Specialized Subagents
 
 The CPO AI orchestrates three specialized subagents for best-in-class results:
 
 ### 1. Product Research Agent
 **Purpose:** Market intelligence, competitor analysis, and design inspiration
+**Model:** `sonnet` (efficient for web search and synthesis)
 **When Used:** Phase 1 (Discovery) and Phase 2 (Planning)
+**Parallelization:** Can run 3 research tasks simultaneously
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -262,7 +337,9 @@ Deliverables: [expected outputs]
 
 ### 2. CTO Advisor Agent
 **Purpose:** Tech stack selection, architecture design, deployment strategy
+**Model:** `opus` (critical architectural decisions require deep reasoning)
 **When Used:** Phase 2 (Planning) and Phase 3 (Stage 1 - Foundation)
+**Parallelization:** Sequential (needs research input first)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -287,7 +364,9 @@ Deliverables: [stack recommendation, deployment guide]
 
 ### 3. Frontend Design Agent
 **Purpose:** Distinctive, production-grade UI that avoids generic AI aesthetics
+**Model:** `opus` (design quality is paramount - no compromises)
 **When Used:** Phase 3 (UI-related stages)
+**Parallelization:** Can run parallel to backend if interfaces are defined
 
 *Based on [Anthropic's Frontend Design Skill](https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design)*
 
@@ -454,45 +533,69 @@ After receiving answers, create the product definition:
 - **Assumption**: [what we're assuming is true]
 ```
 
-### Step 1.4: Research Phase (Product Research Agent)
+### Step 1.4: Research Phase (PARALLEL - 3 Agents)
 
-Before finalizing the product definition, invoke the research agent:
+**IMPORTANT:** Launch all three research tasks in parallel for speed.
 
 ```xml
-<Task subagent_type="product-research-agent" prompt="
-## Product Research Request
+<!-- PARALLEL EXECUTION: Launch all 3 in a single message -->
 
-**Product Idea:** [Product name and description]
+<Task subagent_type="product-research-agent" model="sonnet" prompt="
+## Competitor Analysis Research
+
+**Product:** [Product name and description]
 **Target Market:** [From Q1]
-**Core Problem:** [From Q2]
 
-### Research Objectives
-
-1. **Competitor Analysis**
-   - Identify top 5 competitors in this space
-   - Analyze their features, pricing, and positioning
-   - Find gaps and opportunities
-
-2. **Design Inspiration**
-   - Find best-in-class UI/UX examples for this product type
-   - Collect 5-10 visual references with sources
-   - Identify design patterns that work well
-
-3. **Market Validation**
-   - Assess market size and trends
-   - Identify target user expectations
-   - Note any industry-specific requirements
+### Objective
+Analyze top 5 competitors in this space.
 
 ### Deliverables
-- competitor-analysis.md
-- design-references.md
-- market-insights.md
+Create `competitor-analysis.md` with:
+- Competitor feature matrix
+- Pricing and positioning
+- Strengths and weaknesses
+- Gaps and opportunities for differentiation
+"/>
+
+<Task subagent_type="product-research-agent" model="sonnet" prompt="
+## Design Reference Research
+
+**Product:** [Product name and description]
+**Product Type:** [Web app/Mobile/Dashboard/etc.]
+
+### Objective
+Find best-in-class UI/UX examples for this product type.
+
+### Deliverables
+Create `design-references.md` with:
+- 5-10 visual references with URLs
+- Why each is relevant
+- Specific patterns to adopt
+- Typography and color observations
+"/>
+
+<Task subagent_type="product-research-agent" model="sonnet" prompt="
+## Market Insights Research
+
+**Product:** [Product name and description]
+**Target Users:** [From Q1]
+**Core Problem:** [From Q2]
+
+### Objective
+Validate market opportunity and user expectations.
+
+### Deliverables
+Create `market-insights.md` with:
+- Market size and trends
+- User expectations and preferences
+- Industry-specific requirements
+- Risks and assumptions to validate
 "/>
 ```
 
-**Incorporate Research Findings:**
-- Add competitor insights to product definition
-- Include design references for planning phase
+**After all 3 complete, synthesize findings:**
+- Merge insights into product definition
+- Identify design direction from references
 - Adjust scope based on market expectations
 
 ### Step 1.5: Get Product Definition Approval
@@ -517,10 +620,12 @@ Please review and reply with:
 
 ### Step 2.0: Tech Stack & Architecture (CTO Advisor Agent)
 
+**Model:** `opus` - Critical architectural decisions require deep reasoning.
+
 Before epic decomposition, get CTO-level technical guidance:
 
 ```xml
-<Task subagent_type="cto-advisor-agent" prompt="
+<Task subagent_type="cto-advisor-agent" model="opus" prompt="
 ## Tech Stack Recommendation Request
 
 **Product:** [Product name]
@@ -798,6 +903,11 @@ Delegating to autonomous-dev for implementation...
 
 ### Step 3.2: Delegate Implementation
 
+**Model Selection:**
+- Frontend Design: `opus` (design quality is critical)
+- Backend/API: `sonnet` (standard implementation)
+- Database: `sonnet` (standard implementation)
+
 **For UI/Frontend Stages** - Use Frontend Design Agent with Research Input:
 
 **CRITICAL:** Always pass research findings to the frontend agent. Read research files first:
@@ -812,7 +922,7 @@ cat market-insights.md
 Then invoke with research context:
 
 ```xml
-<Task subagent_type="frontend-design-agent" prompt="
+<Task subagent_type="frontend-design-agent" model="opus" prompt="
 ## Frontend Design: Stage [N] - [Name]
 
 **Product:** [Product name]
@@ -866,9 +976,33 @@ Create production-ready code. Use research for inspiration but make it distincti
 "/>
 ```
 
-**For Backend/API Stages** - Proceed directly to autonomous-dev.
+**For Backend/API Stages** - Use sonnet for standard implementation:
 
-**For Full-Stack Stages** - Run frontend-design-agent first (with research), then autonomous-dev for integration.
+```xml
+<Task subagent_type="general-purpose" model="sonnet" prompt="
+## Backend Implementation: Stage [N]
+[Implementation details...]
+"/>
+```
+
+**For Full-Stack Stages** - Run frontend and backend in PARALLEL if interfaces are defined:
+
+```xml
+<!-- PARALLEL: Frontend and Backend can run simultaneously -->
+
+<Task subagent_type="frontend-design-agent" model="opus" prompt="
+## Frontend: Stage [N] - [Name]
+[Frontend with research context...]
+"/>
+
+<Task subagent_type="general-purpose" model="sonnet" prompt="
+## Backend API: Stage [N] - [Name]
+**Interface Contract:** [Defined API endpoints]
+[Backend implementation...]
+"/>
+```
+
+Then integrate after both complete.
 
 ### Step 3.3: Delegate to Autonomous Dev
 
@@ -1205,7 +1339,64 @@ Only proceed to Phase 5 when:
 
 **Goal:** Create user documentation and prepare for production.
 
-### Step 5.1: Generate User Guide
+**Model:** `haiku` for all documentation tasks (straightforward content generation)
+
+### Step 5.1: Generate Documentation (PARALLEL - 3 Agents)
+
+**IMPORTANT:** Generate all documentation in parallel for speed.
+
+```xml
+<!-- PARALLEL: Launch all 3 documentation tasks simultaneously -->
+
+<Task subagent_type="general-purpose" model="haiku" prompt="
+## Generate User Guide
+
+**Product:** [Product name]
+**Features:** [List of implemented features]
+
+Create `docs/user-guide.md` with:
+- Overview and getting started
+- Feature documentation with examples
+- Configuration options
+- Troubleshooting guide
+- FAQ section
+"/>
+
+<Task subagent_type="general-purpose" model="haiku" prompt="
+## Generate Technical Documentation
+
+**Product:** [Product name]
+**Tech Stack:** [From CTO agent output]
+**Architecture:** [From architecture-overview.md]
+
+Create `docs/technical-docs.md` with:
+- Architecture overview
+- Tech stack details
+- Project structure
+- Development setup
+- Deployment guide
+- Database schema
+- API endpoints
+"/>
+
+<Task subagent_type="general-purpose" model="haiku" prompt="
+## Generate README
+
+**Product:** [Product name]
+**Description:** [Product description]
+**Tech Stack:** [Stack summary]
+
+Update `README.md` with:
+- Project description
+- Features list
+- Quick start guide
+- Tech stack badges
+- Contributing guidelines
+- License
+"/>
+```
+
+### Step 5.2: User Guide Structure
 
 Create `docs/user-guide.md`:
 
