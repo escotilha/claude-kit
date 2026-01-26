@@ -9,6 +9,8 @@ allowed-tools:
   - Bash
   - Glob
   - Grep
+  - WebFetch
+  - WebSearch
 ---
 
 # Financial Data Extractor

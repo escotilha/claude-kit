@@ -1,8 +1,20 @@
 ---
-name: autonomous-agent
+name: autonomous-dev
 description: "Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration. Use when asked to: build a feature autonomously, create a PRD, implement a feature from scratch, run an autonomous coding loop, break down a feature into user stories. Triggers on: autonomous agent, build this autonomously, autonomous mode, implement this feature, create prd, prd to json, user stories, iterative implementation, ralph."
 user-invocable: true
 context: fork
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - Task
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - mcp__memory__*
 ---
 
 # Autonomous Coding Agent
@@ -190,6 +202,24 @@ Brief description of the feature and its value.
 How we'll know this feature is working correctly.
 ```
 
+**Complexity Scoring:**
+
+Assign each story a complexity score (1-10) during PRD creation:
+
+| Score | Description | Example |
+|-------|-------------|---------|
+| 1-3 | Simple, single-file change | Add a config option, fix a typo |
+| 4-6 | Moderate, 2-4 files, clear path | Add API endpoint, create component |
+| 7-8 | Complex, multiple concerns | Database + API + UI changes |
+| 9-10 | Very complex, consider splitting | Full authentication system |
+
+**Scoring factors:**
+- Number of files likely touched
+- Number of systems involved (DB, API, UI, etc.)
+- Unfamiliarity with the area
+- External dependencies or integrations
+- Risk of breaking existing functionality
+
 **Story Sizing Rules:**
 
 | Right-sized (1 iteration)         | Too big (split)             |
@@ -201,20 +231,56 @@ How we'll know this feature is working correctly.
 
 **Rule:** If you can't describe the change in 2-3 sentences, split it.
 
-### Step 1.4: Get Approval
+### Step 1.4: Generate Complexity Report
+
+After creating the PRD, generate a complexity report to identify potential issues early:
+
+```
+## Complexity Report
+
+**Total stories:** [N]
+**Total complexity points:** [sum of all scores]
+
+### Distribution
+- Simple (1-3):  [X] stories
+- Moderate (4-6): [Y] stories
+- Complex (7-10): [Z] stories
+
+### High-Risk Stories (complexity ≥ 7)
+| ID | Title | Score | Risk Factors |
+|----|-------|-------|--------------|
+| US-005 | Add OAuth login | 8 | External API, security, multi-layer |
+| US-008 | Database migration | 7 | Data integrity, downtime risk |
+
+### Recommendations
+- **US-005:** Consider splitting into: token handling, UI flow, callback endpoint
+- **US-008:** Add rollback plan to acceptance criteria
+
+### Estimated Iterations
+Based on complexity: [N-M] iterations (assuming ~1 iteration per 3-4 complexity points)
+```
+
+**When to flag for splitting:**
+- Any story with complexity ≥ 8
+- More than 3 stories with complexity ≥ 7
+- Total complexity points > (story count × 5)
+
+### Step 1.5: Get Approval
 
 ```
 I've created the PRD at `tasks/prd-[feature-name].md`.
 
 Summary:
 - [N] user stories identified
-- Estimated complexity: [Low/Medium/High]
+- Total complexity: [X] points ([Low/Medium/High] average)
+- High-risk stories: [list any ≥7]
 - Key dependencies: [list]
 
 Please review the PRD. Reply with:
 - "approved" - Convert to prd.json and begin implementation
 - "edit [story]" - Modify a specific story
 - "add [story]" - Add a new story
+- "expand [story]" - Break a complex story into smaller pieces
 - "questions" - Ask me anything about the approach
 ```
 
@@ -300,7 +366,12 @@ fi
   "createdAt": "2024-01-15T10:00:00Z",
   "delegation": {
     "enabled": false,
-    "fallbackToDirect": true
+    "fallbackToDirect": true,
+    "parallel": {
+      "enabled": false,
+      "maxConcurrent": 3,
+      "conflictResolution": "sequential"
+    }
   },
   "delegationMetrics": {
     "totalStories": 0,
@@ -331,7 +402,10 @@ fi
         "Tests pass"
       ],
       "priority": 1,
+      "complexity": 4,
+      "complexityFactors": ["API endpoint", "database query"],
       "dependsOn": [],
+      "status": "pending",
       "passes": false,
       "attempts": 0,
       "notes": "",
@@ -342,10 +416,45 @@ fi
 }
 ```
 
+**Story Fields:**
+
+- `complexity`: Score 1-10 indicating implementation difficulty
+- `complexityFactors`: Brief list of what makes it complex (for context)
+- `status`: One of `pending`, `blocked`, `in_progress`, `completed`, `skipped`
+- `dependsOn`: Array of story IDs that must complete first
+
+**Status Values:**
+
+| Status | Meaning |
+|--------|---------|
+| `pending` | Ready to start (no blockers) |
+| `blocked` | Waiting on dependencies |
+| `in_progress` | Currently being implemented |
+| `completed` | Passed all verification |
+| `skipped` | Manually skipped by user |
+
+**Blocked Detection:**
+
+A story is blocked when any story in its `dependsOn` array has `passes: false`:
+
+```javascript
+function isBlocked(story, allStories) {
+  if (!story.dependsOn || story.dependsOn.length === 0) return false;
+  return story.dependsOn.some(depId => {
+    const dep = allStories.find(s => s.id === depId);
+    return dep && !dep.passes;
+  });
+}
+```
+```
+
 **Delegation Configuration:**
 
 - `delegation.enabled`: Set to `true` to enable smart delegation to specialized agents
 - `delegation.fallbackToDirect`: If `true`, falls back to direct implementation when delegation fails
+- `delegation.parallel.enabled`: Set to `true` to enable parallel execution of independent stories
+- `delegation.parallel.maxConcurrent`: Maximum number of agents to run concurrently (default: 3)
+- `delegation.parallel.conflictResolution`: How to handle file conflicts - `"sequential"` (safe) or `"optimistic"` (faster)
 - `detectedType`: Automatically populated with story type (frontend, api, database, devops, fullstack, general)
 - `delegatedTo`: Records which agent implemented the story (e.g., "frontend-agent", "api-agent", or null for direct implementation)
 
@@ -376,6 +485,18 @@ Automatically tracked performance metrics:
   }
   ```
 - `detectionAccuracy`: Manual validation results (optional, set by user review)
+- `parallelExecution`: Parallel execution statistics (when parallel enabled):
+  ```json
+  {
+    "batchCount": 3,
+    "avgBatchSize": 2.3,
+    "maxBatchSize": 3,
+    "totalParallelTime": "8m 30s",
+    "estimatedSequentialTime": "18m 45s",
+    "speedup": 2.2,
+    "conflictCount": 1
+  }
+  ```
 
 **Optimization Configuration:**
 
@@ -501,7 +622,7 @@ Store in prd.json:
 
 ## Phase 3: Autonomous Loop
 
-**Goal:** Implement one story per iteration until complete.
+**Goal:** Implement stories until complete. Can run sequentially (one at a time) or in parallel (multiple independent stories simultaneously).
 
 ### Step 3.0: Load Context (with Token Optimization)
 
@@ -568,7 +689,54 @@ mcp__memory__search_nodes({ query: "pattern" })               # Apply known patt
 | FastAPI        | `fastapi`, `python`, `api`             |
 | React          | `react`, `hooks`, `state-management`   |
 
-Find the next story: first `passes: false` ordered by `priority`, respecting `dependsOn`.
+**Find the next story** using proper dependency and blocking logic:
+
+```javascript
+function getNextStory(prd) {
+  const stories = prd.userStories;
+
+  // Update blocked status for all stories
+  stories.forEach(story => {
+    if (story.passes || story.status === 'skipped') return;
+
+    const blocked = story.dependsOn?.some(depId => {
+      const dep = stories.find(s => s.id === depId);
+      return dep && !dep.passes;
+    });
+
+    story.status = blocked ? 'blocked' : 'pending';
+  });
+
+  // Find first non-blocked, non-completed story by priority
+  return stories
+    .filter(s => !s.passes && s.status !== 'blocked' && s.status !== 'skipped')
+    .sort((a, b) => a.priority - b.priority)[0] || null;
+}
+
+const nextStory = getNextStory(prd);
+
+if (!nextStory) {
+  const blocked = prd.userStories.filter(s => s.status === 'blocked');
+  if (blocked.length > 0) {
+    console.log(`⚠ ${blocked.length} stories are blocked:`);
+    blocked.forEach(s => {
+      const deps = s.dependsOn.filter(id =>
+        !prd.userStories.find(x => x.id === id)?.passes
+      );
+      console.log(`  - ${s.id}: waiting on ${deps.join(', ')}`);
+    });
+  }
+}
+```
+
+**Blocked story output:**
+```
+⚠ 2 stories are blocked:
+  - US-004: waiting on US-002, US-003
+  - US-006: waiting on US-005
+
+Next available: US-002 (priority 2, complexity 5)
+```
 
 ### Step 3.0a: Analyze Story Type (Smart Delegation)
 
@@ -721,6 +889,278 @@ Detection signals: { api: 3, backend: 3, frontend: 0, database: 0, devops: 0 }
 - [ ] Tests pass
 
 **Approach:** Create new API route handler in app/api/users/[id]/route.ts...
+```
+
+### Step 3.0b: Identify Parallel Execution Candidates (Optional)
+
+If `delegation.parallel.enabled === true`, identify stories that can run concurrently.
+
+**Check for Independent Stories:**
+
+```javascript
+function getIndependentStories(prd) {
+  const allStories = prd.userStories;
+
+  return allStories.filter(story => {
+    // Skip completed or in-progress stories
+    if (story.passes || story.status === 'in_progress') return false;
+
+    // Skip blocked stories
+    if (story.status === 'blocked') return false;
+
+    // Check dependencies are all complete
+    if (story.dependsOn && story.dependsOn.length > 0) {
+      const hasUncompletedDeps = story.dependsOn.some(depId => {
+        const dep = allStories.find(s => s.id === depId);
+        return dep && !dep.passes;
+      });
+      if (hasUncompletedDeps) return false;
+    }
+
+    return true;
+  });
+}
+
+const readyStories = getIndependentStories(prd);
+console.log(`Found ${readyStories.length} independent stories`);
+```
+
+**Detect Potential Conflicts:**
+
+Even "independent" stories may conflict if they modify the same files:
+
+```javascript
+function detectPotentialConflicts(stories) {
+  const conflicts = [];
+
+  // Infer likely file paths from story content
+  const storyFiles = stories.map(story => ({
+    id: story.id,
+    files: inferAffectedFiles(story)
+  }));
+
+  // Check for overlapping files
+  for (let i = 0; i < storyFiles.length; i++) {
+    for (let j = i + 1; j < storyFiles.length; j++) {
+      const overlap = storyFiles[i].files.filter(f =>
+        storyFiles[j].files.some(f2 => filesOverlap(f, f2))
+      );
+
+      if (overlap.length > 0) {
+        conflicts.push({
+          stories: [storyFiles[i].id, storyFiles[j].id],
+          files: overlap
+        });
+      }
+    }
+  }
+
+  return conflicts;
+}
+```
+
+**Select Parallel Batch:**
+
+```javascript
+function selectParallelBatch(readyStories, conflicts, maxConcurrent) {
+  const batch = [];
+  const usedFiles = new Set();
+
+  for (const story of readyStories) {
+    if (batch.length >= maxConcurrent) break;
+
+    // Check if this story conflicts with already-selected stories
+    const storyFiles = inferAffectedFiles(story);
+    const hasConflict = storyFiles.some(f =>
+      [...usedFiles].some(uf => filesOverlap(f, uf))
+    );
+
+    if (!hasConflict) {
+      batch.push(story);
+      storyFiles.forEach(f => usedFiles.add(f));
+    }
+  }
+
+  return batch;
+}
+
+const parallelBatch = selectParallelBatch(
+  readyStories,
+  conflicts,
+  prd.delegation.parallel.maxConcurrent || 3
+);
+```
+
+**Decision Point:**
+
+```javascript
+if (parallelBatch.length > 1) {
+  // Proceed to Step 3.1-parallel (Parallel Execution)
+  console.log(`Parallel execution: ${parallelBatch.length} stories`);
+} else {
+  // Proceed to Step 3.1 (Sequential Execution)
+  console.log(`Sequential execution: 1 story`);
+}
+```
+
+### Step 3.1-parallel: Parallel Execution (Multiple Stories)
+
+When `parallelBatch.length > 1`:
+
+**1. Announce Parallel Batch:**
+
+```
+## Parallel Execution: Starting ${parallelBatch.length} stories
+
+| ID | Title | Type | Agent |
+|----|-------|------|-------|
+| US-003 | Add dark mode toggle | frontend | frontend-agent |
+| US-004 | Create profile API | api | api-agent |
+| US-005 | Add email column | database | database-agent |
+
+Potential conflicts: None
+Max concurrent: 3
+
+Launching agents...
+```
+
+**2. Generate Prompts for All Stories:**
+
+```javascript
+const prompts = parallelBatch.map(story => ({
+  story,
+  type: detectStoryType(story),
+  agent: selectAgent(detectStoryType(story)),
+  prompt: generateSubagentPrompt(story, prd, progress, agentsMd, memoryInsights)
+}));
+```
+
+**3. Launch All Agents in Single Message:**
+
+```javascript
+// CRITICAL: All Task calls must be in a SINGLE message for true parallelism
+// The orchestrator sends one message with multiple Task tool invocations
+
+const taskCalls = prompts.map(({ story, agent, prompt }) => ({
+  tool: 'Task',
+  params: {
+    subagent_type: agent,
+    description: `Implement ${story.id}: ${story.title}`,
+    prompt: prompt
+  }
+}));
+
+// These execute concurrently because they're in the same message
+const results = await executeAllTasks(taskCalls);
+```
+
+**4. Collect and Process Results:**
+
+```javascript
+const outcomes = results.map((result, i) => {
+  const story = prompts[i].story;
+  const parsed = parseSubagentResult(result);
+  const validation = validateSubagentResult(parsed, story);
+
+  return {
+    story,
+    agent: prompts[i].agent,
+    result: parsed,
+    success: validation.valid && parsed.success
+  };
+});
+
+const successes = outcomes.filter(o => o.success);
+const failures = outcomes.filter(o => !o.success);
+
+console.log(`Results: ${successes.length} succeeded, ${failures.length} failed`);
+```
+
+**5. Verify All Changes Together:**
+
+```bash
+# Typecheck covers all parallel changes
+npm run typecheck
+
+# Run full test suite
+npm run test
+```
+
+**6. Commit Each Story Atomically:**
+
+```javascript
+for (const outcome of successes) {
+  // Stage only this story's files
+  git.add(outcome.result.filesChanged);
+
+  // Atomic commit per story
+  git.commit(`feat(${outcome.story.id}): ${outcome.story.title}
+
+  - Implemented by: ${outcome.agent}
+  - Parallel batch: ${parallelBatch.map(s => s.id).join(', ')}
+  `);
+
+  // Update prd.json
+  updateStory(outcome.story.id, {
+    passes: true,
+    attempts: outcome.story.attempts + 1,
+    completedAt: new Date().toISOString(),
+    delegatedTo: outcome.agent
+  });
+}
+```
+
+**7. Handle Failures:**
+
+```javascript
+for (const outcome of failures) {
+  console.log(`⚠ ${outcome.story.id} failed`);
+
+  // Revert partial changes
+  git.checkout(outcome.result.filesChanged);
+
+  // Queue for retry
+  updateStory(outcome.story.id, {
+    attempts: outcome.story.attempts + 1,
+    lastError: outcome.result.notes
+  });
+}
+```
+
+**8. Update Progress:**
+
+```markdown
+## Parallel Batch Complete
+
+**Duration:** 2m 34s (vs ~7m sequential)
+**Successes:** US-003, US-004, US-005
+**Failures:** None
+
+### US-003: Add dark mode toggle (frontend-agent)
+- Files: components/ThemeToggle.tsx, app/settings/page.tsx
+- Notes: Used existing ThemeProvider pattern
+
+### US-004: Create profile API (api-agent)
+- Files: app/api/users/[id]/route.ts
+- Notes: Added auth middleware
+
+### US-005: Add email column (database-agent)
+- Files: db/migrations/20260125_add_email.sql
+- Notes: Included rollback migration
+```
+
+**9. Continue Loop:**
+
+```javascript
+// Check if more stories are ready
+const remainingStories = prd.userStories.filter(s => !s.passes);
+
+if (remainingStories.length === 0) {
+  console.log('===== FEATURE COMPLETE =====');
+} else {
+  // Next iteration will re-evaluate parallel candidates
+  console.log(`${remainingStories.length} stories remaining. Continuing...`);
+}
 ```
 
 ### Step 3.1: Announce Task
@@ -1269,14 +1709,17 @@ Blocked: None`;
    }
 
    function generateStoryTable(prd) {
-     const header = '| ID | Title | Status | Agent | Attempts |\n|----|-------|--------|-------|----------|';
+     const header = '| ID | Title | C | Status | Attempts |\n|----|-------|---|--------|----------|';
      const rows = prd.userStories.map(s => {
-       const status = s.passes ? '✓' : (s.attempts > 0 ? '→' : '○');
-       const agent = s.delegatedTo || '-';
-       const title = s.title.length > 30 ? s.title.slice(0, 27) + '...' : s.title;
-       return `| ${s.id} | ${title} | ${status} | ${agent} | ${s.attempts} |`;
+       const statusIcon = s.passes ? '✓' :
+                          s.status === 'blocked' ? '⊘' :
+                          s.status === 'expanded' ? '↳' :
+                          s.attempts > 0 ? '→' : '○';
+       const complexity = s.complexity || '-';
+       const title = s.title.length > 25 ? s.title.slice(0, 22) + '...' : s.title;
+       return `| ${s.id} | ${title} | ${complexity} | ${statusIcon} | ${s.attempts} |`;
      });
-     return [header, ...rows].join('\n') + '\n\nLegend: ✓ complete, → in progress, ○ pending';
+     return [header, ...rows].join('\n') + '\n\nLegend: ✓ done, → active, ○ pending, ⊘ blocked, ↳ expanded\nC = Complexity (1-10)';
    }
 
    function extractKeyLearnings(progressMd, maxLearnings) {
@@ -1412,18 +1855,35 @@ Blocked: None`;
    })
    ```
 
-5. If `attempts >= 3`:
+5. If `attempts >= 2` and `complexity >= 6`, suggest expansion:
+
+   ```
+   US-XXX failed on attempt 2 (complexity: 7).
+
+   This story may be too complex for a single iteration.
+
+   **Suggested:** Run `expand US-XXX` to break it into smaller pieces.
+
+   Options:
+   1. expand - Break into 2-4 smaller stories (recommended)
+   2. retry - Try one more time
+   3. skip - Move to next story
+   4. pause - Stop and get help
+   ```
+
+6. If `attempts >= 3`:
 
    ```
    US-XXX failed after 3 attempts.
 
    Last error: [message]
+   Complexity: [N] | Factors: [list]
 
    Options:
-   1. Split this story into smaller pieces
-   2. Get user help with the blockers
-   3. Skip and continue with next story
-   4. Pause autonomous mode
+   1. expand - Break into smaller stories (recommended for complexity ≥ 6)
+   2. help - Get user assistance with blockers
+   3. skip - Continue with next story
+   4. pause - Stop autonomous mode
 
    What would you like to do?
    ```
@@ -1601,15 +2061,140 @@ When you discover patterns, add them to AGENTS.md:
 
 ## Quick Commands
 
-| Command         | What it does                              |
-| --------------- | ----------------------------------------- |
-| "status"        | Show current progress and next story      |
-| "skip"          | Skip current story, move to next          |
-| "pause"         | Stop autonomous mode, wait for input      |
-| "split [story]" | Break a story into smaller pieces         |
-| "retry"         | Retry the current story                   |
-| "complete"      | Force-mark current story as done          |
-| "summarize"     | Regenerate progress-summary.md from full log |
+| Command          | What it does                                    |
+| ---------------- | ----------------------------------------------- |
+| "status"         | Show current progress and next story            |
+| "skip"           | Skip current story, move to next                |
+| "pause"          | Stop autonomous mode, wait for input            |
+| "split [story]"  | Break a story into smaller pieces (manual)      |
+| "expand [story]" | Smart-expand a complex story into 2-4 substories |
+| "retry"          | Retry the current story                         |
+| "complete"       | Force-mark current story as done                |
+| "summarize"      | Regenerate progress-summary.md from full log    |
+| "parallel on"    | Enable parallel execution of independent stories |
+| "parallel off"   | Disable parallel (sequential only)              |
+| "parallel max N" | Set max concurrent agents (default: 3)          |
+
+### Status Command
+
+The `status` command shows progress with complexity and blocking information:
+
+```
+> status
+
+## Progress: User Settings Feature
+
+Branch: feature/user-settings
+Stories: 4/8 complete (50%)
+
+| ID      | Title                    | C | Status | Attempts |
+|---------|--------------------------|---|--------|----------|
+| US-001  | Create settings page     | 3 | ✓      | 1        |
+| US-002  | Add profile form         | 4 | ✓      | 1        |
+| US-003  | Add avatar upload        | 5 | ✓      | 2        |
+| US-004  | Connect to API           | 4 | ✓      | 1        |
+| US-005  | Add email preferences    | 3 | →      | 1        |
+| US-006  | Add notification settings| 6 | ○      | 0        |
+| US-007  | Add OAuth connections    | 8 | ⊘      | 0        |
+| US-008  | Add delete account       | 5 | ○      | 0        |
+
+Legend: ✓ done, → active, ○ pending, ⊘ blocked
+C = Complexity (1-10)
+
+**Blocked stories:**
+- US-007: waiting on US-005, US-006
+
+**Complexity summary:**
+- Remaining: 22 points across 4 stories
+- Avg complexity: 5.5
+- High-risk: US-007 (8) - consider `expand US-007`
+
+**Next:** US-005 - Add email preferences (complexity: 3)
+
+**Parallel execution:** Enabled (max 3 concurrent)
+**Independent stories:** US-005, US-006, US-008 (can run in parallel)
+```
+
+### Expand Command
+
+The `expand` command intelligently breaks a complex story into smaller, implementable pieces:
+
+```
+> expand US-005
+
+Analyzing US-005: "Add OAuth login flow" (complexity: 8)
+
+Complexity factors:
+- External API integration (Google OAuth)
+- Multiple routes (callback, logout)
+- Session management
+- UI components (login button, user menu)
+
+Expanding into 4 stories...
+
+## Proposed Expansion
+
+**US-005.1: Add OAuth callback endpoint** (complexity: 3)
+- Create /api/auth/callback route
+- Handle token exchange
+- Store session in cookie
+- Acceptance: Returns user data on success, 401 on failure
+
+**US-005.2: Add OAuth initiation endpoint** (complexity: 2)
+- Create /api/auth/login route
+- Redirect to Google OAuth URL
+- Include proper scopes and state
+- Acceptance: Redirects to Google, state validated on return
+
+**US-005.3: Add login button component** (complexity: 3)
+- Create LoginButton component
+- Handle loading/error states
+- Redirect to OAuth initiation
+- Acceptance: Button visible when logged out, triggers OAuth flow
+
+**US-005.4: Add user session context** (complexity: 4)
+- Create AuthContext provider
+- Add useAuth hook
+- Fetch session on app load
+- Acceptance: Components can access user state, logout works
+
+**Dependencies:** US-005.1 → US-005.2 → US-005.3, US-005.4
+
+Original complexity: 8 → Expanded total: 12 (but each piece is manageable)
+
+Apply this expansion? (yes/no/edit)
+```
+
+**When expansion is triggered:**
+- User runs `expand [story-id]`
+- Story fails 2+ times (suggested automatically)
+- Complexity ≥ 8 detected during Phase 3
+
+**Expansion rules:**
+- Create 2-4 new stories (never more)
+- Each new story should be complexity ≤ 5
+- Preserve the original story's intent
+- Set up proper `dependsOn` relationships
+- New IDs use parent.1, parent.2 format
+
+**After expansion:**
+```javascript
+// Original story marked as expanded
+{
+  "id": "US-005",
+  "status": "expanded",
+  "expandedInto": ["US-005.1", "US-005.2", "US-005.3", "US-005.4"]
+}
+
+// New stories added to prd.json
+{
+  "id": "US-005.1",
+  "title": "Add OAuth callback endpoint",
+  "complexity": 3,
+  "dependsOn": [],
+  "expandedFrom": "US-005"
+}
+```
 
 ### Summarize Command
 
@@ -1647,7 +2232,10 @@ Use this command to:
    {
      "delegation": {
        "enabled": true,
-       "fallbackToDirect": true
+       "fallbackToDirect": true,
+       "parallel": {
+         "enabled": false
+       }
      }
    }
    ```
@@ -1787,12 +2375,125 @@ If you have an existing prd.json without delegation:
 
 3. **Run autonomous loop** - delegation activates automatically for remaining stories
 
+---
+
+## Enabling Parallel Execution (Beta)
+
+**⚠️ BETA FEATURE:** Parallel execution runs multiple independent stories concurrently using specialized agents.
+
+### Prerequisites
+
+- Delegation must be enabled (`delegation.enabled: true`)
+- At least 2 independent stories (no dependencies on each other)
+
+### How to Enable
+
+1. **Update prd.json:**
+   ```json
+   {
+     "delegation": {
+       "enabled": true,
+       "fallbackToDirect": true,
+       "parallel": {
+         "enabled": true,
+         "maxConcurrent": 3,
+         "conflictResolution": "sequential"
+       }
+     }
+   }
+   ```
+
+2. **Configuration options:**
+
+   | Option | Default | Description |
+   |--------|---------|-------------|
+   | `enabled` | `false` | Enable parallel execution |
+   | `maxConcurrent` | `3` | Max agents running simultaneously |
+   | `conflictResolution` | `"sequential"` | How to handle file conflicts |
+
+3. **Conflict resolution strategies:**
+   - `"sequential"`: If stories might modify same files, run them one at a time (safe)
+   - `"optimistic"`: Run in parallel, handle merge conflicts if they occur (faster)
+
+### What to Expect
+
+**With parallel enabled:**
+
+```
+## Phase 3: Autonomous Loop
+
+Analyzing stories...
+- US-001: Add users table (database) - READY
+- US-002: Create login endpoint (api) - READY
+- US-003: Add login button (frontend) - depends on US-002, BLOCKED
+- US-004: Add logout endpoint (api) - READY
+
+Independent stories: 3 (US-001, US-002, US-004)
+Conflict check: US-002 & US-004 may touch app/api/* → run sequentially
+
+## Parallel Execution: 2 stories
+
+| ID | Title | Type | Agent |
+|----|-------|------|-------|
+| US-001 | Add users table | database | database-agent |
+| US-002 | Create login endpoint | api | api-agent |
+
+Launching 2 agents in parallel...
+
+[Both agents working concurrently...]
+
+Results:
+✓ US-001 (database-agent): SUCCESS in 1m 42s
+✓ US-002 (api-agent): SUCCESS in 2m 15s
+
+2 stories completed in 2m 15s (vs ~4m sequential)
+Speedup: 1.8x
+```
+
+### Expected Speedups
+
+| Independent Stories | Sequential | Parallel (3 agents) | Speedup |
+|---------------------|------------|---------------------|---------|
+| 2 | ~6 min | ~3 min | 2x |
+| 3 | ~9 min | ~3 min | 3x |
+| 5 | ~15 min | ~5 min | 3x |
+| 10 | ~30 min | ~12 min | 2.5x |
+
+*Assumes ~3 min per story average. Diminishing returns with dependency chains.*
+
+### How It Works
+
+1. **Identify independent stories** - Stories with no unmet dependencies
+2. **Detect file conflicts** - Infer which files each story will modify
+3. **Select non-conflicting batch** - Group stories that won't touch same files
+4. **Launch agents in single message** - All Task tool calls in one message enables true parallelism
+5. **Collect results** - Wait for all agents to complete
+6. **Verify together** - Run typecheck/tests on all changes
+7. **Commit atomically** - One commit per story for clean history
+8. **Handle failures** - Revert failed stories, keep successful ones
+
+### Troubleshooting
+
+**Issue: Stories running sequentially despite parallel enabled**
+- **Cause:** Stories have dependencies or potential file conflicts
+- **Check:** Run `status` to see which stories are independent
+- **Solution:** Ensure stories don't have `dependsOn` pointing to incomplete stories
+
+**Issue: Merge conflicts**
+- **Cause:** Two agents modified the same file unexpectedly
+- **Solution:** Use `conflictResolution: "sequential"` or add better file hints to stories
+
+**Issue: One agent much slower than others**
+- **Impact:** Batch waits for slowest agent
+- **Solution:** Consider reducing `maxConcurrent` or splitting complex stories
+
 ### See Also
 
 - [Detection validation](references/detection-validation.md) - Detection accuracy testing
 - [Agent prompts](references/agent-prompts.md) - Subagent prompt templates
 - [Examples](references/examples.md) - Complete delegation flow examples
-- [Design doc](references/smart-delegation-design.md) - Architecture details
+- [Design doc](references/smart-delegation-design.md) - Sequential delegation architecture
+- [Parallel delegation](references/parallel-delegation-design.md) - Multi-agent parallel execution
 - [Progress summarization](references/progress-summarization-design.md) - Token optimization design
 
 ---

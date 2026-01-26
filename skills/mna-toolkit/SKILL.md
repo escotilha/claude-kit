@@ -20,6 +20,7 @@ allowed-tools:
   - Grep
   - Bash
   - WebFetch
+  - WebSearch
   - TaskCreate
   - TaskUpdate
   - TaskList
