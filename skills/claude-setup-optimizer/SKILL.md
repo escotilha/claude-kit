@@ -1,6 +1,6 @@
 ---
 name: claude-setup-optimizer
-version: 1.0.0
+version: 1.1.0
 color: "#3b82f6"
 description: Analyzes Claude Code changelog, reviews your current agents/skills setup, and recommends improvements based on new features. Use when asked to "optimize claude setup", "check for claude updates", "improve my agents", "sync with claude changelog", or "/optimize-setup".
 user-invocable: true
@@ -34,22 +34,31 @@ Automatically analyzes the Claude Code changelog and recommends improvements to 
 
 ## Paths
 
-### ALWAYS USE ICLOUD PATH DIRECTLY
+### Portable iCloud Path Variable
 
-**Source of Truth:**
+**IMPORTANT:** Always use `$HOME` in bash commands and `~/` in documentation to ensure portability across different machines/users.
+
+**Define this variable at the start of any bash operations:**
+
+```bash
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+```
+
+**Source of Truth Structure:**
 
 ```
-/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
+~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
 ├── skills/       ← All skills
 ├── agents/       ← All agents
 ├── commands/     ← All commands
+├── memory/       ← Memory files (core-memory.json, etc.)
 └── settings.json ← Settings
 ```
 
-**IMPORTANT:** Always read from AND write to the iCloud path directly. Do NOT use symlink paths like `~/.claude/` or `/Users/ps/code/claude/` - use the full iCloud path to ensure:
+**IMPORTANT:** Always read from AND write to the iCloud path directly. Do NOT use symlink paths like `~/.claude/` - use the iCloud path to ensure:
 - Consistent behavior regardless of symlink state
 - Changes persist correctly to iCloud
-- No issues with symlink resolution
+- Syncs across all devices
 
 ### Background (FYI only)
 
@@ -58,7 +67,6 @@ Claude Code searches for skills/agents in multiple locations, but symlinks point
 - `~/.claude/skills` → iCloud
 - `~/.claude/agents` → iCloud
 - `~/.claude/commands` → iCloud
-- `/Users/ps/code/claude/` → iCloud
 
 ## Workflow
 
@@ -109,17 +117,17 @@ Extract key information:
 
 ### Step 2: Analyze Current Setup
 
-**IMPORTANT:** Always use the iCloud path directly for all operations (both reading and writing):
+**IMPORTANT:** Always define the portable path variable first:
 
-```
-/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
+```bash
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
 ```
 
 **Inventory all skills:**
 
 ```bash
-# Use iCloud path directly
-find "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills" -maxdepth 2 \( -name "SKILL.md" -o -name "skill.md" \) 2>/dev/null
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+find "$ICLOUD_SETUP/skills" -maxdepth 2 \( -name "SKILL.md" -o -name "skill.md" \) 2>/dev/null
 ```
 
 For each skill, read and extract:
@@ -132,8 +140,8 @@ For each skill, read and extract:
 **Inventory all agents:**
 
 ```bash
-# Use iCloud path directly
-find "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/agents" -name "*.md" 2>/dev/null
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+find "$ICLOUD_SETUP/agents" -name "*.md" 2>/dev/null
 ```
 
 For each agent, read and extract:
@@ -145,15 +153,17 @@ For each agent, read and extract:
 **Inventory all commands:**
 
 ```bash
-# Use iCloud path directly
-ls "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/commands/"*.md 2>/dev/null
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+ls "$ICLOUD_SETUP/commands/"*.md 2>/dev/null
 ```
 
 **Read configuration files:**
 
 ```bash
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+
 # Settings in iCloud
-cat "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/settings.json"
+cat "$ICLOUD_SETUP/settings.json"
 
 # Global Claude config
 cat ~/.claude.json
@@ -254,25 +264,21 @@ Would you like me to:
 
 ### Step 6: Implement Improvements
 
-**IMPORTANT: iCloud is the source of truth.** All changes MUST be made directly in the iCloud path to ensure they sync across devices:
-
-```
-/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
-```
+**IMPORTANT: iCloud is the source of truth.** All changes MUST be made directly in the iCloud path to ensure they sync across devices.
 
 For approved changes:
 
 1. **Back up affected files first (in iCloud):**
 
 ```bash
-ICLOUD_PATH="/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-mkdir -p "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)"
-cp <file> "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)/"
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+mkdir -p "$ICLOUD_SETUP/backups/$(date +%Y%m%d-%H%M%S)"
+cp <file> "$ICLOUD_SETUP/backups/$(date +%Y%m%d-%H%M%S)/"
 ```
 
 2. **Apply changes using Edit or Write tools to the iCloud path directly**
-   - Always use the full iCloud path: `/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/...`
-   - Do NOT edit via symlinks (`~/.claude/` or `/Users/ps/code/claude/`) to ensure changes are persisted to iCloud
+   - Use the portable path: `~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/...`
+   - Do NOT edit via symlinks (`~/.claude/`) to ensure changes are persisted to iCloud
 
 3. **Validate changes:**
 
@@ -282,7 +288,8 @@ cp <file> "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)/"
 4. **Verify files exist in iCloud:**
 
 ```bash
-ls -la "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills/<skill-name>/"
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+ls -la "$ICLOUD_SETUP/skills/<skill-name>/"
 ```
 
 5. **Auto-commit and push to GitHub:**
@@ -290,8 +297,8 @@ ls -la "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skil
 After all approved changes are made, automatically commit and push to the backup repo. The iCloud folder IS a git repo linked to GitHub:
 
 ```bash
-ICLOUD_PATH="/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-cd "$ICLOUD_PATH"
+ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+cd "$ICLOUD_SETUP"
 
 # Stage all changes
 git add -A
@@ -305,7 +312,7 @@ Changes applied:
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
 # Push to GitHub backup repo
-git push origin main
+git push origin master
 ```
 
 **GitHub Backup Repo:** https://github.com/escotilha/claude
@@ -423,3 +430,4 @@ Never attempt to fetch the full CHANGELOG.md via WebFetch - it's too large.
 - Test changes before committing
 - Some recommendations may require manual review
 - Keep track of which changelog versions have been reviewed to avoid duplicate work
+- All paths use `$HOME` variable for cross-machine compatibility

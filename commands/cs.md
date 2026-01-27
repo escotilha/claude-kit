@@ -38,42 +38,42 @@ Check if your local Claude setup is in sync with the remote repository. Automati
 
 ## Implementation
 
-Run the following on the Claude setup repository at `/Users/ps/code/claude`:
+Run the following on the Claude setup repository at `$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup`:
 
 ```bash
 # Fetch latest from remote
-git -C /Users/ps/code/claude fetch origin master --quiet
+git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup fetch origin master --quiet
 
 # Check for uncommitted changes first
-CHANGES=$(git -C /Users/ps/code/claude status --short)
+CHANGES=$(git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup status --short)
 
 # If there are local changes, commit them
 if [ -n "$CHANGES" ]; then
-    git -C /Users/ps/code/claude add -A
-    git -C /Users/ps/code/claude commit -m "chore: sync claude setup"
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup add -A
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup commit -m "chore: sync claude setup"
 fi
 
 # Get commit hashes after potential commit
-LOCAL=$(git -C /Users/ps/code/claude rev-parse HEAD)
-REMOTE=$(git -C /Users/ps/code/claude rev-parse origin/master)
-BASE=$(git -C /Users/ps/code/claude merge-base HEAD origin/master)
+LOCAL=$(git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup rev-parse HEAD)
+REMOTE=$(git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup rev-parse origin/master)
+BASE=$(git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup merge-base HEAD origin/master)
 
 # Determine sync status and take action
 if [ "$LOCAL" = "$REMOTE" ]; then
     echo "UP TO DATE"
 elif [ "$LOCAL" = "$BASE" ]; then
     echo "BEHIND - manual pull recommended"
-    git -C /Users/ps/code/claude log --oneline HEAD..origin/master
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup log --oneline HEAD..origin/master
 elif [ "$REMOTE" = "$BASE" ]; then
     echo "AHEAD - pushing to remote..."
-    git -C /Users/ps/code/claude push origin master
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup push origin master
     echo "PUSHED SUCCESSFULLY"
 else
     echo "DIVERGED - manual reconciliation needed"
     echo "Local commits not on remote:"
-    git -C /Users/ps/code/claude log --oneline origin/master..HEAD
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup log --oneline origin/master..HEAD
     echo "Remote commits not on local:"
-    git -C /Users/ps/code/claude log --oneline HEAD..origin/master
+    git -C $HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup log --oneline HEAD..origin/master
 fi
 ```
 

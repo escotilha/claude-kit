@@ -33,7 +33,7 @@
     ]
   },
   "alwaysThinkingEnabled": false,
-  "plansDirectory": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/plans",
+  "plansDirectory": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/plans",
   "mcpSearchAutoThreshold": 15,
   "default_arguments": [
     "--dangerously-skip-permissions"

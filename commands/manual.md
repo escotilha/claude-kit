@@ -98,7 +98,7 @@ cd <docs_dir> && cat \
   ... \
   > /tmp/manual_combined.md && \
 pandoc /tmp/manual_combined.md \
-  -o "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/Downloads/manual/Manual_<ProjectName>.docx" \
+  -o "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Downloads/manual/Manual_<ProjectName>.docx" \
   --toc \
   --toc-depth=3 \
   -f markdown \
@@ -116,7 +116,7 @@ For HTML:
 
 For Word:
 
-- Report the Word document path: `/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/Downloads/manual/Manual_<ProjectName>.docx`
+- Report the Word document path: `$HOME/Library/Mobile Documents/com~apple~CloudDocs/Downloads/manual/Manual_<ProjectName>.docx`
 - Ensure the output directory exists before writing
 
 ## Configuration Detection
