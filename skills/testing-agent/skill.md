@@ -4,6 +4,8 @@ description: "End-to-end testing agent for AgentCreator that uses browser automa
 user-invocable: true
 context: fork
 model: opus
+version: 1.0.0
+color: "#22c55e"
 allowed-tools:
   - Read
   - Write
@@ -12,7 +14,12 @@ allowed-tools:
   - Glob
   - Grep
   - Task
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
   - mcp__memory__*
+  - mcp__chrome-devtools__*
 ---
 
 # AgentCreator Testing Agent
@@ -814,19 +821,19 @@ Find next untested feature by priority, respecting dependencies.
 1. Get browser tab context:
 
 ```
-mcp__claude-in-chrome__tabs_context_mcp({ createIfEmpty: true })
+mcp__chrome-devtools__list_pages({ createIfEmpty: true })
 ```
 
 2. Create a tab if needed:
 
 ```
-mcp__claude-in-chrome__tabs_create_mcp()
+mcp__chrome-devtools__new_page()
 ```
 
 3. Navigate to base URL:
 
 ```
-mcp__claude-in-chrome__navigate({ tabId: TAB_ID, url: "http://localhost:3000" })
+mcp__chrome-devtools__navigate_page({ pageId: PAGE_ID, url: "http://localhost:3000" })
 ```
 
 ### Step 3.2: Announce Test
@@ -853,127 +860,108 @@ Use these Chrome DevTools MCP tools:
 
 **Navigate:**
 ```
-mcp__claude-in-chrome__navigate({ tabId: TAB_ID, url: URL })
+mcp__chrome-devtools__navigate_page({ pageId: PAGE_ID, url: URL })
 ```
 
 **Take Screenshot:**
 ```
-mcp__claude-in-chrome__computer({ tabId: TAB_ID, action: "screenshot" })
+mcp__chrome-devtools__take_screenshot({ pageId: PAGE_ID })
 ```
 
 **Read Page Structure:**
 ```
-mcp__claude-in-chrome__read_page({ tabId: TAB_ID, depth: 10 })
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
 ```
 
-**Find Elements:**
+**Find Elements (use snapshot and inspect DOM):**
 ```
-mcp__claude-in-chrome__find({ tabId: TAB_ID, query: "search bar" })
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
 ```
 
 **Click Element:**
 ```
-mcp__claude-in-chrome__computer({ tabId: TAB_ID, action: "left_click", ref: "ref_1" })
+mcp__chrome-devtools__click({ pageId: PAGE_ID, selector: "button.submit" })
 ```
 
 **Type in Input:**
 ```
-mcp__claude-in-chrome__form_input({ tabId: TAB_ID, ref: "ref_1", value: "text" })
+mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[name='email']", value: "text" })
 ```
 
 **Wait:**
 ```
-mcp__claude-in-chrome__computer({ tabId: TAB_ID, action: "wait", duration: 2 })
+mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: ".loaded", timeout: 2000 })
 ```
 
 **Check Console Errors:**
 ```
-mcp__claude-in-chrome__read_console_messages({ tabId: TAB_ID, onlyErrors: true })
+mcp__chrome-devtools__list_console_messages({ pageId: PAGE_ID })
 ```
 
 **Scroll:**
 ```
-mcp__claude-in-chrome__computer({ tabId: TAB_ID, action: "scroll", scroll_direction: "down" })
+mcp__chrome-devtools__evaluate_script({ pageId: PAGE_ID, script: "window.scrollBy(0, 500)" })
 ```
 
 ### Step 3.4: Common Test Patterns
 
-**Login Helper Function:**
-```javascript
-async function ensureLoggedIn(tabId, credentials) {
-  // Take screenshot to check current state
-  await mcp__claude-in-chrome__computer({ tabId, action: "screenshot" });
+**Login Helper Pattern:**
+```
+// 1. Take screenshot to check current state
+mcp__chrome-devtools__take_screenshot({ pageId: PAGE_ID })
 
-  // Read page to check if already logged in
-  const page = await mcp__claude-in-chrome__read_page({ tabId, depth: 5 });
+// 2. Read page to check if already logged in
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
 
-  // If already on dashboard or authenticated page, skip login
-  if (page.includes("Dashboard") || page.includes("Sign out")) {
-    return true;
-  }
+// 3. If already on dashboard or authenticated page, skip login
+// Check snapshot for "Dashboard" or "Sign out"
 
-  // Navigate to login
-  await mcp__claude-in-chrome__navigate({ tabId, url: "/login" });
-  await mcp__claude-in-chrome__computer({ tabId, action: "wait", duration: 1 });
+// 4. Navigate to login
+mcp__chrome-devtools__navigate_page({ pageId: PAGE_ID, url: "/login" })
 
-  // Find and fill email
-  const emailInput = await mcp__claude-in-chrome__find({ tabId, query: "email input" });
-  await mcp__claude-in-chrome__form_input({ tabId, ref: emailInput[0].ref, value: credentials.email });
+// 5. Wait for page to load
+mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: "input[type='email']", timeout: 5000 })
 
-  // Find and fill password
-  const passwordInput = await mcp__claude-in-chrome__find({ tabId, query: "password input" });
-  await mcp__claude-in-chrome__form_input({ tabId, ref: passwordInput[0].ref, value: credentials.password });
+// 6. Fill email input
+mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='email']", value: "test@example.com" })
 
-  // Click submit
-  const submitBtn = await mcp__claude-in-chrome__find({ tabId, query: "sign in button" });
-  await mcp__claude-in-chrome__computer({ tabId, action: "left_click", ref: submitBtn[0].ref });
+// 7. Fill password input
+mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='password']", value: "password123" })
 
-  // Wait for navigation
-  await mcp__claude-in-chrome__computer({ tabId, action: "wait", duration: 3 });
+// 8. Click submit button
+mcp__chrome-devtools__click({ pageId: PAGE_ID, selector: "button[type='submit']" })
 
-  // Verify success
-  const afterLogin = await mcp__claude-in-chrome__read_page({ tabId, depth: 3 });
-  return afterLogin.includes("Dashboard") || afterLogin.includes("Sign out");
-}
+// 9. Wait for navigation to dashboard
+mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: "[data-testid='dashboard']", timeout: 5000 })
+
+// 10. Verify success by taking snapshot
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
 ```
 
-**Error Detection:**
-```javascript
-async function checkForErrors(tabId) {
-  // Check console for errors
-  const consoleMessages = await mcp__claude-in-chrome__read_console_messages({
-    tabId,
-    onlyErrors: true
-  });
+**Error Detection Pattern:**
+```
+// 1. Check console for errors
+mcp__chrome-devtools__list_console_messages({ pageId: PAGE_ID })
 
-  // Check page for error UI
-  const page = await mcp__claude-in-chrome__read_page({ tabId, depth: 5 });
-  const errorIndicators = ["error", "Error", "failed", "Failed", "500", "404"];
-  const hasErrorUI = errorIndicators.some(indicator => page.includes(indicator));
+// 2. Take snapshot to check for error UI
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
 
-  return {
-    consoleErrors: consoleMessages,
-    hasErrorUI,
-    hasErrors: consoleMessages.length > 0 || hasErrorUI
-  };
-}
+// 3. Analyze snapshot for error indicators: "error", "Error", "failed", "Failed", "500", "404"
 ```
 
-**Page Load Verification:**
-```javascript
-async function verifyPageLoaded(tabId, expectedContent) {
-  await mcp__claude-in-chrome__computer({ tabId, action: "wait", duration: 2 });
-  const page = await mcp__claude-in-chrome__read_page({ tabId, depth: 5 });
-  const screenshot = await mcp__claude-in-chrome__computer({ tabId, action: "screenshot" });
-  const errors = await checkForErrors(tabId);
+**Page Load Verification Pattern:**
+```
+// 1. Wait for expected element
+mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: ".expected-element", timeout: 5000 })
 
-  return {
-    loaded: expectedContent.every(content => page.includes(content)),
-    hasErrors: errors.hasErrors,
-    screenshot,
-    pageContent: page
-  };
-}
+// 2. Take snapshot to verify content
+mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
+
+// 3. Take screenshot for documentation
+mcp__chrome-devtools__take_screenshot({ pageId: PAGE_ID })
+
+// 4. Check console for errors
+mcp__chrome-devtools__list_console_messages({ pageId: PAGE_ID })
 ```
 
 ### Step 3.5: Execute Feature Test
@@ -984,33 +972,34 @@ For each feature, execute its test steps:
 
 ```
 1. Navigate to /login
-   mcp__claude-in-chrome__navigate({ tabId, url: "/login" })
+   mcp__chrome-devtools__navigate_page({ pageId: PAGE_ID, url: "/login" })
 
 2. Wait for page load
-   mcp__claude-in-chrome__computer({ tabId, action: "wait", duration: 2 })
+   mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: "input[type='email']", timeout: 5000 })
 
 3. Take screenshot
-   mcp__claude-in-chrome__computer({ tabId, action: "screenshot" })
+   mcp__chrome-devtools__take_screenshot({ pageId: PAGE_ID })
 
 4. Verify form elements
-   mcp__claude-in-chrome__read_page({ tabId, depth: 10 })
+   mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
    - Check for email input
    - Check for password input
    - Check for submit button
 
 5. Test invalid credentials
-   - Fill email: invalid@test.com
-   - Fill password: wrongpassword
-   - Click submit
+   mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='email']", value: "invalid@test.com" })
+   mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='password']", value: "wrongpassword" })
+   mcp__chrome-devtools__click({ pageId: PAGE_ID, selector: "button[type='submit']" })
    - Verify error message appears
 
 6. Test valid credentials
-   - Fill email: [test email]
-   - Fill password: [test password]
-   - Click submit
-   - Wait for redirect
+   mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='email']", value: "[test email]" })
+   mcp__chrome-devtools__fill({ pageId: PAGE_ID, selector: "input[type='password']", value: "[test password]" })
+   mcp__chrome-devtools__click({ pageId: PAGE_ID, selector: "button[type='submit']" })
+   mcp__chrome-devtools__wait_for({ pageId: PAGE_ID, selector: "[data-testid='dashboard']", timeout: 5000 })
 
 7. Verify dashboard access
+   mcp__chrome-devtools__take_snapshot({ pageId: PAGE_ID })
    - Check URL contains /dashboard
    - Verify dashboard content loads
 ```

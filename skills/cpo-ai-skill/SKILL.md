@@ -3,8 +3,13 @@ name: cpo-ai-skill
 description: "Chief Product Officer AI that orchestrates entire product lifecycles. Receives product ideas, qualifies scope through discovery questions, creates strategic plans with epics/stages/stories, implements stage-by-stage with testing, and delivers production-ready products with documentation. Use when asked to: build a product from scratch, create a complete application, plan and implement a full project, orchestrate product development, go from idea to production. Triggers on: build this product, cpo mode, chief product officer, product lifecycle, idea to production, full product build, strategic planning, product roadmap."
 user-invocable: true
 context: fork
-version: 2.1.0
-tools: Task
+version: 2.2.0
+tools:
+  - Task
+  - TeammateTool
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 model: opus
 color: "#6366f1"
 triggers:
@@ -205,19 +210,71 @@ ls -la master-project.json cpo-progress.md docs/user-guide.md 2>/dev/null
 
 ### Phase 3: Stage-by-Stage Implementation
 
-**Goal:** Implement each stage sequentially with quality gates.
+**Goal:** Implement each stage with quality gates. Supports sequential, parallel, or swarm execution.
+
+**Execution Modes:**
+
+| Mode | When to Use | Speedup |
+|------|-------------|---------|
+| **Sequential** (default) | Small projects, < 5 stages | 1x |
+| **Parallel** | Independent stages, no shared files | 2-3x |
+| **Swarm** | Large projects, 5+ stages with specialists | 3-5x |
+
+**Enable swarm mode** by setting in `master-project.json`:
+```json
+{
+  "executionMode": "swarm",
+  "swarm": {
+    "enabled": true,
+    "teamName": "cpo-{projectName}",
+    "workers": {
+      "types": ["frontend", "api", "database"],
+      "maxWorkers": 5
+    }
+  }
+}
+```
 
 **Key Steps:**
 1. Load project state and identify next pending stage
-2. Determine stage type and select appropriate specialized agent
-3. For Foundation: Invoke Database Setup Agent
-4. For UI: Invoke Frontend Design Agent with research context
-5. For API: Invoke Backend API Agent
-6. Delegate implementation to autonomous-dev
-7. Monitor progress and update tracking
-8. Test stage with fulltest-skill
-9. Commit and push if tests pass, fix and retry if tests fail
-10. Repeat for all stages
+2. **Check execution mode** - sequential, parallel, or swarm
+3. Determine stage type and select appropriate specialized agent
+4. For Foundation: Invoke Database Setup Agent
+5. For UI: Invoke Frontend Design Agent with research context
+6. For API: Invoke Backend API Agent
+7. **If swarm mode:**
+   - Create team with `TeammateTool.spawnTeam()`
+   - Create tasks for all stages with `TaskCreate`
+   - Spawn specialist workers (frontend-worker, api-worker, database-worker)
+   - Monitor via inbox messages, workers self-assign from TaskList
+   - Coordinate via TeammateTool messaging
+8. **If sequential/parallel:** Delegate to autonomous-dev
+9. Monitor progress and update tracking
+10. Test stage with fulltest-skill
+11. Commit and push if tests pass, fix and retry if tests fail
+12. Repeat for all stages (or wait for swarm completion)
+
+**Swarm Workflow Diagram:**
+```
+┌─────────────────────────────────────────────────────────┐
+│                CPO AI (LEADER)                          │
+│  - Creates team: cpo-{projectName}                      │
+│  - Spawns workers based on stage types                  │
+│  - Monitors inboxes for completion                      │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+         ┌────────────┼────────────┐
+         ▼            ▼            ▼
+    ┌─────────┐  ┌─────────┐  ┌─────────┐
+    │Frontend │  │   API   │  │Database │
+    │ Worker  │  │ Worker  │  │ Worker  │
+    └─────────┘  └─────────┘  └─────────┘
+         │            │            │
+         └────────────┴────────────┘
+                      │
+              Shared TaskList
+              (stages as tasks)
+```
 
 **Output:** Fully implemented product with all stages complete and tested
 
@@ -272,6 +329,11 @@ ls -la master-project.json cpo-progress.md docs/user-guide.md 2>/dev/null
 | "replan" | Go back to Phase 2 and adjust plan |
 | "test only" | Run tests without implementing |
 | "docs only" | Generate documentation only |
+| "swarm on" | Enable swarm mode for Phase 3 |
+| "swarm off" | Disable swarm, use sequential |
+| "swarm status" | Show team, workers, and task board |
+| "swarm workers" | List active workers and tasks |
+| "parallel on" | Enable parallel mode (no swarm) |
 
 ---
 

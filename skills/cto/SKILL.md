@@ -1,9 +1,10 @@
 ---
 name: cto
-description: "Universal AI CTO advisor for any project. Provides full technical leadership: architecture, code quality, security, performance, and testing strategy. On first run, checks for cto-requirements.md config file. If missing, explores the codebase and checks for fulltest reports to understand current state before making recommendations. Triggers on: CTO advice, architecture review, tech stack decision, system design, code quality review, security audit, performance review, technical roadmap, refactoring strategy, or when making technical decisions."
+description: "Swarm-enabled AI CTO advisor for any project. Uses TeammateTool for parallel technical analysis across architecture, security, performance, and code quality. Spawns concurrent specialist reviewers that share findings in real-time. On first run, checks for cto-requirements.md config file. Triggers on: CTO advice, architecture review, tech stack decision, system design, code quality review, security audit, performance review, technical roadmap, refactoring strategy."
 user-invocable: true
 context: fork
 model: opus
+version: 1.0.0
 color: "#8b5cf6"
 triggers:
   - "/cto"
@@ -16,6 +17,7 @@ triggers:
   - "performance review"
   - "technical roadmap"
   - "refactoring strategy"
+  - "swarm review"
 allowed-tools:
   - Read
   - Write
@@ -26,6 +28,11 @@ allowed-tools:
   - WebSearch
   - WebFetch
   - Task
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - TeammateTool
   - AskUserQuestion
   - mcp__memory__*
 ---
@@ -65,6 +72,64 @@ A comprehensive CTO advisor skill that provides strategic technical leadership f
 - Recommend alternatives when appropriate
 - Evaluate dependency health and security
 - Plan migration strategies
+
+---
+
+## Execution Modes
+
+| Mode | Description | When to Use |
+|------|-------------|-------------|
+| **Sequential** | One analysis area at a time | Simple reviews, focused questions |
+| **Swarm** | Parallel specialist analysts via TeammateTool | Full codebase reviews, comprehensive audits |
+
+### Swarm Mode Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        CTO SWARM ORCHESTRATOR                        │
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                 PARALLEL SPECIALIST ANALYSTS                 │   │
+│   │                                                              │   │
+│   │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │   │
+│   │  │ARCHITECT │  │ SECURITY │  │  PERF    │  │ QUALITY  │    │   │
+│   │  │ ANALYST  │◀─▶│ ANALYST  │◀─▶│ ANALYST  │◀─▶│ ANALYST  │    │   │
+│   │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │   │
+│   │       │              │              │              │         │   │
+│   │       └──────────────┴──────────────┴──────────────┘         │   │
+│   │                          │                                    │   │
+│   │              ┌───────────┴───────────┐                       │   │
+│   │              │   REAL-TIME MESSAGING  │                       │   │
+│   │              │  • Cross-concern alerts │                       │   │
+│   │              │  • Pattern sharing      │                       │   │
+│   │              │  • Critical findings    │                       │   │
+│   │              └───────────────────────┘                       │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                              │                                       │
+│                              ▼                                       │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                    LIVE SYNTHESIS                            │   │
+│   │  • Findings merged as they arrive                           │   │
+│   │  • Cross-concern correlations detected                      │   │
+│   │  • Prioritized action items generated                       │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                              │                                       │
+│                              ▼                                       │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                CTO EXECUTIVE REPORT                          │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Swarm Specialist Agents
+
+| Agent | Focus | Checks For | Priority |
+|-------|-------|------------|----------|
+| **architecture-analyst** | System design | Patterns, coupling, scalability, separation of concerns | Medium |
+| **security-analyst** | Vulnerabilities | OWASP Top 10, secrets, auth/authz, injection | High |
+| **performance-analyst** | Bottlenecks | N+1 queries, caching, memory, complexity | Medium |
+| **quality-analyst** | Code health | Tech debt, testing, conventions, maintainability | Low |
+| **stack-analyst** | Technology fit | Dependencies, versions, alternatives, migrations | Low |
 
 ---
 
@@ -159,7 +224,310 @@ ls -la tsconfig.json .eslintrc* .prettierrc* jest.config* vitest.config* playwri
 5. State management: Redux, Zustand, Pinia, etc.
 ```
 
-### Step 3: Analysis Based on Focus Area
+### Step 3: Swarm Mode Analysis (Recommended for Full Reviews)
+
+When performing a comprehensive review, spawn parallel specialist analysts using TeammateTool:
+
+#### 3.1: Spawn Specialist Swarm
+
+```
+TeammateTool.spawn({
+  agents: [
+    {
+      name: "architecture-analyst",
+      type: "cto-specialist",
+      task: {
+        focus: "architecture",
+        codebase_context: {
+          tech_stack: detected_stack,
+          structure: directory_structure,
+          agents_md: agents_md_content
+        },
+        checklist: [
+          "Component organization and boundaries",
+          "Dependency graph analysis",
+          "API layer design",
+          "Data flow patterns",
+          "Circular dependency detection",
+          "Separation of concerns",
+          "Scalability readiness",
+          "Microservices vs monolith fit"
+        ]
+      },
+      can_message: ["orchestrator", "security-analyst", "performance-analyst", "quality-analyst"],
+      priority: "medium"
+    },
+    {
+      name: "security-analyst",
+      type: "cto-specialist",
+      task: {
+        focus: "security",
+        codebase_context: {
+          tech_stack: detected_stack,
+          auth_files: auth_related_files,
+          api_files: api_files
+        },
+        checklist: [
+          "OWASP Top 10 vulnerabilities",
+          "Authentication flow security",
+          "Authorization (RBAC/ABAC) implementation",
+          "Input validation coverage",
+          "SQL/NoSQL injection risks",
+          "XSS vulnerability points",
+          "CSRF protection",
+          "Secrets management",
+          "Dependency vulnerabilities (npm audit)",
+          "Security headers"
+        ]
+      },
+      can_message: ["orchestrator", "architecture-analyst", "performance-analyst"],
+      priority: "high"  // Security findings are urgent
+    },
+    {
+      name: "performance-analyst",
+      type: "cto-specialist",
+      task: {
+        focus: "performance",
+        codebase_context: {
+          tech_stack: detected_stack,
+          database_files: db_related_files,
+          api_files: api_files
+        },
+        checklist: [
+          "N+1 query patterns",
+          "Database index coverage",
+          "Caching strategy",
+          "Bundle size analysis",
+          "Memory leak risks",
+          "Async operation handling",
+          "Connection pooling",
+          "Rate limiting",
+          "Pagination implementation",
+          "Heavy computation offloading"
+        ]
+      },
+      can_message: ["orchestrator", "architecture-analyst", "security-analyst"],
+      priority: "medium"
+    },
+    {
+      name: "quality-analyst",
+      type: "cto-specialist",
+      task: {
+        focus: "code_quality",
+        codebase_context: {
+          tech_stack: detected_stack,
+          test_files: test_files,
+          config_files: linter_configs
+        },
+        checklist: [
+          "Test coverage analysis",
+          "Code complexity metrics",
+          "Technical debt indicators",
+          "TODO/FIXME accumulation",
+          "Dead code detection",
+          "Naming conventions",
+          "Documentation coverage",
+          "Error handling patterns",
+          "Logging strategy",
+          "Type safety (if applicable)"
+        ]
+      },
+      can_message: ["orchestrator", "architecture-analyst"],
+      priority: "low"
+    },
+    {
+      name: "stack-analyst",
+      type: "cto-specialist",
+      task: {
+        focus: "tech_stack",
+        codebase_context: {
+          package_files: package_files,
+          lock_files: lock_files,
+          config_files: config_files
+        },
+        checklist: [
+          "Dependency freshness",
+          "Deprecated package usage",
+          "Security advisory check",
+          "License compatibility",
+          "Bundle bloat detection",
+          "Alternative recommendations",
+          "Migration path assessment",
+          "Framework version currency"
+        ]
+      },
+      can_message: ["orchestrator", "security-analyst"],
+      priority: "low"
+    }
+  ],
+  coordination: "async"
+})
+```
+
+#### 3.2: Inter-Analyst Communication
+
+Analysts share findings in real-time for cross-concern detection:
+
+```
+// Security analyst finds auth issue
+TeammateTool.message({
+  from: "security-analyst",
+  to: ["orchestrator"],
+  type: "critical_finding",
+  priority: "immediate",
+  payload: {
+    severity: "critical",
+    category: "security",
+    file: "src/api/auth.ts",
+    line: 45,
+    issue: "JWT secret hardcoded in source",
+    evidence: "const JWT_SECRET = 'mysecretkey'",
+    recommendation: "Move to environment variable",
+    cwe: "CWE-798"
+  }
+})
+
+// Architecture analyst alerts performance about pattern
+TeammateTool.message({
+  from: "architecture-analyst",
+  to: ["performance-analyst"],
+  type: "pattern_alert",
+  payload: {
+    pattern: "Service calls database directly in loop",
+    file: "src/services/orders.ts",
+    suggestion: "Check for N+1 query pattern here"
+  }
+})
+
+// Performance analyst confirms cross-concern
+TeammateTool.message({
+  from: "performance-analyst",
+  to: ["orchestrator", "architecture-analyst"],
+  type: "cross_concern_confirmed",
+  payload: {
+    original_alert: "architecture:loop_pattern",
+    finding: {
+      severity: "high",
+      issue: "N+1 query: 50 DB calls per request",
+      file: "src/services/orders.ts",
+      line: 78,
+      recommendation: "Batch fetch with WHERE IN clause"
+    }
+  }
+})
+
+// Stack analyst warns security about vulnerable dep
+TeammateTool.message({
+  from: "stack-analyst",
+  to: ["security-analyst", "orchestrator"],
+  type: "vulnerability_alert",
+  payload: {
+    package: "lodash",
+    version: "4.17.15",
+    vulnerability: "Prototype Pollution",
+    severity: "high",
+    fix: "Upgrade to 4.17.21+"
+  }
+})
+```
+
+#### 3.3: Live Progress Dashboard
+
+```markdown
+## CTO Analysis Progress (Live)
+
+| Analyst | Status | Findings | Critical | Duration |
+|---------|--------|----------|----------|----------|
+| security-analyst | ✅ Complete | 5 | 1 | 2m 15s |
+| architecture-analyst | 🔄 Running | 3 | 0 | 2m 45s |
+| performance-analyst | ✅ Complete | 4 | 0 | 1m 58s |
+| quality-analyst | 🔄 Running | 2 | 0 | 2m 10s |
+| stack-analyst | ✅ Complete | 6 | 0 | 1m 30s |
+
+### Critical Findings (Live)
+🚨 [security] JWT secret hardcoded in src/api/auth.ts:45
+   └─ Detected 1m 30s ago
+
+### Cross-Concern Alerts
+⚠️ architecture → performance: N+1 confirmed in orders service
+⚠️ stack → security: Vulnerable lodash version detected
+
+### Emerging Patterns
+📊 3 analysts flagged error handling inconsistency
+📊 2 analysts noted missing input validation
+```
+
+#### 3.4: Swarm Synchronization
+
+Wait for all analysts before final synthesis:
+
+```
+TeammateTool.sync({
+  name: "analysis-complete",
+  wait_for: [
+    "security-analyst",
+    "architecture-analyst",
+    "performance-analyst",
+    "quality-analyst",
+    "stack-analyst"
+  ],
+  timeout: 300,  // 5 minutes max
+  on_partial_timeout: {
+    // If one analyst is slow, synthesize available findings
+    action: "synthesize_available",
+    mark_incomplete: ["slow_analyst_name"]
+  },
+  on_complete: "generate_executive_report"
+})
+```
+
+#### 3.5: Swarm Findings Synthesis
+
+Merge all analyst findings into unified report:
+
+```json
+{
+  "swarmAnalysis": {
+    "mode": "swarm",
+    "duration": "3m 42s",
+    "analysts": {
+      "security-analyst": { "findings": 5, "critical": 1 },
+      "architecture-analyst": { "findings": 3, "critical": 0 },
+      "performance-analyst": { "findings": 4, "critical": 0 },
+      "quality-analyst": { "findings": 2, "critical": 0 },
+      "stack-analyst": { "findings": 6, "critical": 0 }
+    },
+    "crossConcerns": [
+      {
+        "analysts": ["architecture", "performance"],
+        "issue": "N+1 query in order service",
+        "combinedSeverity": "high"
+      }
+    ],
+    "emergingPatterns": [
+      {
+        "pattern": "Inconsistent error handling",
+        "flaggedBy": ["security", "architecture", "quality"],
+        "recommendation": "Implement centralized error handler"
+      }
+    ],
+    "totalFindings": 20,
+    "criticalCount": 1,
+    "highCount": 4,
+    "mediumCount": 8,
+    "lowCount": 7
+  }
+}
+```
+
+---
+
+### Step 3-Alt: Sequential Analysis (For Focused Reviews)
+
+Use sequential mode when:
+- Answering a specific question ("Should we use GraphQL?")
+- Focused single-area review ("Just check security")
+- Limited context/time available
 
 #### Architecture Review
 
@@ -592,12 +960,74 @@ mcp__memory__create_entities({
 
 ---
 
+## Swarm Mode Configuration
+
+Enable swarm mode in your `cto-requirements.md`:
+
+```markdown
+## Execution Mode
+mode: swarm  # or "sequential"
+
+## Swarm Configuration
+swarm:
+  max_concurrent_analysts: 5
+  timeout_seconds: 300
+  critical_finding_action: immediate_notify
+  cross_concern_detection: true
+  live_dashboard: true
+```
+
+Or configure globally:
+
+```json
+{
+  "cto": {
+    "defaultMode": "swarm",
+    "swarmConfig": {
+      "analysts": ["security", "architecture", "performance", "quality", "stack"],
+      "priorityOrder": ["security", "performance", "architecture", "quality", "stack"],
+      "timeoutSeconds": 300,
+      "crossConcernDetection": true
+    }
+  }
+}
+```
+
+### Swarm vs Sequential Comparison
+
+| Aspect | Sequential | Swarm |
+|--------|------------|-------|
+| Execution | One area at a time | All areas concurrent |
+| Duration | Sum of all analyses | Max of all analyses |
+| Cross-Concerns | Manual correlation | Auto-detected |
+| Critical Findings | Found after all complete | Immediately surfaced |
+| Token Usage | Lower (single context) | Higher (5 contexts) |
+| Best For | Focused questions | Full codebase review |
+
+### When to Use Each Mode
+
+**Use Swarm Mode:**
+- Full codebase review ("Review this project as CTO")
+- Pre-launch audit
+- New project onboarding
+- Quarterly health check
+- Due diligence review
+
+**Use Sequential Mode:**
+- Specific question ("Is our auth secure?")
+- Single area focus ("Review architecture only")
+- Quick check before PR
+- Limited time available
+
+---
+
 ## Quick Commands
 
 | Command | Action |
 |---------|--------|
 | "status" | Show current review progress |
-| "focus [area]" | Narrow review to specific area |
+| "focus [area]" | Narrow review to specific area (sequential) |
+| "swarm review" | Force swarm mode for full analysis |
 | "deep dive [component]" | Detailed analysis of component |
 | "create adr" | Generate Architecture Decision Record |
 | "implement" | Prompt for /autonomous-dev implementation |
@@ -630,26 +1060,45 @@ CPO defines product → CTO advises architecture → Implementation proceeds
 
 ## Example Invocations
 
-### General Review
+### Swarm Mode: Full Review
 ```
 User: "Review this codebase as a CTO"
 
-CTO Advisor:
-1. Checks for cto-requirements.md (not found)
-2. Checks for fulltest reports (not found)
-3. Performs full codebase discovery
-4. Analyzes architecture, code quality, security, performance
-5. Generates comprehensive report
-6. Presents summary with action items
-7. Asks: "Would you like me to implement these using /autonomous-dev?"
-8. If approved → Creates PRD → Invokes autonomous-dev
+CTO Advisor (Swarm Mode):
+1. Checks for cto-requirements.md
+2. Performs codebase discovery
+3. Spawns 5 parallel analysts via TeammateTool:
+   - security-analyst
+   - architecture-analyst
+   - performance-analyst
+   - quality-analyst
+   - stack-analyst
+
+# Real-time output:
+[0:15] security-analyst: 🔍 Scanning auth patterns...
+[0:22] architecture-analyst: 🔍 Mapping component boundaries...
+[0:28] security-analyst: 🚨 CRITICAL: Hardcoded JWT secret found
+[0:35] performance-analyst: ⚠️ N+1 query detected in orders
+[0:42] architecture-analyst → performance-analyst: "Check service loop pattern"
+[0:55] performance-analyst: ✅ Confirmed N+1 (cross-concern with architecture)
+[1:10] quality-analyst: ℹ️ Test coverage at 45%
+[1:25] stack-analyst: ⚠️ 3 vulnerable dependencies found
+
+# Synthesis (live as findings arrive):
+- Critical: 1 (security)
+- High: 3 (security, performance, stack)
+- Medium: 5
+- Cross-concerns detected: 2
+
+4. Generates executive report
+5. Asks: "Would you like me to implement fixes using /autonomous-dev?"
 ```
 
-### Focused Security Audit
+### Sequential Mode: Focused Security Audit
 ```
 User: "Do a security audit of the authentication system"
 
-CTO Advisor:
+CTO Advisor (Sequential Mode):
 1. Locates auth-related files
 2. Reviews authentication flow
 3. Checks for OWASP vulnerabilities
@@ -658,11 +1107,28 @@ CTO Advisor:
 6. Generates security-focused report
 ```
 
+### Swarm Mode: Pre-Launch Audit
+```
+User: "We're launching next week - full CTO review please"
+
+CTO Advisor (Swarm Mode):
+1. Spawns all 5 analysts with "launch_readiness" focus
+2. Each analyst prioritizes launch-blocking issues
+3. Cross-concern detection catches:
+   - Security + Performance: "Rate limiting missing on public API"
+   - Architecture + Quality: "No error boundary in React app"
+4. Generates launch readiness checklist:
+   ❌ 2 blockers (must fix)
+   ⚠️ 5 should fix
+   ℹ️ 8 nice to have
+5. Creates prioritized fix plan for autonomous-dev
+```
+
 ### Architecture Decision
 ```
 User: "Should we migrate from REST to GraphQL?"
 
-CTO Advisor:
+CTO Advisor (Sequential - focused question):
 1. Analyzes current REST implementation
 2. Evaluates GraphQL fit for use cases
 3. Considers team expertise
@@ -675,8 +1141,20 @@ CTO Advisor:
 
 ## Version
 
-**Current Version:** 1.0.0
+**Current Version:** 2.0.0 (Swarm-enabled)
 **Last Updated:** January 2026
+
+### Changelog
+- **2.0.0**: Added swarm mode with parallel specialist analysts
+  - 5 concurrent analysts (security, architecture, performance, quality, stack)
+  - Real-time cross-concern detection
+  - Live progress dashboard
+  - Inter-analyst communication via TeammateTool
+- **1.0.0**: Initial release with sequential analysis
+
+### Requirements
+- **Sequential Mode**: Standard Claude Code
+- **Swarm Mode**: Requires `claude-sneakpeek` or official TeammateTool support
 
 ---
 

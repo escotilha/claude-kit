@@ -385,6 +385,162 @@ Generate a comprehensive report:
 4. **Iterate on failures**: Re-run agents to fix issues found by testing
 5. **Know when to stop**: Max 5 orchestration iterations to prevent loops
 
+## Task Dependencies
+
+Use TaskCreate with dependency tracking for phased execution. This enables the orchestrator to manage complex workflows where tasks must complete in a specific order.
+
+### Dependency Relationships
+
+- **blockedBy**: Task cannot start until specified tasks complete
+- **blocks**: Specifies which tasks are waiting on this task
+
+### Creating Tasks with Dependencies
+
+**Step 1: Create foundation tasks first**
+
+```xml
+<TaskCreate
+  title="Set up database schema"
+  description="Create PostgreSQL tables, indexes, and initial migrations"
+  priority="high"
+/>
+<!-- Returns: task-db-001 -->
+```
+
+**Step 2: Create dependent tasks with blockedBy**
+
+```xml
+<TaskCreate
+  title="Implement backend API"
+  description="Build REST endpoints for all CRUD operations"
+  priority="high"
+  addBlockedBy="task-db-001"
+/>
+<!-- Returns: task-api-002 -->
+
+<TaskCreate
+  title="Write API integration tests"
+  description="Create comprehensive test suite for all endpoints"
+  priority="medium"
+  addBlockedBy="task-api-002"
+/>
+<!-- Returns: task-test-003 -->
+
+<TaskCreate
+  title="Deploy to staging"
+  description="Deploy application to staging environment"
+  priority="medium"
+  addBlockedBy="task-test-003"
+/>
+<!-- Returns: task-deploy-004 -->
+```
+
+### Updating Dependencies with TaskUpdate
+
+Add dependencies to existing tasks:
+
+```xml
+<TaskUpdate
+  id="task-frontend-005"
+  addBlockedBy="task-api-002"
+/>
+```
+
+Remove dependencies when requirements change:
+
+```xml
+<TaskUpdate
+  id="task-frontend-005"
+  removeBlockedBy="task-api-002"
+/>
+```
+
+### Phased Execution Pattern
+
+For the orchestrator's typical workflow, structure dependencies as:
+
+```
+Phase 1 (Foundation):
+├── task-db-setup (no dependencies)
+└── task-env-config (no dependencies)
+
+Phase 2 (Implementation):
+├── task-backend-api (blockedBy: task-db-setup)
+├── task-frontend-ui (blockedBy: task-env-config)
+└── task-auth-service (blockedBy: task-db-setup)
+
+Phase 3 (Integration):
+├── task-frontend-integration (blockedBy: task-backend-api, task-frontend-ui)
+└── task-e2e-tests (blockedBy: task-frontend-integration)
+
+Phase 4 (Deployment):
+└── task-deploy-staging (blockedBy: task-e2e-tests)
+```
+
+### Example: Full Orchestration with Dependencies
+
+```xml
+<!-- Phase 1: Foundation (parallel) -->
+<TaskCreate title="Database setup" description="Schema and migrations" priority="high"/>
+<!-- task-001 -->
+
+<TaskCreate title="Environment config" description="Set up .env and secrets" priority="high"/>
+<!-- task-002 -->
+
+<!-- Phase 2: Implementation (blocked by Phase 1) -->
+<TaskCreate
+  title="Backend API"
+  description="REST endpoints"
+  priority="high"
+  addBlockedBy="task-001"
+/>
+<!-- task-003 -->
+
+<TaskCreate
+  title="Frontend UI"
+  description="React components"
+  priority="high"
+  addBlockedBy="task-002"
+/>
+<!-- task-004 -->
+
+<!-- Phase 3: Integration (blocked by Phase 2) -->
+<TaskCreate
+  title="API integration"
+  description="Connect frontend to backend"
+  priority="high"
+  addBlockedBy="task-003,task-004"
+/>
+<!-- task-005 -->
+
+<!-- Phase 4: Testing (blocked by Phase 3) -->
+<TaskCreate
+  title="E2E testing"
+  description="Full test suite with fulltesting-agent"
+  priority="high"
+  addBlockedBy="task-005"
+/>
+<!-- task-006 -->
+
+<!-- Phase 5: Deployment (blocked by Phase 4) -->
+<TaskCreate
+  title="Deploy to production"
+  description="GitHub + Railway deployment"
+  priority="high"
+  addBlockedBy="task-006"
+/>
+<!-- task-007 -->
+```
+
+### Querying Task Dependencies
+
+Use TaskRead to check dependency status:
+
+```xml
+<TaskRead id="task-005"/>
+<!-- Returns task with blockedBy and blocks arrays showing dependency chain -->
+```
+
 ## Workflow Diagram
 
 ```

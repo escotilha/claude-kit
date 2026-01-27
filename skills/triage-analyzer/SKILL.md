@@ -4,6 +4,8 @@ description: Analyze M&A opportunities and score them 0-10 against investment cr
 user-invocable: true
 model: sonnet
 context: fork
+version: 1.0.0
+color: "#f59e0b"
 allowed-tools:
   - Read
   - Write
@@ -21,13 +23,73 @@ allowed-tools:
 
 ## Session Tracking
 
-Use `${CLAUDE_SESSION_ID}` to track triage analyses for audit purposes:
+Use `${CLAUDE_SESSION_ID}` to track analysis across sessions for comprehensive deal tracking.
+
+### Organizing Multiple Document Extractions
+
+When triaging a deal involves multiple data sources (CIMs, financial statements, pitch decks), organize extractions by session:
 
 ```bash
-# Save triage results with session tracking
-TRIAGE_OUTPUT="triage_${CLAUDE_SESSION_ID}.json"
-echo '{"session": "${CLAUDE_SESSION_ID}", "company": "...", "score": N}' > "$TRIAGE_OUTPUT"
+# Create session-specific directories for triage inputs
+DEAL_DIR="deals/${COMPANY_NAME}/sessions/${CLAUDE_SESSION_ID}"
+mkdir -p "$DEAL_DIR/sources"
+
+# Store all source documents and extractions
+cp CIM.pdf "$DEAL_DIR/sources/"
+cp financials.xlsx "$DEAL_DIR/sources/"
+
+# Tag triage output with session ID
+TRIAGE_OUTPUT="$DEAL_DIR/triage_${CLAUDE_SESSION_ID}.json"
 ```
+
+### Cross-Referencing with Proposals and Analyses
+
+Link triage sessions with downstream proposal and investment analysis workflows:
+
+```bash
+# Include session reference in triage output for traceability
+cat > "$TRIAGE_OUTPUT" << EOF
+{
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "company": "${COMPANY_NAME}",
+  "score": 8.2,
+  "recommendation": "PROCEED",
+  "next_session_type": "proposal",
+  "related_sessions": {
+    "cim_extraction": "<extraction_session_id>",
+    "financial_review": "<review_session_id>"
+  }
+}
+EOF
+
+# Reference triage session when generating proposal
+/mna proposal --triage-session ${CLAUDE_SESSION_ID}
+```
+
+### Audit Trail for Due Diligence
+
+Maintain complete audit trails for investment committee review and compliance:
+
+```bash
+# Create audit log for all triage activities
+AUDIT_LOG="deals/${COMPANY_NAME}/audit_trail.log"
+
+# Log triage decision with full context
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=triage_initiated COMPANY=${COMPANY_NAME}" >> "$AUDIT_LOG"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=data_sources SOURCES=[CIM.pdf,financials.xlsx]" >> "$AUDIT_LOG"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=triage_complete SCORE=8.2 RECOMMENDATION=PROCEED" >> "$AUDIT_LOG"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=handoff NEXT_PHASE=proposal NEXT_SESSION=<proposal_session_id>" >> "$AUDIT_LOG"
+```
+
+### Benefits
+
+- **Reproducibility**: Recreate any triage analysis from session artifacts
+- **Compliance**: Full audit trail for investment committee due diligence
+- **Team collaboration**: Share session IDs across team members
+- **Multi-source tracking**: Link all document extractions to their triage context
+
+---
 
 ## Name
 M&A Triage Analyzer
@@ -137,22 +199,12 @@ When this skill is invoked in Claude Code, use the Read, Grep, and Bash tools to
 3. Save results with session tracking: `triage_${CLAUDE_SESSION_ID}.json`
 4. Present the results to the user with clear recommendations
 
-### Session Tracking
-Use `${CLAUDE_SESSION_ID}` for output files to track analysis sessions:
+### Session Tracking Integration
 
-```bash
-# Save triage results with session ID
-OUTPUT_FILE="triage_results_${CLAUDE_SESSION_ID}.json"
-echo "$TRIAGE_JSON" > "$OUTPUT_FILE"
-
-# Generate report with session reference
-REPORT_FILE="triage_report_${CLAUDE_SESSION_ID}.md"
-```
-
-This enables:
-- Tracking multiple deal analyses in the same workspace
-- Cross-referencing with proposals and analyses
-- Audit trail for investment decisions
+Always use `${CLAUDE_SESSION_ID}` for output files. See the [Session Tracking](#session-tracking) section above for complete documentation on:
+- Organizing multiple document extractions per deal
+- Cross-referencing extraction sessions with triage/proposals
+- Audit trail for due diligence work
 
 ## Examples
 

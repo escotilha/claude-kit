@@ -1,8 +1,10 @@
 ---
 name: autonomous-dev
-description: "Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration. Use when asked to: build a feature autonomously, create a PRD, implement a feature from scratch, run an autonomous coding loop, break down a feature into user stories. Triggers on: autonomous agent, build this autonomously, autonomous mode, implement this feature, create prd, prd to json, user stories, iterative implementation, ralph."
+description: "Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration. Supports swarm mode for multi-agent orchestration with TeammateTool. Use when asked to: build a feature autonomously, create a PRD, implement a feature from scratch, run an autonomous coding loop, break down a feature into user stories. Triggers on: autonomous agent, build this autonomously, autonomous mode, implement this feature, create prd, prd to json, user stories, iterative implementation, ralph, swarm mode."
 user-invocable: true
 context: fork
+version: 2.1.0
+color: "#8b5cf6"
 allowed-tools:
   - Read
   - Write
@@ -14,12 +16,14 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
+  - TaskGet
+  - TeammateTool
   - mcp__memory__*
 ---
 
 # Autonomous Coding Agent
 
-An autonomous workflow that breaks features into small, testable user stories and implements them one at a time with fresh context per iteration.
+An autonomous workflow that breaks features into small, testable user stories and implements them one at a time with fresh context per iteration. Now with **Swarm Mode** for multi-agent orchestration.
 
 ## Core Architecture
 
@@ -30,18 +34,88 @@ An autonomous workflow that breaks features into small, testable user stories an
 - `AGENTS.md` - Long-term patterns for the repository
 - Git history - All code changes
 - **Memory MCP** - Cross-codebase learnings (patterns, mistakes, preferences)
+- **Team Inboxes** (Swarm Mode) - Inter-agent communication at `~/.claude/teams/{name}/inboxes/`
 
 **Each iteration is stateless** - read these files to understand context.
 
+## Execution Modes
+
+| Mode | Description | When to Use |
+|------|-------------|-------------|
+| **Sequential** | One story at a time, single agent | Default, safest |
+| **Parallel** | Multiple stories via Task tool | Independent stories, 2-3x speedup |
+| **Swarm** | Persistent workers with TeammateTool | Large PRDs (10+ stories), 3-5x speedup |
+
+**Mode Selection Logic:**
+```javascript
+function selectExecutionMode(prd) {
+  const { swarm, delegation } = prd;
+
+  if (swarm?.enabled) return 'swarm';
+  if (delegation?.parallel?.enabled) return 'parallel';
+  if (delegation?.enabled) return 'delegation';
+  return 'sequential';
+}
+```
+
 ---
 
-## Memory Integration (Cross-Codebase Learning)
+## Memory Integration (Human-Like Memory System)
 
-The agent uses the Memory MCP server to learn across different projects. This enables:
+The agent uses a **three-tier memory system** inspired by human cognition:
 
-- Remembering patterns that work well
-- Avoiding mistakes made in other codebases
-- Applying user preferences consistently
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CORE MEMORY                              │
+│  ~/.claude/memory/core-memory.json                          │
+│  - Stable preferences, beliefs, patterns                     │
+│  - Loaded at session start, rarely changes                   │
+│  - Highest priority, always applied                          │
+└─────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ Promotion (high usage + effectiveness)
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                   LONG-TERM MEMORY                           │
+│  Memory MCP (patterns, mistakes, tech-insights)             │
+│  - Cross-project learnings                                   │
+│  - Subject to decay and consolidation                        │
+│  - Filtered by Sensory Gate (relevance >= 5)                │
+└─────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ Sensory Filter
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                  SHORT-TERM / SESSION                        │
+│  progress.md, progress-summary.md, prd.json                 │
+│  - Project-specific learnings                                │
+│  - Evaluated for long-term storage at story completion      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Core Memory (Stable Self)
+
+Load user's stable preferences at session start:
+
+```javascript
+// First action in any phase
+const coreMemory = JSON.parse(
+  await readFile('~/.claude/memory/core-memory.json')
+);
+
+// Apply without asking:
+// - coreMemory.preferences.packageManager → use pnpm
+// - coreMemory.preferences.styling → use Tailwind + shadcn
+// - coreMemory.stablePatterns → apply known patterns
+// - coreMemory.beliefs → guide decision-making
+```
+
+**Core memory contains:**
+- User profile (name, role, expertise)
+- Preferences (packageManager, deployment, codeStyle, testing)
+- Stable patterns (projectStructure, apiDesign, authentication)
+- Beliefs ("Simple solutions are better than clever ones")
+- Memory config (relevanceThreshold, decayThresholdDays)
 
 ### Memory Entity Types
 
@@ -53,17 +127,232 @@ The agent uses the Memory MCP server to learn across different projects. This en
 | `tech-insight`          | Framework-specific knowledge | `tech-insight:supabase-rls`          |
 | `architecture-decision` | High-level design choices    | `architecture-decision:multi-tenant` |
 
+### Sensory Filter (Before Saving)
+
+**Not everything learned should be stored.** Apply relevance scoring before saving to Memory MCP:
+
+```javascript
+function calculateRelevance(learning, existingMemories, coreMemory) {
+  let score = 0;
+  const reasons = [];
+
+  // 1. NOVELTY CHECK - Duplicate? Skip entirely
+  const similar = findSimilarMemories(learning, existingMemories);
+  if (similar.length > 0 && similar[0].similarity > 0.85) {
+    return { score: 0, reasons: ["Duplicate"], save: false };
+  }
+  if (similar.length > 0 && similar[0].similarity > 0.6) {
+    score -= 2; // Similar exists, penalty
+    reasons.push("Similar memory exists (-2)");
+  }
+
+  // 2. GENERALITY - Applies to multiple projects/frameworks?
+  if (learning.appliesTo?.length > 2) {
+    score += 3;
+    reasons.push("Broadly applicable (+3)");
+  } else if (learning.appliesTo?.length > 1) {
+    score += 2;
+    reasons.push("Multiple contexts (+2)");
+  }
+
+  // 3. SEVERITY - How important?
+  const severityScores = { critical: 5, high: 3, medium: 2, low: 1 };
+  if (learning.severity) {
+    score += severityScores[learning.severity] || 1;
+    reasons.push(`Severity: ${learning.severity} (+${severityScores[learning.severity]})`);
+  }
+
+  // 4. SOURCE - Learned from failure = more memorable
+  if (learning.source === 'mistake' || learning.source === 'failure') {
+    score += 2;
+    reasons.push("Learned from failure (+2)");
+  }
+  if (learning.source === 'explicit_user_feedback') {
+    score += 3;
+    reasons.push("User explicitly shared (+3)");
+  }
+
+  // 5. FREQUENCY - Will encounter often?
+  if (learning.frequencyHint === 'common') {
+    score += 2;
+    reasons.push("Common scenario (+2)");
+  }
+
+  const threshold = coreMemory.memoryConfig?.relevanceThreshold || 5;
+  return { score, reasons, save: score >= threshold, threshold };
+}
+```
+
+**Decision flow:**
+- Score >= 5 → Save to Memory MCP (long-term)
+- Score < 5 → Save to AGENTS.md if project-specific, or discard
+
 ### When to Query Memory
 
-1. **Phase 1 Start** - Query preferences and patterns before asking clarifying questions
-2. **Phase 3 Start** - Load relevant tech-insights for the detected stack
-3. **Before Implementation** - Check for related mistakes/patterns
+1. **Session Start** - Load core-memory.json for preferences
+2. **Phase 1 Start** - Query preferences and patterns before asking clarifying questions
+3. **Phase 3 Start** - Load relevant tech-insights for the detected stack
+4. **Before Implementation** - Check for related mistakes/patterns
 
-### When to Save to Memory
+### When to Save to Memory (with Filter)
 
-1. **After successful story** - Extract reusable patterns
-2. **After fixing a bug** - Save as mistake to avoid
-3. **When discovering codebase convention** - Save if broadly applicable
+After each story completion, evaluate learnings:
+
+```javascript
+// In Step 3.4 after successful story
+if (discoveredLearning) {
+  const learning = {
+    name: `pattern:${kebabCase(title)}`,
+    entityType: 'pattern',
+    observations: [details],
+    appliesTo: [detectedStack], // e.g., ['nextjs', 'supabase']
+    severity: 'medium',
+    source: 'implementation', // or 'mistake', 'explicit_user_feedback'
+    frequencyHint: 'common'   // or 'rare', 'occasional'
+  };
+
+  const relevance = calculateRelevance(learning, existingMemories, coreMemory);
+
+  if (relevance.save) {
+    // Add tracking metadata
+    learning.observations.push(
+      `Discovered: ${new Date().toISOString().split('T')[0]}`,
+      `Relevance score: ${relevance.score}`,
+      `Source: ${learning.source}`
+    );
+
+    await mcp__memory__create_entities({ entities: [learning] });
+
+    // Create relationships to related memories
+    await mcp__memory__create_relations({
+      relations: [{
+        from: learning.name,
+        relationType: 'applies_to',
+        to: `tech-insight:${detectedStack}`
+      }]
+    });
+
+    console.log(`✓ Memory saved: ${learning.name} (score: ${relevance.score})`);
+  } else {
+    console.log(`⊘ Memory filtered: ${learning.name} (score: ${relevance.score} < ${relevance.threshold})`);
+    // Consider saving to AGENTS.md instead for project-specific patterns
+  }
+}
+```
+
+### Memory Usage Tracking
+
+When a memory is applied during implementation, track its effectiveness:
+
+```javascript
+// After applying a pattern from memory
+await mcp__memory__add_observations({
+  observations: [{
+    entityName: 'pattern:early-returns',
+    contents: [
+      `Applied in ${storyId}: ${wasHelpful ? 'HELPFUL' : 'NOT HELPFUL'}`,
+      `Context: ${storyTitle}`,
+      `Last used: ${new Date().toISOString().split('T')[0]}`
+    ]
+  }]
+});
+```
+
+This tracking enables:
+- **Consolidation**: High-usage memories promoted to core memory
+- **Forgetting**: Low-usage memories decay and get archived
+- **Metacognition**: Reflect on what patterns actually help
+
+### Attention System (Short-term Focus)
+
+The attention system maintains **focus context** to weight memory retrieval:
+
+```javascript
+// Session context file: ~/.claude/memory/session-context.json
+{
+  "currentFocus": {
+    "topic": "authentication",
+    "since": "2026-01-27T10:15:00Z",
+    "relatedFiles": ["src/auth/*"],
+    "memoriesApplied": ["pattern:supabase-rls"]
+  },
+  "attentionWeights": {
+    "authentication": 0.95,  // Current focus = high weight
+    "security": 0.70,        // Related topic
+    "database": 0.40,        // Recent context
+    "ui-components": 0.10    // Low relevance now
+  }
+}
+```
+
+**Integration in Step 3.0:**
+
+```javascript
+// Update focus when starting a story
+await updateFocus(story.detectedType, inferRelatedFiles(story));
+
+// Query memories with attention weighting
+const relevantMemories = await queryMemoriesWithAttention(
+  `${story.title} ${story.description}`,
+  sessionContext
+);
+
+// High-attention memories surface first
+// Low-attention memories suppressed (reduces noise)
+```
+
+**See:** [attention-system.md](../memory-consolidation/references/attention-system.md)
+
+### Metacognition (Self-Reflection)
+
+Track memory effectiveness and learn from what works:
+
+```javascript
+// After applying a memory during implementation
+await trackMemoryApplication('pattern:early-returns', story.id, 'Refactoring validation logic');
+
+// After story completion, evaluate helpfulness
+await evaluateMemoryHelpfulness(story.id, {
+  passed: true,
+  attempts: 1,
+  notes: 'Used early returns pattern, clean result'
+});
+
+// Memory gets observation: "Applied in US-005: HELPFUL"
+```
+
+**Reflection Cycles:**
+
+| Trigger | Action |
+|---------|--------|
+| Every story completion | Quick reflection (log helpfulness) |
+| Every 10 stories | Deep reflection (what worked, what didn't) |
+| End of session | Review unsaved learnings |
+| `/reflect` command | Manual deep reflection |
+
+**Deep reflection answers:**
+1. Which memories were most valuable? (candidates for core promotion)
+2. Which memories led us astray? (candidates for review/deletion)
+3. What did we learn that we didn't save? (apply sensory filter)
+4. Do our core beliefs hold up? (validate against evidence)
+
+**See:** [metacognition.md](../memory-consolidation/references/metacognition.md)
+
+### Memory Consolidation
+
+Run periodically (weekly or after major milestones) using `/consolidate`:
+
+```
+/consolidate
+```
+
+This triggers the `memory-consolidation` skill which:
+1. Merges similar memories (>70% overlap)
+2. Promotes high-performing patterns to core memory (useCount >= 15, effectiveness >= 85%)
+3. Archives stale memories (unused >90 days, useCount < 3)
+4. Updates core-memory.json with promotions
+
+**See:** [memory-consolidation skill](../memory-consolidation/SKILL.md) for details
 
 ---
 
@@ -457,6 +746,54 @@ function isBlocked(story, allStories) {
 - `delegation.parallel.conflictResolution`: How to handle file conflicts - `"sequential"` (safe) or `"optimistic"` (faster)
 - `detectedType`: Automatically populated with story type (frontend, api, database, devops, fullstack, general)
 - `delegatedTo`: Records which agent implemented the story (e.g., "frontend-agent", "api-agent", or null for direct implementation)
+
+**Swarm Configuration (Advanced):**
+
+Add swarm configuration for TeammateTool-based multi-agent orchestration:
+
+```json
+{
+  "swarm": {
+    "enabled": false,
+    "teamName": "feature-{branchName}",
+    "workers": {
+      "autoSpawn": true,
+      "types": ["frontend", "api", "database"],
+      "maxWorkers": 5,
+      "workerTimeout": 300000
+    },
+    "coordination": {
+      "useSharedTaskBoard": true,
+      "inboxPollingInterval": 5000,
+      "idleTimeout": 60000
+    },
+    "spawnBackend": "auto"
+  },
+  "swarmMetrics": {
+    "totalBatches": 0,
+    "workerSpawns": 0,
+    "messagesExchanged": 0,
+    "avgBatchDuration": 0,
+    "speedupVsSequential": 0,
+    "workerStats": {}
+  }
+}
+```
+
+**Swarm Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `swarm.enabled` | `false` | Enable swarm mode with TeammateTool |
+| `swarm.teamName` | `"feature-{branch}"` | Team identifier for this feature |
+| `swarm.workers.autoSpawn` | `true` | Auto-spawn workers based on story types |
+| `swarm.workers.types` | `["frontend", "api", "database"]` | Which worker types to spawn |
+| `swarm.workers.maxWorkers` | `5` | Maximum concurrent workers |
+| `swarm.workers.workerTimeout` | `300000` | Worker timeout in ms (5 min) |
+| `swarm.coordination.useSharedTaskBoard` | `true` | Workers claim from shared TaskList |
+| `swarm.coordination.inboxPollingInterval` | `5000` | How often to check inboxes (ms) |
+| `swarm.coordination.idleTimeout` | `60000` | Shutdown idle workers after (ms) |
+| `swarm.spawnBackend` | `"auto"` | `"auto"`, `"tmux"`, `"iterm2"`, or `"in-process"` |
 
 **Delegation Metrics:**
 
@@ -1162,6 +1499,557 @@ if (remainingStories.length === 0) {
   console.log(`${remainingStories.length} stories remaining. Continuing...`);
 }
 ```
+
+---
+
+### Step 3.1-swarm: Swarm Orchestration (TeammateTool)
+
+**When:** `prd.swarm.enabled === true`
+
+Swarm mode uses TeammateTool for persistent, self-organizing worker agents that:
+- Join a team and communicate via inboxes
+- Claim tasks from a shared task board
+- Report results back to the leader
+- Have fresh context (no token bloat)
+
+**Requires:** Claude Code with TeammateTool enabled (native support now available)
+
+#### Step 3.1-swarm.1: Initialize Team
+
+```javascript
+// Create team infrastructure
+const teamName = prd.swarm.teamName.replace('{branchName}', prd.branchName);
+
+await TeammateTool({
+  operation: 'spawnTeam',
+  team_name: teamName
+});
+
+console.log(`Team created: ${teamName}`);
+```
+
+**Team Directory Structure:**
+```
+~/.claude/teams/{teamName}/
+├── inboxes/
+│   ├── leader.json        # Leader's inbox
+│   ├── frontend-worker.json
+│   ├── api-worker.json
+│   └── database-worker.json
+└── state.json             # Team state
+```
+
+#### Step 3.1-swarm.2: Create All Tasks Upfront
+
+Convert all user stories to the shared TaskList:
+
+```javascript
+// Create tasks for all pending stories
+for (const story of prd.userStories.filter(s => !s.passes)) {
+  await TaskCreate({
+    subject: `${story.id}: ${story.title}`,
+    description: generateTaskDescription(story),
+    activeForm: `Implementing ${story.id}`,
+    metadata: {
+      storyId: story.id,
+      type: story.detectedType || detectStoryType(story),
+      complexity: story.complexity,
+      acceptanceCriteria: story.acceptanceCriteria,
+      verification: prd.verification
+    }
+  });
+}
+
+// Set up dependencies
+for (const story of prd.userStories) {
+  if (story.dependsOn?.length > 0) {
+    const taskId = getTaskIdForStory(story.id);
+    const blockedByIds = story.dependsOn.map(id => getTaskIdForStory(id));
+
+    await TaskUpdate({
+      taskId,
+      addBlockedBy: blockedByIds
+    });
+  }
+}
+
+console.log(`Created ${prd.userStories.length} tasks on shared board`);
+```
+
+**Task Description Template:**
+
+```javascript
+function generateTaskDescription(story) {
+  return `
+## Story: ${story.title}
+
+${story.description}
+
+## Acceptance Criteria
+${story.acceptanceCriteria.map(c => `- [ ] ${c}`).join('\n')}
+
+## Instructions
+1. Read relevant existing code first
+2. Implement ONLY this story - do not touch other stories
+3. Run verification commands
+4. Report results via Teammate.write() to leader
+
+## Verification Commands
+- Typecheck: \`${prd.verification?.typecheck || 'npm run typecheck'}\`
+- Test: \`${prd.verification?.test || 'npm run test'}\`
+- Lint: \`${prd.verification?.lint || 'npm run lint'}\`
+
+## Required Output Format
+Send to leader via TeammateTool.write():
+\`\`\`json
+{
+  "type": "task_completed",
+  "taskId": "${story.id}",
+  "result": "SUCCESS|FAILURE",
+  "filesChanged": ["path/to/file.ts"],
+  "verification": {
+    "typecheck": "PASS|FAIL",
+    "test": "PASS|FAIL",
+    "lint": "PASS|FAIL"
+  },
+  "notes": "Implementation summary",
+  "learnings": "Patterns discovered"
+}
+\`\`\`
+`;
+}
+```
+
+#### Step 3.1-swarm.3: Spawn Specialist Workers
+
+```javascript
+// Determine which worker types are needed
+const storyTypes = [...new Set(
+  prd.userStories
+    .filter(s => !s.passes)
+    .map(s => s.detectedType || detectStoryType(s))
+)];
+
+const workersToSpawn = storyTypes
+  .filter(type => prd.swarm.workers.types.includes(type))
+  .slice(0, prd.swarm.workers.maxWorkers);
+
+console.log(`Spawning ${workersToSpawn.length} specialist workers: ${workersToSpawn.join(', ')}`);
+
+// Spawn each worker as a persistent teammate
+for (const workerType of workersToSpawn) {
+  await Task({
+    team_name: teamName,
+    name: `${workerType}-worker`,
+    subagent_type: getAgentType(workerType),
+    run_in_background: true,
+    prompt: generateWorkerPrompt(workerType, teamName, prd)
+  });
+}
+```
+
+**Worker Prompt Template:**
+
+```javascript
+function generateWorkerPrompt(workerType, teamName, prd) {
+  return `
+# ${workerType.toUpperCase()} Worker Agent
+
+You are a specialist ${workerType} worker in team "${teamName}".
+
+## Your Role
+Implement ${workerType}-related tasks from the shared task board.
+
+## Your Specialty
+${getWorkerSpecialty(workerType)}
+
+## Workflow Loop
+
+Repeat until no matching tasks remain:
+
+1. **Check for tasks:**
+   \`\`\`
+   TaskList()
+   \`\`\`
+
+2. **Find a task matching your specialty:**
+   - Look for tasks with type "${workerType}" in metadata
+   - Task must be status "pending" with no owner
+   - Task must not be blocked (blockedBy is empty or all resolved)
+
+3. **Claim the task:**
+   \`\`\`
+   TaskUpdate({
+     taskId: "X",
+     status: "in_progress",
+     owner: "${workerType}-worker"
+   })
+   \`\`\`
+
+4. **Implement the story:**
+   - Read the task description for acceptance criteria
+   - Read relevant existing code
+   - Make minimal, focused changes
+   - Run verification commands
+
+5. **Report completion:**
+   \`\`\`
+   TaskUpdate({ taskId: "X", status: "completed" })
+
+   TeammateTool({
+     operation: "write",
+     team_name: "${teamName}",
+     target: "leader",
+     message: {
+       type: "task_completed",
+       taskId: "X",
+       result: "SUCCESS",
+       filesChanged: [...],
+       verification: {...},
+       notes: "..."
+     }
+   })
+   \`\`\`
+
+6. **Commit the work:**
+   \`\`\`bash
+   git add -A
+   git commit -m "feat(STORY-ID): Title"
+   \`\`\`
+
+7. **Continue to next task** or signal idle if none available:
+   \`\`\`
+   TeammateTool({
+     operation: "write",
+     team_name: "${teamName}",
+     target: "leader",
+     message: { type: "idle_notification", worker: "${workerType}-worker" }
+   })
+   \`\`\`
+
+## Project Context
+
+**Tech Stack:** ${detectStack()}
+**Branch:** ${prd.branchName}
+**Working Directory:** ${process.cwd()}
+
+## Repository Patterns
+${readFile('AGENTS.md') || 'Follow existing code patterns'}
+
+## Important Rules
+- ONLY work on tasks matching your specialty (${workerType})
+- NEVER implement tasks assigned to other workers
+- ALWAYS run verification before reporting completion
+- ALWAYS commit after successful implementation
+- If stuck for 2+ attempts, message leader for help
+`;
+}
+
+function getWorkerSpecialty(type) {
+  const specialties = {
+    frontend: `
+- React/Vue/Svelte components
+- CSS/Tailwind styling
+- Client-side state management
+- UI interactions and animations
+- Pages and layouts`,
+    api: `
+- REST/GraphQL endpoints
+- Request/response handling
+- Authentication middleware
+- Input validation
+- Error handling`,
+    database: `
+- Schema migrations
+- Database queries
+- ORM models (Prisma/Drizzle/SQLAlchemy)
+- Indexes and constraints
+- Data integrity`,
+    backend: `
+- Server-side logic
+- Background jobs
+- External API integrations
+- Business logic
+- Services and utilities`,
+    devops: `
+- CI/CD pipelines
+- Docker configuration
+- Deployment scripts
+- Environment variables
+- Infrastructure as code`
+  };
+  return specialties[type] || 'General development tasks';
+}
+```
+
+#### Step 3.1-swarm.4: Leader Monitoring Loop
+
+The leader monitors worker progress via inboxes:
+
+```javascript
+async function leaderMonitoringLoop(teamName, prd) {
+  const startTime = Date.now();
+  const idleWorkers = new Set();
+  const completedTasks = new Set();
+
+  while (true) {
+    // 1. Check task board status
+    const tasks = await TaskList();
+    const pending = tasks.filter(t => t.status === 'pending' && !t.owner);
+    const inProgress = tasks.filter(t => t.status === 'in_progress');
+    const completed = tasks.filter(t => t.status === 'completed');
+
+    console.log(`Tasks: ${completed.length}/${tasks.length} complete, ${inProgress.length} in progress`);
+
+    // 2. Check inbox for worker messages
+    const messages = await checkLeaderInbox(teamName);
+
+    for (const msg of messages) {
+      switch (msg.type) {
+        case 'task_completed':
+          await handleTaskCompletion(msg, prd);
+          completedTasks.add(msg.taskId);
+          idleWorkers.delete(msg.from);
+          break;
+
+        case 'task_failed':
+          await handleTaskFailure(msg, prd);
+          break;
+
+        case 'idle_notification':
+          idleWorkers.add(msg.worker);
+          break;
+
+        case 'help_request':
+          await handleHelpRequest(msg, prd);
+          break;
+      }
+    }
+
+    // 3. Check for completion
+    if (pending.length === 0 && inProgress.length === 0) {
+      console.log('All tasks complete!');
+      break;
+    }
+
+    // 4. Check for stalled workers
+    if (idleWorkers.size === workersToSpawn.length && pending.length > 0) {
+      console.log('All workers idle but tasks remain - rebalancing...');
+      await rebalanceWorkers(teamName, pending);
+    }
+
+    // 5. Timeout check
+    if (Date.now() - startTime > prd.swarm.workers.workerTimeout * 2) {
+      console.log('Swarm timeout reached - shutting down');
+      break;
+    }
+
+    // 6. Wait before next poll
+    await sleep(prd.swarm.coordination.inboxPollingInterval);
+  }
+
+  // Update metrics
+  prd.swarmMetrics.totalBatches++;
+  prd.swarmMetrics.avgBatchDuration = calculateAvgDuration(prd);
+
+  return { completed: completedTasks.size, total: tasks.length };
+}
+
+async function handleTaskCompletion(msg, prd) {
+  // Update prd.json
+  const story = prd.userStories.find(s => s.id === msg.taskId);
+  if (story) {
+    story.passes = msg.result === 'SUCCESS';
+    story.completedAt = new Date().toISOString();
+    story.attempts = (story.attempts || 0) + 1;
+    story.delegatedTo = msg.from;
+    story.notes = msg.notes;
+  }
+
+  // Update progress.md
+  await appendToProgress(`
+## ${new Date().toISOString()} - ${msg.taskId}: Completed by ${msg.from}
+
+**Result:** ${msg.result}
+**Files:** ${msg.filesChanged?.join(', ') || 'None reported'}
+**Verification:** ${JSON.stringify(msg.verification)}
+
+**Notes:** ${msg.notes}
+**Learnings:** ${msg.learnings || 'None'}
+
+---
+`);
+
+  // Update swarm metrics
+  prd.swarmMetrics.messagesExchanged++;
+  if (!prd.swarmMetrics.workerStats[msg.from]) {
+    prd.swarmMetrics.workerStats[msg.from] = { completed: 0, failed: 0 };
+  }
+  prd.swarmMetrics.workerStats[msg.from].completed++;
+
+  console.log(`✓ ${msg.taskId} completed by ${msg.from}`);
+}
+```
+
+#### Step 3.1-swarm.5: Graceful Shutdown
+
+```javascript
+async function shutdownSwarm(teamName, prd) {
+  console.log('Initiating swarm shutdown...');
+
+  // 1. Request shutdown from all workers
+  const workers = Object.keys(prd.swarmMetrics.workerStats);
+
+  for (const worker of workers) {
+    await TeammateTool({
+      operation: 'requestShutdown',
+      team_name: teamName,
+      target: worker
+    });
+  }
+
+  // 2. Wait for acknowledgments (with timeout)
+  const shutdownTimeout = 30000;
+  const startTime = Date.now();
+  const acknowledged = new Set();
+
+  while (acknowledged.size < workers.length) {
+    if (Date.now() - startTime > shutdownTimeout) {
+      console.log('Shutdown timeout - forcing cleanup');
+      break;
+    }
+
+    const messages = await checkLeaderInbox(teamName);
+    for (const msg of messages) {
+      if (msg.type === 'shutdown_approved') {
+        acknowledged.add(msg.from);
+        console.log(`${msg.from} acknowledged shutdown`);
+      }
+    }
+
+    await sleep(1000);
+  }
+
+  // 3. Cleanup team resources
+  await TeammateTool({
+    operation: 'cleanup',
+    team_name: teamName
+  });
+
+  // 4. Calculate final metrics
+  const totalStories = prd.userStories.length;
+  const completedStories = prd.userStories.filter(s => s.passes).length;
+  const sequentialEstimate = totalStories * 3; // ~3 min per story
+  const actualDuration = (Date.now() - prd.swarmMetrics.startTime) / 60000;
+
+  prd.swarmMetrics.speedupVsSequential = (sequentialEstimate / actualDuration).toFixed(2);
+
+  console.log(`
+===== SWARM COMPLETE =====
+
+Team: ${teamName}
+Stories: ${completedStories}/${totalStories} complete
+Duration: ${actualDuration.toFixed(1)} min
+Speedup: ${prd.swarmMetrics.speedupVsSequential}x vs sequential
+
+Worker Stats:
+${Object.entries(prd.swarmMetrics.workerStats)
+  .map(([w, s]) => `  ${w}: ${s.completed} completed, ${s.failed} failed`)
+  .join('\n')}
+`);
+
+  return {
+    success: completedStories === totalStories,
+    completed: completedStories,
+    total: totalStories,
+    speedup: prd.swarmMetrics.speedupVsSequential
+  };
+}
+```
+
+#### Step 3.1-swarm.6: Error Handling
+
+**Worker Crash Recovery:**
+
+```javascript
+async function handleWorkerCrash(workerName, teamName, prd) {
+  console.log(`Worker ${workerName} appears to have crashed`);
+
+  // 1. Find tasks owned by this worker
+  const tasks = await TaskList();
+  const orphanedTasks = tasks.filter(t =>
+    t.owner === workerName && t.status === 'in_progress'
+  );
+
+  // 2. Release orphaned tasks
+  for (const task of orphanedTasks) {
+    await TaskUpdate({
+      taskId: task.id,
+      status: 'pending',
+      owner: null
+    });
+    console.log(`Released task ${task.id} back to pool`);
+  }
+
+  // 3. Optionally respawn the worker
+  if (prd.swarm.workers.autoSpawn) {
+    const workerType = workerName.replace('-worker', '');
+    await Task({
+      team_name: teamName,
+      name: workerName,
+      subagent_type: getAgentType(workerType),
+      run_in_background: true,
+      prompt: generateWorkerPrompt(workerType, teamName, prd)
+    });
+
+    prd.swarmMetrics.workerSpawns++;
+    console.log(`Respawned ${workerName}`);
+  }
+}
+```
+
+**Task Retry with Escalation:**
+
+```javascript
+async function handleTaskFailure(msg, prd) {
+  const story = prd.userStories.find(s => s.id === msg.taskId);
+  if (!story) return;
+
+  story.attempts = (story.attempts || 0) + 1;
+  story.lastError = msg.error;
+
+  // Record failure in metrics
+  if (!prd.swarmMetrics.workerStats[msg.from]) {
+    prd.swarmMetrics.workerStats[msg.from] = { completed: 0, failed: 0 };
+  }
+  prd.swarmMetrics.workerStats[msg.from].failed++;
+
+  if (story.attempts >= 3) {
+    // Escalate to leader
+    console.log(`Task ${msg.taskId} failed 3 times - escalating to leader`);
+
+    // Mark as needs-help
+    await TaskUpdate({
+      taskId: msg.taskId,
+      status: 'pending',
+      owner: null,
+      metadata: { needsHelp: true, lastError: msg.error }
+    });
+
+    // Leader will handle directly or ask user
+  } else {
+    // Release back to pool for retry
+    await TaskUpdate({
+      taskId: msg.taskId,
+      status: 'pending',
+      owner: null
+    });
+    console.log(`Task ${msg.taskId} released for retry (attempt ${story.attempts})`);
+  }
+}
+```
+
+---
 
 ### Step 3.1: Announce Task
 
@@ -2003,6 +2891,15 @@ If a story needs something not yet implemented:
 | `archive/`                  | Previous completed PRDs          | Before new feature |
 | `.worktree-scaffold.json`   | Worktree config (optional)       | User creates       |
 
+**Swarm Mode Files:**
+
+| File                                    | Purpose                        | Created         |
+| --------------------------------------- | ------------------------------ | --------------- |
+| `~/.claude/teams/{name}/`               | Team directory                 | Swarm init      |
+| `~/.claude/teams/{name}/inboxes/*.json` | Worker message inboxes         | Swarm init      |
+| `~/.claude/teams/{name}/state.json`     | Team state and configuration   | Swarm init      |
+| `~/.claude/tasks/{name}/*.json`         | Shared task board              | Swarm Phase 3   |
+
 ---
 
 ## Worktree Integration
@@ -2074,6 +2971,12 @@ When you discover patterns, add them to AGENTS.md:
 | "parallel on"    | Enable parallel execution of independent stories |
 | "parallel off"   | Disable parallel (sequential only)              |
 | "parallel max N" | Set max concurrent agents (default: 3)          |
+| "swarm on"       | Enable swarm mode with TeammateTool             |
+| "swarm off"      | Disable swarm mode                              |
+| "swarm status"   | Show team status, workers, and task board       |
+| "swarm workers"  | List active workers and their current tasks     |
+| "swarm shutdown" | Gracefully shutdown the swarm                   |
+| "swarm respawn [worker]" | Respawn a crashed/stuck worker         |
 
 ### Status Command
 
@@ -2498,6 +3401,237 @@ Speedup: 1.8x
 
 ---
 
+## Enabling Swarm Mode
+
+Swarm mode provides multi-agent orchestration for large features, offering 3-5x speedup on PRDs with 10+ stories.
+
+### Prerequisites
+
+1. **Claude Code with TeammateTool** - Now natively available in Claude Code. TeammateTool provides team coordination, task boards, and inter-agent messaging.
+
+2. **PRD with 5+ stories** - Swarm overhead isn't worth it for small features
+
+3. **Stories with clear type separation** - Best when stories can be distributed to specialists
+
+### How to Enable
+
+1. **Update prd.json:**
+   ```json
+   {
+     "swarm": {
+       "enabled": true,
+       "teamName": "feature-auth-system",
+       "workers": {
+         "autoSpawn": true,
+         "types": ["frontend", "api", "database"],
+         "maxWorkers": 5,
+         "workerTimeout": 300000
+       },
+       "coordination": {
+         "useSharedTaskBoard": true,
+         "inboxPollingInterval": 5000,
+         "idleTimeout": 60000
+       },
+       "spawnBackend": "auto"
+     },
+     "swarmMetrics": {
+       "totalBatches": 0,
+       "workerSpawns": 0,
+       "messagesExchanged": 0,
+       "avgBatchDuration": 0,
+       "speedupVsSequential": 0,
+       "workerStats": {},
+       "startTime": null
+     }
+   }
+   ```
+
+2. **Run autonomous-dev:**
+   ```bash
+   # Start autonomous dev with swarm enabled
+   claude /autonomous-dev
+
+   # Or enable swarm during execution
+   > swarm on
+   ```
+
+3. **Watch the swarm:**
+   - If using tmux backend, workers appear in separate panes
+   - Run `swarm status` to see task board and worker activity
+   - Run `swarm workers` to see what each worker is doing
+
+### Swarm Mode vs Parallel Mode
+
+| Feature | Parallel Mode | Swarm Mode |
+|---------|---------------|------------|
+| **Tool** | Task (subagents) | TeammateTool (teammates) |
+| **Persistence** | Short-lived, returns result | Long-lived, stays until shutdown |
+| **Communication** | Via return value | Via inbox messages |
+| **Task Assignment** | Batch-assigned by leader | Self-claimed from task board |
+| **Visibility** | Hidden (in-process) | Visible (tmux panes) |
+| **Context** | Fresh per story | Fresh per story |
+| **Best For** | 2-5 parallel stories | 10+ stories, complex features |
+| **Overhead** | Low | Higher (team setup, messaging) |
+
+### When to Use Swarm Mode
+
+**Good candidates:**
+- Large features with 10+ stories
+- Multi-layer features (frontend + api + database)
+- Features where stories have clear type boundaries
+- When you want to watch workers in real-time (tmux)
+
+**Not recommended:**
+- Small features (< 5 stories)
+- Tightly coupled stories with many dependencies
+- When stories frequently modify the same files
+- Quick fixes or single-layer changes
+
+### Swarm Status Command
+
+The `swarm status` command shows comprehensive swarm information:
+
+```
+> swarm status
+
+## Swarm Status: feature-auth-system
+
+**Team:** feature-auth-system
+**Started:** 2026-01-27T10:30:00Z
+**Duration:** 4m 32s
+
+### Task Board
+
+| ID | Title | Type | Status | Owner |
+|----|-------|------|--------|-------|
+| 1 | Add users table | database | ✓ completed | database-worker |
+| 2 | Create login endpoint | api | ✓ completed | api-worker |
+| 3 | Add login button | frontend | → in_progress | frontend-worker |
+| 4 | Add logout endpoint | api | ○ pending | - |
+| 5 | Add session context | frontend | ⊘ blocked | - |
+
+### Workers
+
+| Worker | Status | Current Task | Completed | Failed |
+|--------|--------|--------------|-----------|--------|
+| frontend-worker | active | Task 3 | 0 | 0 |
+| api-worker | idle | - | 1 | 0 |
+| database-worker | idle | - | 1 | 0 |
+
+### Metrics
+
+- Messages exchanged: 12
+- Avg task duration: 1m 45s
+- Estimated speedup: 2.8x
+
+### Recent Messages
+
+- [10:32:15] database-worker → leader: task_completed (Task 1)
+- [10:33:42] api-worker → leader: task_completed (Task 2)
+- [10:34:01] frontend-worker → leader: claimed Task 3
+```
+
+### Troubleshooting Swarm Mode
+
+**Issue: "TeammateTool not available"**
+- **Cause:** Older Claude Code version or missing tool permissions
+- **Solution:** Update Claude Code to latest version, ensure TeammateTool is in allowed-tools
+- **Alternative:** Use parallel mode instead (uses Task tool)
+
+**Issue: Workers not claiming tasks**
+- **Cause:** Story types don't match worker specialties
+- **Check:** Run `swarm status` to see task types
+- **Solution:** Ensure `swarm.workers.types` includes all needed types, or add "general" worker
+
+**Issue: Worker appears stuck**
+- **Cause:** Worker hit an error or infinite loop
+- **Solution:** `swarm respawn [worker-name]` to restart it
+- **Prevention:** Set reasonable `workerTimeout`
+
+**Issue: Tasks stay blocked forever**
+- **Cause:** Circular dependencies in `dependsOn`
+- **Check:** Review prd.json for dependency cycles
+- **Solution:** Remove circular dependencies, use `expand` to restructure
+
+**Issue: Workers modifying same files**
+- **Cause:** Stories aren't well-separated by layer
+- **Solution:** Add file hints to stories, or use sequential conflict resolution
+- **Alternative:** Use parallel mode with conflict detection instead
+
+**Issue: Swarm too slow (worse than sequential)**
+- **Cause:** Too much coordination overhead, not enough parallelism
+- **Check:** Most tasks have dependencies → limited parallelism
+- **Solution:** Restructure stories to reduce dependencies, or use sequential mode
+
+### Swarm Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        SWARM ORCHESTRATOR                         │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────┐   │
+│  │                      LEADER AGENT                          │   │
+│  │  - Creates team and task board                             │   │
+│  │  - Spawns specialist workers                               │   │
+│  │  - Monitors inboxes for completion/failure                 │   │
+│  │  - Updates prd.json and progress.md                        │   │
+│  │  - Handles escalations and shutdown                        │   │
+│  └───────────────────────────────────────────────────────────┘   │
+│                              │                                    │
+│                    TeammateTool.write()                          │
+│                              │                                    │
+│         ┌────────────────────┼────────────────────┐              │
+│         │                    │                    │              │
+│         ▼                    ▼                    ▼              │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐        │
+│  │  FRONTEND   │     │    API      │     │  DATABASE   │        │
+│  │   WORKER    │     │   WORKER    │     │   WORKER    │        │
+│  │             │     │             │     │             │        │
+│  │ TaskList()  │     │ TaskList()  │     │ TaskList()  │        │
+│  │ → Claim     │     │ → Claim     │     │ → Claim     │        │
+│  │ → Implement │     │ → Implement │     │ → Implement │        │
+│  │ → Verify    │     │ → Verify    │     │ → Verify    │        │
+│  │ → Report    │     │ → Report    │     │ → Report    │        │
+│  └─────────────┘     └─────────────┘     └─────────────┘        │
+│         │                    │                    │              │
+│         └────────────────────┼────────────────────┘              │
+│                              │                                    │
+│                     Shared Task Board                            │
+│                    (~/.claude/tasks/)                            │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Migration from Parallel to Swarm
+
+If you're already using parallel mode and want to try swarm:
+
+1. **Add swarm configuration** to existing prd.json:
+   ```json
+   {
+     "delegation": {
+       "enabled": true,
+       "parallel": { "enabled": false }
+     },
+     "swarm": {
+       "enabled": true,
+       "teamName": "feature-xyz",
+       "workers": {
+         "autoSpawn": true,
+         "types": ["frontend", "api", "database"]
+       }
+     }
+   }
+   ```
+
+2. **Ensure stories have `detectedType`** - swarm relies on this for worker assignment
+
+3. **Run with TeammateTool** - natively available in Claude Code
+
+4. **Compare metrics** - check `swarmMetrics` vs `delegationMetrics` to see which mode works better for your workflow
+
+---
+
 ## Examples
 
 See [references/examples.md](references/examples.md) for:
@@ -2506,3 +3640,18 @@ See [references/examples.md](references/examples.md) for:
 - Acceptance criteria templates
 - Complete prd.json examples
 - progress.md and progress-summary.md formats
+- Swarm mode complete workflow example
+
+---
+
+## See Also
+
+- [Detection validation](references/detection-validation.md) - Detection accuracy testing
+- [Agent prompts](references/agent-prompts.md) - Subagent prompt templates
+- [Smart delegation](references/smart-delegation-design.md) - Sequential delegation architecture
+- [Parallel delegation](references/parallel-delegation-design.md) - Multi-agent parallel execution
+- [Swarm orchestration](references/swarm-orchestration-design.md) - TeammateTool-based swarm mode
+- [Progress summarization](references/progress-summarization-design.md) - Token optimization design
+- [TeammateTool Documentation](https://docs.anthropic.com/claude-code/teammatetool) - Native multi-agent coordination
+- [Agentic Coding Handbook](https://tweag.github.io/agentic-coding-handbook/) - Visual feedback patterns
+- [Claude Agent SDK](https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk) - Agent building patterns

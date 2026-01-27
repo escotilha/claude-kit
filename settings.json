@@ -1,6 +1,4 @@
 {
-  "plansDirectory": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/plans",
-  "mcpSearchAutoThreshold": 15,
   "hooks": {
     "SessionStart": [
       {
@@ -21,9 +19,22 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Working directory: '$(pwd)"
+          }
+        ]
+      }
     ]
   },
   "alwaysThinkingEnabled": false,
+  "plansDirectory": "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/plans",
+  "mcpSearchAutoThreshold": 15,
   "default_arguments": [
     "--dangerously-skip-permissions"
   ],
@@ -163,7 +174,16 @@
           "DIGITALOCEAN_TOKEN": "${DIGITALOCEAN_TOKEN}"
         },
         "description": "DigitalOcean App Platform, Databases, and Spaces management"
+      },
+      "chrome-devtools": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "chrome-devtools-mcp@latest"
+        ],
+        "description": "Chrome DevTools for browser automation and testing"
       }
     }
-  }
+  },
+  "model": "opus"
 }

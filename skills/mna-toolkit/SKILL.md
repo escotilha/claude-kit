@@ -12,6 +12,8 @@ description: |
 user-invocable: true
 context: fork
 model: opus
+version: 1.0.0
+color: "#f59e0b"
 allowed-tools:
   - Read
   - Write
@@ -342,28 +344,68 @@ Output:
 
 ---
 
-## Session Tracking for Deal Workflows
+## Session Tracking
 
-The toolkit supports session tracking using `${CLAUDE_SESSION_ID}` to organize all outputs for a deal:
+Use `${CLAUDE_SESSION_ID}` to track analysis across sessions for comprehensive due diligence workflows.
+
+### Directory Structure
+
+Organize multiple document extractions per deal with session-specific directories:
 
 ```bash
-# Create deal directory with session ID
-DEAL_DIR="deals/CompanyName_${CLAUDE_SESSION_ID}"
+# Create session-specific output directories
+DEAL_DIR="deals/${COMPANY_NAME}/sessions/${CLAUDE_SESSION_ID}"
 mkdir -p "$DEAL_DIR"
 
-# All outputs go to this directory
-TRIAGE_FILE="$DEAL_DIR/triage.json"
-EXTRACTION_FILE="$DEAL_DIR/extraction.json"
-PROPOSAL_FILE="$DEAL_DIR/proposal.xlsx"
-ANALYSIS_FILE="$DEAL_DIR/analysis.pdf"
-DECK_FILE="$DEAL_DIR/board_deck.pptx"
+# All outputs tagged with session ID
+TRIAGE_FILE="$DEAL_DIR/triage_${CLAUDE_SESSION_ID}.json"
+EXTRACTION_FILE="$DEAL_DIR/extraction_${CLAUDE_SESSION_ID}.json"
+PROPOSAL_FILE="$DEAL_DIR/proposal_${CLAUDE_SESSION_ID}.xlsx"
+ANALYSIS_FILE="$DEAL_DIR/analysis_${CLAUDE_SESSION_ID}.pdf"
+DECK_FILE="$DEAL_DIR/deck_${CLAUDE_SESSION_ID}.pptx"
 ```
 
-**Benefits:**
-- Complete audit trail per deal analysis
-- Easy handoff between team members
-- Cross-reference all documents by session ID
-- Support for parallel deal evaluation
+### Cross-Referencing Sessions
+
+Link extraction sessions with triage and proposal analyses:
+
+```bash
+# Create session manifest for cross-referencing
+SESSION_MANIFEST="deals/${COMPANY_NAME}/session_manifest.json"
+
+# Append session record
+cat >> "$SESSION_MANIFEST" << EOF
+{
+  "session_id": "${CLAUDE_SESSION_ID}",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "workflow_type": "full_analysis",
+  "related_sessions": ["<previous_triage_session>", "<cim_extraction_session>"],
+  "outputs": ["triage.json", "extraction.json", "proposal.xlsx", "analysis.pdf"]
+}
+EOF
+```
+
+### Audit Trail for Due Diligence
+
+Maintain complete audit trails for investment committee review:
+
+```bash
+# Create audit log with all session activities
+AUDIT_LOG="deals/${COMPANY_NAME}/audit_trail.log"
+
+# Log each action with session context
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=triage SCORE=8.2 RECOMMENDATION=PROCEED" >> "$AUDIT_LOG"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=extract SOURCE=CIM.pdf PAGES=45" >> "$AUDIT_LOG"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SESSION=${CLAUDE_SESSION_ID} ACTION=proposal IRR=35.2 MOIC=4.2" >> "$AUDIT_LOG"
+```
+
+### Benefits
+
+- **Complete audit trail**: Every analysis tracked per session for compliance
+- **Multi-session workflows**: Continue analysis across multiple Claude sessions
+- **Team handoff**: Share session IDs for seamless collaboration
+- **Parallel evaluation**: Run multiple deal analyses simultaneously
+- **Historical reference**: Trace back any decision to its source session
 
 ## Complete Deal Workflow
 

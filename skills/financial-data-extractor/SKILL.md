@@ -3,6 +3,8 @@ name: financial-data-extractor
 description: |
   Advanced financial data extraction and analysis from PDFs and Excel files with intelligent model selection (Sonnet 4.5 vs Opus 4.1). Use when Claude needs to extract financial metrics, tables, or structured data from M&A documents like CIMs, financial statements, pitch decks, due diligence materials, Excel financial models, reports, or data exports. Extracts revenue, EBITDA, valuation metrics, and other financial figures. Outputs structured JSON/CSV data ready for analysis, modeling, or import into other systems. Automatically recommends optimal model based on task complexity, deal size, and quality requirements.
 context: fork
+version: 1.0.0
+color: "#f59e0b"
 allowed-tools:
   - Read
   - Write
