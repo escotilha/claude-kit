@@ -67,7 +67,7 @@ The agent uses a **three-tier memory system** inspired by human cognition:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     CORE MEMORY                              │
-│  ~/.claude/memory/core-memory.json                          │
+│  ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json                          │
 │  - Stable preferences, beliefs, patterns                     │
 │  - Loaded at session start, rarely changes                   │
 │  - Highest priority, always applied                          │
@@ -100,7 +100,7 @@ Load user's stable preferences at session start:
 ```javascript
 // First action in any phase
 const coreMemory = JSON.parse(
-  await readFile('~/.claude/memory/core-memory.json')
+  await readFile('~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json')
 );
 
 // Apply without asking:
@@ -268,7 +268,7 @@ This tracking enables:
 The attention system maintains **focus context** to weight memory retrieval:
 
 ```javascript
-// Session context file: ~/.claude/memory/session-context.json
+// Session context file: ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/session-context.json
 {
   "currentFocus": {
     "topic": "authentication",

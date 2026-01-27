@@ -54,7 +54,7 @@ MCP tools are deferred and must be loaded via ToolSearch before use:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     CORE MEMORY                              │
-│  ~/.claude/memory/core-memory.json                          │
+│  ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json │
 │  - Stable preferences, beliefs, patterns                     │
 │  - Rarely changes, high confidence                           │
 │  - Loaded at session start                                   │
@@ -95,8 +95,8 @@ When this skill activates:
 **First Action:** Load current state:
 
 ```bash
-cat ~/.claude/memory/core-memory.json
-ls ~/.claude/memory/archive/ 2>/dev/null | wc -l
+cat ~/Library/Mobile\ Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json
+ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/claude-setup/memory/archive/ 2>/dev/null | wc -l
 ```
 
 ---
@@ -303,7 +303,7 @@ Other skills should call this before saving:
 // In autonomous-dev, cto, cpo-ai-skill, etc.
 async function saveToMemoryWithFilter(learning) {
   const coreMemory = JSON.parse(
-    await readFile('~/.claude/memory/core-memory.json')
+    await readFile('~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json')
   );
   const existingMemories = await mcp__memory__search_nodes({ query: "" });
 
@@ -443,7 +443,7 @@ async function promoteToCore(memory, coreMemory) {
 
   // Update core memory file
   coreMemory.lastUpdated = new Date().toISOString().split('T')[0];
-  await writeFile('~/.claude/memory/core-memory.json', JSON.stringify(coreMemory, null, 2));
+  await writeFile('~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json', JSON.stringify(coreMemory, null, 2));
 
   return true;
 }
@@ -489,7 +489,7 @@ function identifyStaleMemories(memories, coreMemory) {
 
 ```javascript
 async function archiveMemories(memories) {
-  const archiveDir = '~/.claude/memory/archive';
+  const archiveDir = '~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/archive';
   const archiveFile = `${archiveDir}/${new Date().toISOString().split('T')[0]}-forgotten.json`;
 
   // Read existing archive or create new
@@ -650,7 +650,7 @@ async function findOrphanedMemories(memories) {
 |--------|------------|-----------|-----------|--------|
 | mistake:old-api | 180 | 150 days ago | 1 | Decay threshold |
 
-**Archive location:** ~/.claude/memory/archive/2026-01-27-forgotten.json
+**Archive location:** ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/archive/2026-01-27-forgotten.json
 
 ---
 
@@ -729,7 +729,7 @@ Add to `~/.claude/hooks/post-project.sh`:
 
 # Check if consolidation needed
 MEMORY_COUNT=$(claude --print "How many memories in Memory MCP?" 2>/dev/null | grep -o '[0-9]*')
-LAST_CONSOLIDATION=$(jq -r '.lastConsolidation' ~/.claude/memory/core-memory.json)
+LAST_CONSOLIDATION=$(jq -r '.lastConsolidation' ~/Library/Mobile\ Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json)
 
 if [ "$MEMORY_COUNT" -gt 200 ] || [ "$LAST_CONSOLIDATION" = "null" ]; then
   echo "Running memory consolidation..."
