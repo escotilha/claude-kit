@@ -1,0 +1,80 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-27",
+  "lastConsolidation": null,
+
+  "userProfile": {
+    "name": "psm2",
+    "role": "Software developer / M&A analyst at Nuvini Group",
+    "expertise": ["TypeScript", "React", "Next.js", "Supabase", "Claude Code"],
+    "workContext": "Building AI-powered tools, M&A analysis systems, and autonomous coding agents",
+    "communicationStyle": "direct, technical, minimal"
+  },
+
+  "preferences": {
+    "packageManager": "pnpm",
+    "deployment": {
+      "primary": "Railway",
+      "static": "Vercel",
+      "alternatives": ["Cloudflare Workers"]
+    },
+    "database": {
+      "primary": "Supabase (PostgreSQL)",
+      "alternatives": ["Neon", "PlanetScale"]
+    },
+    "codeStyle": {
+      "principle": "minimal, no over-engineering",
+      "avoidPatterns": ["premature abstraction", "unnecessary comments", "feature flags for simple changes"],
+      "preferPatterns": ["early returns", "explicit over implicit", "composition over inheritance"]
+    },
+    "testing": {
+      "e2e": "Playwright",
+      "unit": "Vitest",
+      "approach": "test behavior, not implementation"
+    },
+    "documentation": "only when explicitly requested",
+    "styling": {
+      "css": "Tailwind CSS",
+      "components": "shadcn/ui",
+      "icons": "Lucide"
+    },
+    "stateManagement": {
+      "prefer": "Zustand",
+      "avoid": "Redux (too verbose)"
+    }
+  },
+
+  "stablePatterns": {
+    "projectStructure": "feature folders with colocation",
+    "apiDesign": "REST with consistent error responses",
+    "authentication": "Supabase Auth or JWT with httpOnly cookies",
+    "errorHandling": "fail fast, explicit error types",
+    "gitWorkflow": "feature branches, atomic commits"
+  },
+
+  "beliefs": [
+    "Simple solutions are better than clever ones",
+    "Delete code rather than comment it out",
+    "Tests should verify behavior, not implementation details",
+    "Premature optimization is the root of all evil",
+    "Working software over comprehensive documentation",
+    "Three similar lines of code is better than a premature abstraction"
+  ],
+
+  "projectContext": {
+    "activeProjects": ["Contably", "AgentCreator", "M&A Toolkit"],
+    "techStack": {
+      "Contably": "Next.js + Supabase + Brazil accounting integrations",
+      "AgentCreator": "Agent orchestration platform",
+      "MnA": "Financial analysis and document extraction"
+    }
+  },
+
+  "memoryConfig": {
+    "relevanceThreshold": 5,
+    "decayThresholdDays": 90,
+    "minUsesToRetain": 3,
+    "consolidationFrequency": "weekly",
+    "maxMemoriesBeforeConsolidation": 200
+  }
+}
