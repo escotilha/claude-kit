@@ -32,17 +32,9 @@ Automatically analyzes the Claude Code changelog and recommends improvements to 
 
 ## Paths
 
-Claude Code searches for skills/agents in multiple locations with this precedence:
+### ALWAYS USE ICLOUD PATH DIRECTLY
 
-1. **Managed** (enterprise) - Organization-wide
-2. **Personal** - `~/.claude/skills/`, `~/.claude/agents/`, `~/.claude/commands/`
-3. **Project** - `.claude/skills/`, `.claude/agents/` in current project
-
-### User's Setup
-
-All personal skills, agents, and commands are stored in a single iCloud location. The `~/.claude/` directory has symlinks pointing directly to iCloud:
-
-**Source of Truth (iCloud):**
+**Source of Truth:**
 
 ```
 /Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
@@ -52,44 +44,57 @@ All personal skills, agents, and commands are stored in a single iCloud location
 └── settings.json ← Settings
 ```
 
-**Symlinks (how Claude finds them):**
+**IMPORTANT:** Always read from AND write to the iCloud path directly. Do NOT use symlink paths like `~/.claude/` or `/Users/ps/code/claude/` - use the full iCloud path to ensure:
+- Consistent behavior regardless of symlink state
+- Changes persist correctly to iCloud
+- No issues with symlink resolution
 
-```
-~/.claude/skills   → iCloud/claude-setup/skills
-~/.claude/agents   → iCloud/claude-setup/agents
-~/.claude/commands → iCloud/claude-setup/commands
-```
+### Background (FYI only)
 
-**Convenience symlinks (for editing via code/claude path):**
+Claude Code searches for skills/agents in multiple locations, but symlinks point everything to iCloud:
 
-```
-/Users/ps/code/claude/skills   → iCloud/claude-setup/skills
-/Users/ps/code/claude/agents   → iCloud/claude-setup/agents
-/Users/ps/code/claude/commands → iCloud/claude-setup/commands
-```
-
-**All paths resolve to the same iCloud location.** Edit via any path - changes sync everywhere.
+- `~/.claude/skills` → iCloud
+- `~/.claude/agents` → iCloud
+- `~/.claude/commands` → iCloud
+- `/Users/ps/code/claude/` → iCloud
 
 ## Workflow
 
 ### Step 1: Fetch Claude Code Changelog
 
-Fetch the latest Claude Code changelog from multiple sources:
+Fetch the latest Claude Code changelog using strategies that handle large files:
 
-**Primary Source - GitHub Releases:**
+**Primary Source - GitHub CLI (Recommended):**
+
+Use the `gh` CLI to fetch recent releases which avoids large file issues:
+
+```bash
+# Get the 5 most recent releases with full details
+gh release list --repo anthropics/claude-code --limit 5
+
+# Get detailed notes for a specific release
+gh release view <tag> --repo anthropics/claude-code
+```
+
+**Secondary Source - GitHub Releases Page:**
+
+Use WebFetch on the releases page (summarized, not full changelog):
 
 ```
 https://github.com/anthropics/claude-code/releases
 ```
 
-**Secondary Source - Changelog File:**
-
-```
-https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
-```
+Prompt: "Extract the 3 most recent releases with their version numbers, dates, and key new features. Focus on: new tools, skill/agent updates, MCP changes, configuration options."
 
 **Tertiary Source - Web Search:**
-Search for "Claude Code changelog 2025" or "Claude Code new features" for recent announcements.
+
+Search for "Claude Code changelog 2026" or "Claude Code new features" for recent announcements.
+
+**IMPORTANT: Avoid fetching the full CHANGELOG.md file directly** - it exceeds token limits (~32K tokens). If you must read it, use the Read tool with `limit` parameter to read only the first 500 lines:
+
+```
+Read file with limit=500 to get only recent entries
+```
 
 Extract key information:
 
@@ -102,11 +107,17 @@ Extract key information:
 
 ### Step 2: Analyze Current Setup
 
+**IMPORTANT:** Always use the iCloud path directly for all operations (both reading and writing):
+
+```
+/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/
+```
+
 **Inventory all skills:**
 
 ```bash
-# All skills are in one place (via ~/.claude/skills symlink to iCloud)
-find ~/.claude/skills -maxdepth 2 \( -name "SKILL.md" -o -name "skill.md" \) 2>/dev/null
+# Use iCloud path directly
+find "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills" -maxdepth 2 \( -name "SKILL.md" -o -name "skill.md" \) 2>/dev/null
 ```
 
 For each skill, read and extract:
@@ -119,8 +130,8 @@ For each skill, read and extract:
 **Inventory all agents:**
 
 ```bash
-# All agents are in one place (via ~/.claude/agents symlink to iCloud)
-find ~/.claude/agents -name "*.md" 2>/dev/null
+# Use iCloud path directly
+find "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/agents" -name "*.md" 2>/dev/null
 ```
 
 For each agent, read and extract:
@@ -132,8 +143,8 @@ For each agent, read and extract:
 **Inventory all commands:**
 
 ```bash
-# All commands are in one place (via ~/.claude/commands symlink to iCloud)
-ls ~/.claude/commands/*.md 2>/dev/null
+# Use iCloud path directly
+ls "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/commands/"*.md 2>/dev/null
 ```
 
 **Read configuration files:**
@@ -381,6 +392,19 @@ This skill activates on:
 - "what's new in claude code"
 - "update my skills for new features"
 - "/optimize-setup"
+
+## Error Handling
+
+### Large File Errors
+
+If you encounter "File content exceeds maximum allowed tokens" when fetching changelog:
+
+1. **Use `gh` CLI instead** - Fetch releases via `gh release list` and `gh release view`
+2. **Read with limits** - Use `Read` tool with `limit=500` to get only recent entries
+3. **Use WebSearch** - Search for "Claude Code new features 2026" for recent announcements
+4. **Fetch releases page** - WebFetch the releases page with a focused prompt
+
+Never attempt to fetch the full CHANGELOG.md via WebFetch - it's too large.
 
 ## Notes
 

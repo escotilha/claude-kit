@@ -42,6 +42,11 @@
       "DATABASE_URL": "PostgreSQL connection string (postgres://user:pass@host:5432/db)"
     },
     "common_additions": {
+      "chrome-devtools": {
+        "command": "npx",
+        "args": ["-y", "chrome-devtools-mcp@latest"],
+        "description": "Chrome DevTools for browser automation and testing"
+      },
       "supabase": {
         "command": "npx",
         "args": ["-y", "@supabase/mcp-server"],

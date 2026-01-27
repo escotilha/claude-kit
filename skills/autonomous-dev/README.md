@@ -73,11 +73,25 @@ The agent learns across codebases using Memory MCP:
 
 | Command | Action |
 |---------|--------|
-| `status` | Show progress and next story |
+| `status` | Show progress, complexity, and blocked stories |
 | `skip` | Skip current story |
 | `pause` | Stop autonomous mode |
-| `split [story]` | Break into smaller pieces |
+| `split [story]` | Break into smaller pieces (manual) |
+| `expand [story]` | Smart-expand complex story into 2-4 substories |
 | `retry` | Retry current story |
+
+## Complexity Scoring
+
+Each story gets a complexity score (1-10) to catch problems early:
+
+| Score | Description | Action |
+|-------|-------------|--------|
+| 1-3 | Simple | Proceed normally |
+| 4-6 | Moderate | Watch for issues |
+| 7-8 | Complex | Consider splitting |
+| 9-10 | Very complex | Split before starting |
+
+The agent generates a **complexity report** after PRD creation and will automatically suggest `expand` when high-complexity stories fail.
 
 ## Story Sizing
 

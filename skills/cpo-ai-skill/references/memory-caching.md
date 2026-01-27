@@ -2,6 +2,40 @@
 
 Caching research findings in Memory MCP for cross-project reuse and faster discovery phases.
 
+**Integrates with:** [memory-consolidation skill](../../memory-consolidation/SKILL.md) for human-like memory management.
+
+## Human-Like Memory Architecture
+
+Research caching follows the three-tier memory system:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CORE MEMORY                              │
+│  ~/.claude/memory/core-memory.json                          │
+│  - User preferences (deployment targets, tech stack)         │
+│  - Stable beliefs about product development                  │
+└─────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ Promotion after multiple successful uses
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                   LONG-TERM MEMORY                           │
+│  Memory MCP research entities                                │
+│  - Market research (30-day freshness)                        │
+│  - Competitor profiles (90-day freshness)                    │
+│  - Design patterns (180-day freshness)                       │
+│  - Stack recommendations (90-day freshness)                  │
+└─────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ Sensory Filter (relevance >= 5)
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                  SESSION RESEARCH                            │
+│  Raw research outputs (competitor-analysis.md, etc.)        │
+│  - Evaluated for caching after research completes           │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## Why Cache Research Across Projects
 
 Research is expensive - it requires multiple web searches, source evaluation, and synthesis. Caching enables:
@@ -16,10 +50,91 @@ Research is expensive - it requires multiple web searches, source evaluation, an
 
 | Action | When to Read | When to Write |
 |--------|--------------|---------------|
+| **Core Memory** | Session start (always) | After preferences proven stable |
 | **Market Research** | Before running Product Research Agent | After research completes with fresh data |
 | **Competitor Profiles** | When building similar product type | After deep competitor analysis |
 | **Design Patterns** | Before Frontend Design Agent runs | After discovering effective patterns |
 | **Stack Recommendations** | Phase 2 before CTO Advisor | After successful project deployment |
+
+---
+
+## Sensory Filter for Research
+
+Before saving research to Memory MCP, apply relevance scoring:
+
+```javascript
+async function saveResearchWithFilter(research) {
+  // Load core memory for threshold
+  const coreMemory = JSON.parse(
+    await readFile('~/.claude/memory/core-memory.json')
+  );
+  const existingMemories = await mcp__memory__search_nodes({ query: "" });
+
+  // Calculate relevance
+  let score = 0;
+  const reasons = [];
+
+  // Research typically scores well on:
+  // - Generality: market research applies to multiple projects (+3)
+  // - Severity: strategic decisions are high impact (+3)
+  // - Source: web research is validated (+1)
+
+  if (research.appliesTo?.length > 1) {
+    score += 3;
+    reasons.push("Applies to multiple product types (+3)");
+  }
+
+  if (research.entityType === 'market-research') {
+    score += 3; // Market research is always strategic
+    reasons.push("Strategic market intelligence (+3)");
+  }
+
+  if (research.entityType === 'competitor-profile') {
+    score += 2; // Competitors inform strategy
+    reasons.push("Competitive intelligence (+2)");
+  }
+
+  // Check for duplicates
+  const similar = existingMemories.entities?.filter(m =>
+    m.name.includes(research.name.split(':')[1]) ||
+    m.observations?.some(o => research.observations?.some(r =>
+      calculateSimilarity(o, r) > 0.7
+    ))
+  );
+
+  if (similar?.length > 0) {
+    // Update existing instead of creating duplicate
+    console.log(`Updating existing: ${similar[0].name}`);
+    await mcp__memory__add_observations({
+      observations: [{
+        entityName: similar[0].name,
+        contents: [
+          ...research.observations,
+          `Updated: ${new Date().toISOString().split('T')[0]}`
+        ]
+      }]
+    });
+    return { saved: false, updated: similar[0].name };
+  }
+
+  const threshold = coreMemory.memoryConfig?.relevanceThreshold || 5;
+
+  if (score >= threshold) {
+    // Add tracking metadata
+    research.observations.push(
+      `Researched: ${new Date().toISOString().split('T')[0]}`,
+      `Relevance score: ${score}`
+    );
+
+    await mcp__memory__create_entities({ entities: [research] });
+    console.log(`✓ Research cached: ${research.name} (score: ${score})`);
+    return { saved: true, score, reasons };
+  }
+
+  console.log(`⊘ Research not cached: score ${score} < ${threshold}`);
+  return { saved: false, score, reasons };
+}
+```
 
 ---
 
@@ -30,21 +145,25 @@ const RESEARCH_ENTITIES = {
   'market-research': {
     // Competitor analysis, market size, trends
     // Refresh: 30 days
+    // Default relevance: +3 (strategic)
     example: 'research:task-management-apps-2025'
   },
   'design-pattern': {
     // UI/UX patterns for specific product types
     // Refresh: 180 days (patterns evolve slowly)
+    // Default relevance: +2 (reusable)
     example: 'design:dashboard-patterns'
   },
   'tech-stack-recommendation': {
     // Proven stack combinations with rationale
     // Refresh: 90 days (ecosystem changes)
+    // Default relevance: +3 (validated through deployment)
     example: 'stack:saas-mvp-nextjs-supabase'
   },
   'competitor-profile': {
     // Individual competitor deep dives
     // Refresh: 90 days
+    // Default relevance: +2 (competitive intelligence)
     example: 'competitor:linear-app'
   }
 };

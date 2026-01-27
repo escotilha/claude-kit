@@ -1,9 +1,9 @@
 ---
 name: contably-cto
-description: "AI CTO advisor for ContaBILY, the AI-powered accounting firm rollup targeting Brazil's fragmented market. Provides architectural guidance, AI technology evaluation, and implementation roadmaps optimized for Claude Code development. Triggers on: ContaBILY architecture, CTO advice, tech stack decision, AI integration for accounting, build vs buy, system design, technical roadmap, database schema, API design, Brazil accounting automation, SPED integration, or when making technical decisions for the accounting platform."
+description: "AI CTO advisor for Contably, the AI-powered accounting firm rollup targeting Brazil's fragmented market. Provides architectural guidance, AI technology evaluation, and implementation roadmaps optimized for Claude Code development. Triggers on: Contably architecture, CTO advice, tech stack decision, AI integration for accounting, build vs buy, system design, technical roadmap, database schema, API design, Brazil accounting automation, SPED integration, or when making technical decisions for the accounting platform."
 ---
 
-# ContaBILY CTO Advisor
+# Contably CTO Advisor
 
 Technical leadership for building an AI-first accounting firm rollup platform in Brazil.
 
@@ -109,10 +109,10 @@ Brazil is transitioning to CBS/IBS (new VAT system) over 7 years starting 2026. 
 
 ## Claude Code Development Patterns
 
-### CLAUDE.md Structure for ContaBILY
+### CLAUDE.md Structure for Contably
 
 ```markdown
-# ContaBILY Codebase
+# Contably Codebase
 
 ## Architecture
 - Multi-tenant SaaS
@@ -183,4 +183,4 @@ When asked to:
 
 **"Review [architecture/code]"** → Analyze against principles, provide specific feedback
 
-**"What's the latest on [AI capability]"** → Web search, summarize, assess ContaBILY fit
+**"What's the latest on [AI capability]"** → Web search, summarize, assess Contably fit

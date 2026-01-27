@@ -21,7 +21,7 @@ The accounting profession is transitioning from compliance execution to strategi
 - Automatic GL account mapping
 - Validation and anomaly flagging
 
-**ContaBILY application**: Ingest documents from acquired firms, normalize to unified format.
+**Contably application**: Ingest documents from acquired firms, normalize to unified format.
 
 ### 2. Data Entry Automation
 **What it does**: Eliminate manual data entry through intelligent extraction and routing.
@@ -32,7 +32,7 @@ The accounting profession is transitioning from compliance execution to strategi
 - Bank reconciliation matching
 - Payroll input validation
 
-**ContaBILY application**: "No-touch" transaction processing for routine bookkeeping.
+**Contably application**: "No-touch" transaction processing for routine bookkeeping.
 
 ### 3. Compliance Automation
 **What it does**: Ensure regulatory adherence automatically.
@@ -43,7 +43,7 @@ The accounting profession is transitioning from compliance execution to strategi
 - Regulatory change tracking
 - Audit trail generation
 
-**ContaBILY application**: Automate SPED submissions, NF-e validation, eSocial events.
+**Contably application**: Automate SPED submissions, NF-e validation, eSocial events.
 
 ### 4. Anomaly Detection
 **What it does**: Identify outliers, errors, and potential fraud.
@@ -54,7 +54,7 @@ The accounting profession is transitioning from compliance execution to strategi
 - Intercompany discrepancy detection
 - Risk scoring
 
-**ContaBILY application**: Quality control across acquired firms, fraud prevention.
+**Contably application**: Quality control across acquired firms, fraud prevention.
 
 ### 5. Report Generation
 **What it does**: Produce financial reports, analyses, and summaries.
@@ -65,7 +65,7 @@ The accounting profession is transitioning from compliance execution to strategi
 - Narrative generation for reports
 - Multi-entity consolidation
 
-**ContaBILY application**: Unified reporting across all acquired firms.
+**Contably application**: Unified reporting across all acquired firms.
 
 ## Agentic AI in Accounting
 
@@ -106,7 +106,7 @@ Standardized way for AI agents to connect to enterprise systems:
 - **Dynamics 365 ERP**: Full ERP operations
 
 ### Architecture Implication
-Build ContaBILY services as MCP servers → AI agents can orchestrate across them.
+Build Contably services as MCP servers → AI agents can orchestrate across them.
 
 ## Technology Stack Trends
 
@@ -157,7 +157,7 @@ Use best-in-class APIs + proprietary orchestration layer:
 ```
 External AI APIs (Claude, GPT, etc.)
         ↓
-ContaBILY Orchestration Layer (proprietary)
+Contably Orchestration Layer (proprietary)
         ↓
 Brazil-specific rules engine (proprietary)
         ↓

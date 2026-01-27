@@ -1,4 +1,4 @@
-# Claude Code Patterns for ContaBILY
+# Claude Code Patterns for Contably
 
 ## Context Management
 
@@ -85,7 +85,7 @@ Provide specific line references and suggested fixes.
 
 Invoke with: "Use a subagent to review this code for security issues."
 
-### ContaBILY Subagent Suggestions
+### Contably Subagent Suggestions
 
 ```
 .claude/agents/
