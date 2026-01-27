@@ -1,5 +1,7 @@
 ---
 name: ma-board-presentation
+version: 1.0.0
+color: "#f59e0b"
 description: "Create executive-quality M&A board presentations and investment committee decks. Use when creating acquisition recommendation summaries, investment committee presentations, deal analysis board decks, M&A financial highlights presentations, risk assessment slides, or any board-level M&A documentation. Produces polished presentations with large metric callouts, financial tables, risk matrices, and recommendation sections."
 license: Proprietary
 context: fork

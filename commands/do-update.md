@@ -4,6 +4,12 @@ argument-hint: [--dry-run|--force|--services api,admin|status|logs|info|diagnose
 allowed-tools: Bash, Read, Task
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 # DigitalOcean Smart Update
 
 Smart, diff-based deployment to DigitalOcean App Platform. Detects what changed and only rebuilds affected services.

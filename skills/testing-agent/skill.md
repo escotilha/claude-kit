@@ -18,6 +18,7 @@ allowed-tools:
   - TaskUpdate
   - TaskList
   - TaskGet
+  - AskUserQuestion
   - mcp__memory__*
   - mcp__chrome-devtools__*
 ---
@@ -25,6 +26,16 @@ allowed-tools:
 # AgentCreator Testing Agent
 
 An autonomous E2E testing workflow that identifies features, tests them via browser automation (Chrome DevTools MCP), tracks testing state, finds bugs, and generates reports.
+
+## MCP Tool Loading
+
+MCP tools are deferred and must be loaded via ToolSearch before use:
+- Keyword search: `ToolSearch({ query: "memory" })` - loads matching tools
+- Direct select: `ToolSearch({ query: "select:mcp__chrome-devtools__navigate_page" })`
+
+**Required tools to load:**
+- `mcp__chrome-devtools__*` - Browser automation (navigate, click, screenshot, etc.)
+- `mcp__memory__*` - Cross-session memory storage
 
 ## Core Architecture
 

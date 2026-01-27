@@ -1,6 +1,9 @@
 ---
 name: committee-presenter
+version: 1.0.0
+color: "#f59e0b"
 description: Create PowerPoint presentations for M&A board approval. Generates executive dashboards, financial highlights, risk assessments in Nuvini brand style.
+user-invocable: true
 context: fork
 allowed-tools:
   - Read

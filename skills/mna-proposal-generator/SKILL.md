@@ -1,6 +1,9 @@
 ---
 name: mna-proposal-generator
+version: 1.0.0
+color: "#f59e0b"
 description: Generate M&A financial proposals with IRR/MOIC calculations, payment schedules, earnouts, and debt modeling. Use for qualified deals needing financial analysis.
+user-invocable: true
 context: fork
 allowed-tools:
   - Read

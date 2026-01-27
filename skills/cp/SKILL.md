@@ -1,5 +1,7 @@
 ---
 name: cp
+version: 1.0.0
+color: "#3b82f6"
 description: Quick commit and push. Use when asked to commit and push, or just "cp".
 user-invocable: true
 model: haiku
@@ -38,3 +40,7 @@ Commit: feat(auth): add input validation to login flow
 
 Pushed to origin/main
 ```
+
+## PR Status Tracking
+
+Claude Code v2.1.20+ shows PR review status indicators in the prompt footer. After pushing, check the status bar for PR review state.

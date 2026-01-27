@@ -1,5 +1,7 @@
 ---
 name: run-local
+version: 1.0.0
+color: "#8b5cf6"
 description: Start local development environment with automatic dependency installation, service orchestration, and health checks. Use when developers ask to run locally, start dev server, launch the app, or spin up the development environment.
 user-invocable: true
 model: haiku

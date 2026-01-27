@@ -4,6 +4,12 @@ argument-hint: [company-name]
 allowed-tools: Read, Write, Bash, TaskCreate, TaskUpdate, TaskList
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 # Generate Board Presentation
 
 Create professional M&A board presentation deck.

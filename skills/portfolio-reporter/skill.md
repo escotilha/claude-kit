@@ -1,5 +1,7 @@
 ---
 name: portfolio-reporter
+version: 1.0.0
+color: "#f59e0b"
 description: Generate comprehensive portfolio financial reports and presentations from individual company Excel files. Consolidates financial data from multiple Nuvini portfolio companies and creates executive-ready presentations with monthly and quarterly support.
 user-invocable: true
 context: fork

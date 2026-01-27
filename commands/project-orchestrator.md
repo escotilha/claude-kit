@@ -4,6 +4,12 @@ argument-hint: [project-path]
 allowed-tools: "*"
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 # Project Orchestrator
 
 Full project orchestrator that analyzes a codebase, creates an implementation plan, coordinates specialized agents to build it, runs comprehensive testing until all tests pass, then deploys to GitHub and Railway.
@@ -37,6 +43,10 @@ The assistant will:
 - Passing test suite
 - Deployed application on Railway
 - GitHub repository with all changes
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed task chains.
 
 ## Best For
 

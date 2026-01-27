@@ -4,6 +4,7 @@ description: "Orchestrates full M&A deal analysis using swarm of specialists. Sp
 user-invocable: true
 context: fork
 version: 1.0.0
+color: "#f59e0b"
 triggers:
   - "/mna full"
   - "/mna swarm"
@@ -375,18 +376,35 @@ Document:
 ## Output Format
 Save files to: deals/${companyName}/phase1/
 
+> **Note:** TeammateTool messages support **rich Markdown rendering**. Use headers, bold, code blocks, and tables for clear communication between workers and the leader.
+
 When complete, report to leader:
+```javascript
 TeammateTool.write({
   to: 'leader',
-  message: {
-    type: 'task_completed',
-    phase: 1,
-    worker: 'extractor',
-    outputs: ['financials.json', 'metrics.json', 'extraction-notes.md'],
-    quality: 'high|medium|low',
-    issues: []
-  }
+  message: `## Extraction Complete
+
+### Worker Status
+- **Worker:** extractor
+- **Phase:** 1
+- **Quality:** High
+
+### Output Files
+| File | Description | Status |
+|------|-------------|--------|
+| \`financials.json\` | Structured financial data | ✅ Created |
+| \`metrics.json\` | Key calculated metrics | ✅ Created |
+| \`extraction-notes.md\` | Data quality notes | ✅ Created |
+
+### Data Quality Summary
+- **Revenue Data:** 5 years historical, 3 years projected
+- **EBITDA:** Complete with margins
+- **Confidence Level:** 92%
+
+### Issues Encountered
+_None - extraction successful_`
 })
+```
 ```
 
 ### Triage Worker Prompt
@@ -451,6 +469,41 @@ List any concerns:
 
 ### 3. recommendation.md
 Executive summary with clear recommendation.
+
+When complete, report to leader with Markdown formatting:
+```javascript
+TeammateTool.write({
+  to: 'leader',
+  message: `## Triage Analysis Complete
+
+### Deal Score
+| Category | Score | Weight | Weighted |
+|----------|-------|--------|----------|
+| Financial Health | 8/10 | 25% | 2.00 |
+| Business Model | 7/10 | 25% | 1.75 |
+| Market Position | 6/10 | 20% | 1.20 |
+| Strategic Fit | 8/10 | 20% | 1.60 |
+| Deal Terms | 7/10 | 10% | 0.70 |
+| **Overall** | **7.25/10** | | |
+
+### Recommendation
+**PURSUE** - Deal meets investment criteria.
+
+### Key Strengths
+- Strong recurring revenue (85%)
+- Healthy EBITDA margins (22%)
+- Low customer concentration
+
+### Red Flags Identified
+1. **Medium Risk:** Key person dependency on CTO
+2. **Low Risk:** Aging tech stack needs modernization
+
+### Output Files
+- \`triage-score.json\` ✅
+- \`red-flags.md\` ✅
+- \`recommendation.md\` ✅`
+})
+```
 ```
 
 ---
@@ -499,6 +552,10 @@ Executive summary with clear recommendation.
 | `/mna swarm phase [1\|2\|3]` | Run specific phase only |
 | `/mna swarm resume` | Resume interrupted analysis |
 | `/mna swarm cleanup` | Cleanup team resources |
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed task chains.
 
 ---
 

@@ -276,6 +276,88 @@ ls -la master-project.json cpo-progress.md docs/user-guide.md 2>/dev/null
               (stages as tasks)
 ```
 
+**TeammateTool Message Formatting:**
+
+> **Note:** TeammateTool messages support **rich Markdown rendering**. Use headers, bold, code blocks, tables, and lists for clear communication between CPO leader and specialist workers.
+
+**Worker Stage Completion Example:**
+```javascript
+// Frontend worker reports stage completion
+TeammateTool.write({
+  to: 'leader',
+  message: `## Stage Complete: User Dashboard UI
+
+### Worker Status
+- **Worker:** frontend-worker
+- **Stage:** 2.1 - User Dashboard
+- **Duration:** 12 minutes
+
+### Implementation Summary
+| Component | Status | Tests |
+|-----------|--------|-------|
+| \`DashboardLayout\` | ✅ Complete | 4/4 passing |
+| \`StatsCards\` | ✅ Complete | 3/3 passing |
+| \`ActivityFeed\` | ✅ Complete | 5/5 passing |
+| \`QuickActions\` | ✅ Complete | 2/2 passing |
+
+### Files Created
+\`\`\`
+src/components/dashboard/
+├── DashboardLayout.tsx
+├── StatsCards.tsx
+├── ActivityFeed.tsx
+└── QuickActions.tsx
+\`\`\`
+
+### Design Notes
+- Implemented responsive grid layout
+- Used Tailwind CSS with project design tokens
+- Added loading skeletons for async data
+
+### Ready for Integration
+Stage is ready for fulltest-skill validation.`
+})
+```
+
+**Leader Task Assignment Example:**
+```javascript
+// CPO leader assigns task to API worker
+TeammateTool.write({
+  to: 'api-worker',
+  message: `## Task Assignment: Authentication API
+
+### Stage Details
+- **Stage:** 1.2 - Auth System
+- **Priority:** High (blocks other stages)
+
+### Requirements
+Implement the following endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| \`/api/auth/register\` | POST | User registration |
+| \`/api/auth/login\` | POST | User login with JWT |
+| \`/api/auth/logout\` | POST | Invalidate session |
+| \`/api/auth/refresh\` | POST | Refresh JWT token |
+
+### Technical Specs
+- Use **bcrypt** for password hashing
+- JWT tokens with 15min expiry
+- Refresh tokens with 7-day expiry
+
+### Acceptance Criteria
+\`\`\`gherkin
+Given a new user with valid email
+When they submit registration
+Then account is created and JWT returned
+\`\`\`
+
+### Dependencies
+- Database schema must be complete (Stage 1.1)
+- Use shared \`/lib/auth\` utilities`
+})
+```
+
 **Output:** Fully implemented product with all stages complete and tested
 
 **Detailed Steps:** [references/phase-details.md#phase-3](references/phase-details.md)
@@ -334,6 +416,10 @@ ls -la master-project.json cpo-progress.md docs/user-guide.md 2>/dev/null
 | "swarm status" | Show team, workers, and task board |
 | "swarm workers" | List active workers and tasks |
 | "parallel on" | Enable parallel mode (no swarm) |
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed task chains.
 
 ---
 

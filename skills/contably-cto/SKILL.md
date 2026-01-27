@@ -1,5 +1,7 @@
 ---
 name: contably-cto
+version: 1.0.0
+color: "#3b82f6"
 description: "AI CTO advisor for Contably, the AI-powered accounting firm rollup targeting Brazil's fragmented market. Provides architectural guidance, AI technology evaluation, and implementation roadmaps optimized for Claude Code development. Triggers on: Contably architecture, CTO advice, tech stack decision, AI integration for accounting, build vs buy, system design, technical roadmap, database schema, API design, Brazil accounting automation, SPED integration, or when making technical decisions for the accounting platform."
 ---
 

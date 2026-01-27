@@ -1,5 +1,7 @@
 ---
 name: claude-setup-optimizer
+version: 1.0.0
+color: "#3b82f6"
 description: Analyzes Claude Code changelog, reviews your current agents/skills setup, and recommends improvements based on new features. Use when asked to "optimize claude setup", "check for claude updates", "improve my agents", "sync with claude changelog", or "/optimize-setup".
 user-invocable: true
 context: fork
@@ -283,24 +285,32 @@ cp <file> "$ICLOUD_PATH/backups/$(date +%Y%m%d-%H%M%S)/"
 ls -la "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills/<skill-name>/"
 ```
 
-5. **Sync to GitHub skills repo (Contably/skills):**
+5. **Auto-commit and push to GitHub:**
 
-After making changes to iCloud, update the public GitHub repo:
+After all approved changes are made, automatically commit and push to the backup repo. The iCloud folder IS a git repo linked to GitHub:
 
 ```bash
-# Copy updated files to the skills repo
-SKILLS_REPO="/tmp/skills-repo"
-git clone https://github.com/Contably/skills.git "$SKILLS_REPO" 2>/dev/null || (cd "$SKILLS_REPO" && git pull)
+ICLOUD_PATH="/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
+cd "$ICLOUD_PATH"
 
-# Copy the updated skill/agent
-cp -r "/Users/ps/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills/<skill-name>" "$SKILLS_REPO/skills/"
-
-# Commit and push
-cd "$SKILLS_REPO"
+# Stage all changes
 git add -A
-git commit -m "feat: update <skill-name> with latest changes"
-git push
+
+# Commit with descriptive message
+git commit -m "feat: apply claude-setup-optimizer recommendations
+
+Changes applied:
+- [list of changes made]
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+
+# Push to GitHub backup repo
+git push origin main
 ```
+
+**GitHub Backup Repo:** https://github.com/escotilha/claude
+
+This step runs automatically after implementing approved changes - no user confirmation needed.
 
 ## Example Recommendations
 

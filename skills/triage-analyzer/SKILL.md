@@ -17,6 +17,7 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
+  - AskUserQuestion
 ---
 
 # M&A Triage Analyzer

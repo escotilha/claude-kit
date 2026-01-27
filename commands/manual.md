@@ -4,6 +4,12 @@ argument-hint: [format: html|word|screenshots [url]]
 allowed-tools: Bash, Read, Glob, Write, mcp__chrome-devtools__*
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 Build the user manual for the current project.
 
 ## Arguments

@@ -5,8 +5,9 @@ version: 4.0.0
 tools:
   - Task
   - TeammateTool
+  - AskUserQuestion
 model: sonnet
-color: green
+color: "#22c55e"
 triggers:
   - "test the website"
   - "run e2e tests"
@@ -23,6 +24,16 @@ dependencies:
 # Full-Spectrum Testing Skill (v4.0 - Swarm Mode)
 
 Comprehensive website testing with **true parallel execution** via TeammateTool, real-time failure sharing, and cross-page pattern detection.
+
+## MCP Tool Loading
+
+MCP tools are deferred and must be loaded via ToolSearch before use:
+- Keyword search: `ToolSearch({ query: "memory" })` - loads matching tools
+- Direct select: `ToolSearch({ query: "select:mcp__chrome-devtools__navigate_page" })`
+
+**Required tools to load:**
+- `mcp__chrome-devtools__*` - Browser automation (navigate, click, screenshot, etc.)
+- `mcp__memory__*` - Pattern storage and cross-session learning
 
 ## What It Does
 
@@ -286,6 +297,102 @@ These functions can be called by reading the TypeScript source and understanding
 [0:52] All tests pass!
 
 Total: 52 seconds (vs ~3 minutes sequential)
+```
+
+### TeammateTool Message Formatting
+
+> **Note:** TeammateTool messages support **rich Markdown rendering**. Use headers, bold, code blocks, tables, and lists for clear communication between testers and fixers.
+
+#### Failure Broadcast Example
+
+```javascript
+// Tester broadcasts CSS failure to all other testers
+TeammateTool.message({
+  from: "tester-3",
+  to: ["orchestrator", "tester-*"],
+  type: "failure_broadcast",
+  message: `## CSS Load Failure Detected
+
+**Page:** \`/blog\`
+**Severity:** Critical
+
+### Error Details
+| Resource | Status | Path |
+|----------|--------|------|
+| main.css | 404 | \`/styles/main.css\` |
+
+### Console Error
+\`\`\`
+GET http://localhost:3000/styles/main.css 404 (Not Found)
+\`\`\`
+
+### Action for Other Testers
+Skip CSS verification until this is fixed - mark as **known_issue**.`
+})
+```
+
+#### Fix Completion Example
+
+```javascript
+// CSS fixer reports completion
+TeammateTool.message({
+  from: "css-fixer",
+  to: ["orchestrator"],
+  type: "fix_completed",
+  message: `## Fix Applied: CSS Path Correction
+
+### Summary
+- **Issue:** CSS file returning 404
+- **Root Cause:** Incorrect path in HTML template
+- **Status:** Fixed
+
+### Changes Made
+\`\`\`diff
+- <link rel="stylesheet" href="/styles/main.css">
++ <link rel="stylesheet" href="/css/main.css">
+\`\`\`
+
+### Files Modified
+- \`src/templates/base.html\`
+- \`src/templates/blog.html\`
+
+### Verification
+Ready for re-test on affected pages: \`/\`, \`/blog\`, \`/about\``
+})
+```
+
+#### Pattern Detection Example
+
+```javascript
+// Orchestrator announces systemic pattern
+TeammateTool.message({
+  from: "orchestrator",
+  to: ["all-workers"],
+  type: "pattern_detected",
+  message: `## Systemic Pattern Detected
+
+**Pattern:** JavaScript null reference error
+**Occurrences:** 3 pages
+
+### Affected Pages
+1. \`/products\` - line 45
+2. \`/cart\` - line 23
+3. \`/checkout\` - line 89
+
+### Common Stack Trace
+\`\`\`javascript
+TypeError: Cannot read property 'items' of null
+    at renderCart (bundle.js:1234)
+\`\`\`
+
+### Recommended Fix
+Add null check before accessing \`cart.items\`:
+\`\`\`javascript
+const items = cart?.items || []
+\`\`\`
+
+**Assigning to:** js-fixer`
+})
 ```
 
 ---

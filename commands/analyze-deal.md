@@ -4,6 +4,12 @@ argument-hint: [company-name or PDF path]
 allowed-tools: Read, Write, Bash, WebFetch, TaskCreate, TaskUpdate, TaskList, Task
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 # Analyze M&A Deal
 
 Run complete end-to-end M&A analysis on a company opportunity.

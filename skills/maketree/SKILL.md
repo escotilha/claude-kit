@@ -1,5 +1,7 @@
 ---
 name: maketree
+version: 1.0.0
+color: "#8b5cf6"
 description: Automatically create and manage git worktrees for any project with intelligent branch discovery.
 user-invocable: true
 model: haiku

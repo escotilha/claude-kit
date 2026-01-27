@@ -3,6 +3,12 @@ description: Check and sync Claude setup with remote repository
 allowed-tools: Bash
 ---
 
+## Argument Syntax
+- `$0` - First argument
+- `$1` - Second argument
+- `$ARGUMENTS` - Full argument string
+- `$ARGUMENTS[0]` - Indexed access
+
 # Claude Setup Sync Check
 
 Check if your local Claude setup is in sync with the remote repository. Automatically commits and pushes local changes when ahead.

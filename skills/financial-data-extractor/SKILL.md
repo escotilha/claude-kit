@@ -1,7 +1,8 @@
 ---
 name: financial-data-extractor
 description: |
-  Advanced financial data extraction and analysis from PDFs and Excel files with intelligent model selection (Sonnet 4.5 vs Opus 4.1). Use when Claude needs to extract financial metrics, tables, or structured data from M&A documents like CIMs, financial statements, pitch decks, due diligence materials, Excel financial models, reports, or data exports. Extracts revenue, EBITDA, valuation metrics, and other financial figures. Outputs structured JSON/CSV data ready for analysis, modeling, or import into other systems. Automatically recommends optimal model based on task complexity, deal size, and quality requirements.
+  Advanced financial data extraction and analysis from PDFs and Excel files with intelligent model selection (Sonnet 4.5 vs Opus 4.5). Use when Claude needs to extract financial metrics, tables, or structured data from M&A documents like CIMs, financial statements, pitch decks, due diligence materials, Excel financial models, reports, or data exports. Extracts revenue, EBITDA, valuation metrics, and other financial figures. Outputs structured JSON/CSV data ready for analysis, modeling, or import into other systems. Automatically recommends optimal model based on task complexity, deal size, and quality requirements.
+user-invocable: true
 context: fork
 version: 1.0.0
 color: "#f59e0b"
@@ -13,6 +14,10 @@ allowed-tools:
   - Grep
   - WebFetch
   - WebSearch
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
 ---
 
 # Financial Data Extractor
@@ -29,7 +34,7 @@ This skill includes strategic guidance for choosing between:
 - Fast, cost-effective, highly accurate
 - $3/$15 per million tokens
 
-**Claude Opus 4.1** (Premium):
+**Claude Opus 4.5** (Premium):
 - Superior reasoning for complex analysis
 - Use for high-stakes decisions (>$25M deals)
 - Near-zero hallucination tolerance
@@ -140,7 +145,7 @@ Returns complete data extraction including sheets, metrics, and tables.
 for pipeline screening"
 ```
 
-### When to Use Opus 4.1 (Premium) ⭐
+### When to Use Opus 4.5 (Premium) ⭐
 
 **Use for critical tasks**:
 - Final deal validation (>$25M deals)
@@ -153,7 +158,7 @@ for pipeline screening"
 
 **Example prompt**:
 ```
-"Using Opus 4.1, perform comprehensive validation of these financial 
+"Using Opus 4.5, perform comprehensive validation of these financial 
 statements and identify any inconsistencies or red flags"
 ```
 
@@ -163,9 +168,9 @@ statements and identify any inconsistencies or red flags"
 |-----------|------|-----------------|-------|
 | Any | Initial extraction | Clean | Sonnet 4.5 |
 | <$5M | All stages | Any | Sonnet 4.5 |
-| $5M-$25M | Validation | Clean | Opus 4.1 |
-| >$25M | All critical tasks | Any | Opus 4.1 |
-| Any | Ambiguous/poor | Poor | Opus 4.1 |
+| $5M-$25M | Validation | Clean | Opus 4.5 |
+| >$25M | All critical tasks | Any | Opus 4.5 |
+| Any | Ambiguous/poor | Poor | Opus 4.5 |
 
 **See references/model_selection_strategy.md for complete decision framework.**
 
@@ -180,9 +185,9 @@ statements and identify any inconsistencies or red flags"
 python scripts/extract_pdf_financials.py cim.pdf --mode all > data.json
 ```
 
-**Stage 2 - Opus 4.1**: Quality validation (2 minutes)
+**Stage 2 - Opus 4.5**: Quality validation (2 minutes)
 ```
-Prompt to Opus 4.1:
+Prompt to Opus 4.5:
 "Review this extracted data against the source CIM. Validate accuracy 
 of key metrics and flag any inconsistencies."
 ```
@@ -238,9 +243,9 @@ for file in *.pdf; do
 done
 ```
 
-**Opus 4.1** for validation and reconciliation:
+**Opus 4.5** for validation and reconciliation:
 ```
-Prompt to Opus 4.1:
+Prompt to Opus 4.5:
 "Review these extractions from multiple documents and identify 
 any inconsistencies in the financial data. Cross-validate key 
 metrics across sources."
@@ -255,7 +260,7 @@ metrics across sources."
 **Location**: `references/model_selection_strategy.md`
 
 Comprehensive decision framework covering:
-- When to use Sonnet 4.5 vs Opus 4.1
+- When to use Sonnet 4.5 vs Opus 4.5
 - Cost-benefit analysis by deal size
 - Quality benchmarks and accuracy rates
 - Workflow patterns for different scenarios
@@ -316,7 +321,7 @@ The scripts will check for dependencies and provide installation instructions if
 ### Model Selection
 
 1. **Default to Sonnet 4.5** for all standard extraction and automation
-2. **Upgrade to Opus 4.1** when:
+2. **Upgrade to Opus 4.5** when:
    - Deal size >$25M
    - Final validation before IC presentation
    - Documents are ambiguous or conflicting
@@ -361,15 +366,15 @@ Review top 3 targets with Sonnet + Opus:
 python scripts/extract_pdf_financials.py target_cim.pdf --mode all > data.json
 ```
 
-Then prompt Opus 4.1:
+Then prompt Opus 4.5:
 ```
 "Review these extractions and validate all key financial metrics, 
 consistency, and flag any red flags or inconsistencies."
 ```
 
-### Investment Committee Prep (Opus 4.1)
+### Investment Committee Prep (Opus 4.5)
 
-Final validation for IC presentation - use Opus 4.1 exclusively for comprehensive validation of all financial data, cross-checking across sources, and identifying any concerns.
+Final validation for IC presentation - use Opus 4.5 exclusively for comprehensive validation of all financial data, cross-checking across sources, and identifying any concerns.
 
 ---
 
@@ -378,7 +383,7 @@ Final validation for IC presentation - use Opus 4.1 exclusively for comprehensiv
 This skill provides best-in-class financial data extraction with intelligent model selection:
 
 - **Sonnet 4.5**: Fast, accurate, cost-effective for 95% of tasks
-- **Opus 4.1**: Premium accuracy for critical 5% where quality is paramount
+- **Opus 4.5**: Premium accuracy for critical 5% where quality is paramount
 - **Strategic approach**: Use both models optimally to balance speed, cost, and quality
 
 The key insight: For high-value M&A work, spending $50 on Opus validation is trivial insurance against million-dollar mistakes.

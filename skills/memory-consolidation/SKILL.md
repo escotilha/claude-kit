@@ -19,6 +19,10 @@ allowed-tools:
   - Bash
   - Glob
   - mcp__memory__*
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
 ---
 
 # Memory Consolidation Skill
@@ -26,6 +30,20 @@ allowed-tools:
 A human-inspired memory maintenance system that implements the cognitive processes of consolidation, forgetting, and metacognition for AI agents.
 
 Based on: [Towards Human-like Memory for AI Agents](https://manthanguptaa.in/posts/towards_human_like_memory_for_ai_agents/)
+
+## MCP Tool Loading
+
+MCP tools are deferred and must be loaded via ToolSearch before use:
+- Keyword search: `ToolSearch({ query: "memory" })` - loads matching tools
+- Direct select: `ToolSearch({ query: "select:mcp__memory__search_nodes" })`
+
+**Required tools to load:**
+- `mcp__memory__search_nodes` - Query existing memories
+- `mcp__memory__create_entities` - Create new memories
+- `mcp__memory__delete_entities` - Remove memories
+- `mcp__memory__add_observations` - Add to existing memories
+- `mcp__memory__create_relations` - Link memories together
+- `mcp__memory__open_nodes` - Get full memory details
 
 ---
 

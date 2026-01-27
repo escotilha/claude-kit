@@ -366,7 +366,9 @@ TeammateTool.spawn({
 
 #### 3.2: Inter-Analyst Communication
 
-Analysts share findings in real-time for cross-concern detection:
+Analysts share findings in real-time for cross-concern detection.
+
+> **Note:** TeammateTool messages support **rich Markdown rendering**. Use headers, bold, code blocks, and lists in your message payloads for clear, well-formatted communication between agents.
 
 ```
 // Security analyst finds auth issue
@@ -375,16 +377,29 @@ TeammateTool.message({
   to: ["orchestrator"],
   type: "critical_finding",
   priority: "immediate",
-  payload: {
-    severity: "critical",
-    category: "security",
-    file: "src/api/auth.ts",
-    line: 45,
-    issue: "JWT secret hardcoded in source",
-    evidence: "const JWT_SECRET = 'mysecretkey'",
-    recommendation: "Move to environment variable",
-    cwe: "CWE-798"
-  }
+  message: `## Critical Security Finding
+
+**Severity:** Critical
+**Category:** Security
+**CWE:** CWE-798 (Hardcoded Credentials)
+
+### Location
+- **File:** \`src/api/auth.ts\`
+- **Line:** 45
+
+### Issue
+JWT secret is hardcoded in source code.
+
+### Evidence
+\`\`\`typescript
+const JWT_SECRET = 'mysecretkey'
+\`\`\`
+
+### Recommendation
+Move secret to environment variable:
+\`\`\`typescript
+const JWT_SECRET = process.env.JWT_SECRET
+\`\`\``
 })
 
 // Architecture analyst alerts performance about pattern
@@ -392,11 +407,15 @@ TeammateTool.message({
   from: "architecture-analyst",
   to: ["performance-analyst"],
   type: "pattern_alert",
-  payload: {
-    pattern: "Service calls database directly in loop",
-    file: "src/services/orders.ts",
-    suggestion: "Check for N+1 query pattern here"
-  }
+  message: `## Pattern Alert: Potential N+1 Query
+
+**File:** \`src/services/orders.ts\`
+
+### Observed Pattern
+Service calls database directly in loop - classic N+1 pattern.
+
+### Action Requested
+Please verify and quantify the performance impact.`
 })
 
 // Performance analyst confirms cross-concern
@@ -404,16 +423,25 @@ TeammateTool.message({
   from: "performance-analyst",
   to: ["orchestrator", "architecture-analyst"],
   type: "cross_concern_confirmed",
-  payload: {
-    original_alert: "architecture:loop_pattern",
-    finding: {
-      severity: "high",
-      issue: "N+1 query: 50 DB calls per request",
-      file: "src/services/orders.ts",
-      line: 78,
-      recommendation: "Batch fetch with WHERE IN clause"
-    }
-  }
+  message: `## Cross-Concern Confirmed: N+1 Query
+
+**Original Alert:** architecture:loop_pattern
+
+### Finding Details
+| Field | Value |
+|-------|-------|
+| **Severity** | High |
+| **File** | \`src/services/orders.ts\` |
+| **Line** | 78 |
+
+### Issue
+N+1 query pattern causing **50 DB calls per request**.
+
+### Recommendation
+Batch fetch with \`WHERE IN\` clause:
+\`\`\`sql
+SELECT * FROM items WHERE order_id IN (?, ?, ...)
+\`\`\``
 })
 
 // Stack analyst warns security about vulnerable dep
@@ -421,13 +449,19 @@ TeammateTool.message({
   from: "stack-analyst",
   to: ["security-analyst", "orchestrator"],
   type: "vulnerability_alert",
-  payload: {
-    package: "lodash",
-    version: "4.17.15",
-    vulnerability: "Prototype Pollution",
-    severity: "high",
-    fix: "Upgrade to 4.17.21+"
-  }
+  message: `## Vulnerability Alert: Outdated Dependency
+
+### Package Details
+- **Package:** \`lodash\`
+- **Current Version:** 4.17.15
+- **Vulnerability:** Prototype Pollution
+- **Severity:** High
+
+### Fix
+Upgrade to version **4.17.21+**:
+\`\`\`bash
+npm install lodash@^4.17.21
+\`\`\``
 })
 ```
 
