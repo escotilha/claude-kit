@@ -419,7 +419,16 @@ Then account is created and JWT returned
 
 ## Task Cleanup
 
-Use `TaskUpdate` with `status: "deleted"` to clean up completed task chains.
+Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:
+
+```json
+{"taskId": "1", "status": "deleted"}
+```
+
+This prevents task list clutter during long sessions. Clean up task chains after:
+- All stages complete and verified
+- User cancels a workflow
+- Starting a fresh PRD cycle
 
 ---
 
@@ -511,9 +520,20 @@ If implementation expands beyond plan:
 
 ---
 
+## Multi-Directory Projects
+
+For monorepos or projects with multiple subdirectories containing their own CLAUDE.md files:
+
+1. Set environment variable: `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`
+2. Use `--add-dir` flag when launching Claude Code to include additional directories
+
+This ensures all project-specific instructions are loaded when orchestrating across multiple packages.
+
+---
+
 ## Version & Updates
 
-**Current Version:** 2.0.0
+**Current Version:** 2.2.0
 
 **Recent Changes:**
 - Added `/cpo-go` quick-start command

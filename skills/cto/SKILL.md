@@ -1055,6 +1055,18 @@ Or configure globally:
 
 ---
 
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:
+
+```json
+{"taskId": "1", "status": "deleted"}
+```
+
+This prevents task list clutter during long review sessions.
+
+---
+
 ## Quick Commands
 
 | Command | Action |

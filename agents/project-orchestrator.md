@@ -600,6 +600,29 @@ Use TaskRead to check dependency status:
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## Multi-Directory Projects
+
+For monorepos or projects with multiple subdirectories containing their own CLAUDE.md files:
+
+1. Set environment variable: `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`
+2. Use `--add-dir` flag when launching Claude Code to include additional directories
+
+This ensures all project-specific instructions are loaded across the workspace.
+
+---
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:
+
+```json
+{"taskId": "1", "status": "deleted"}
+```
+
+This prevents task list clutter during long orchestration sessions.
+
+---
+
 ## Triggers
 
 Use this orchestrator when:

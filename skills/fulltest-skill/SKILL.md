@@ -417,3 +417,15 @@ const items = cart?.items || []
 - **Both Modes**: Chrome DevTools MCP, Memory MCP
 - **Sequential Mode**: Standard Claude Code
 - **Swarm Mode**: Requires `claude-sneakpeek` or official TeammateTool support
+
+---
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:
+
+```json
+{"taskId": "1", "status": "deleted"}
+```
+
+This prevents task list clutter during long testing sessions.

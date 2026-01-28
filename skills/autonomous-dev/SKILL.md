@@ -3,7 +3,7 @@ name: autonomous-dev
 description: "Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration. Supports swarm mode for multi-agent orchestration with TeammateTool. Use when asked to: build a feature autonomously, create a PRD, implement a feature from scratch, run an autonomous coding loop, break down a feature into user stories. Triggers on: autonomous agent, build this autonomously, autonomous mode, implement this feature, create prd, prd to json, user stories, iterative implementation, ralph, swarm mode."
 user-invocable: true
 context: fork
-version: 2.1.0
+version: 2.2.0
 color: "#8b5cf6"
 allowed-tools:
   - Read
@@ -22,6 +22,56 @@ allowed-tools:
 ---
 
 # Autonomous Coding Agent
+
+## FAST PATH: Check Completion First (Token Optimization)
+
+**CRITICAL: Before reading the rest of this document, check if the PRD is already complete.**
+
+```bash
+# Check prd.json status
+if [ -f prd.json ]; then
+  jq -r '
+    .userStories as $stories |
+    ($stories | length) as $total |
+    ($stories | map(select(.passes == true)) | length) as $complete |
+    if $total == $complete then
+      "COMPLETE: \($complete)/\($total) stories done"
+    else
+      "IN_PROGRESS: \($complete)/\($total) stories done"
+    end
+  ' prd.json
+else
+  echo "NO_PRD"
+fi
+```
+
+### If Output is "COMPLETE": STOP HERE
+
+**Do NOT read the rest of this document.** Simply respond with:
+
+```
+===== FEATURE COMPLETE =====
+
+All stories in prd.json have passed.
+
+Branch: [read from prd.json branchName]
+Stories completed: [N]/[N]
+
+Options:
+1. Create a PR for this branch: `/commit` then create PR
+2. Start a new feature: Provide a feature idea
+3. Archive and clean up:
+   ```bash
+   mkdir -p archive/$(date +%Y-%m-%d)-[branch]
+   mv prd.json progress.md archive/$(date +%Y-%m-%d)-[branch]/
+   ```
+
+What would you like to do next?
+```
+
+### If Output is "IN_PROGRESS" or "NO_PRD": Continue Below
+
+---
 
 An autonomous workflow that breaks features into small, testable user stories and implements them one at a time with fresh context per iteration. Now with **Swarm Mode** for multi-agent orchestration.
 
@@ -353,6 +403,41 @@ This triggers the `memory-consolidation` skill which:
 4. Updates core-memory.json with promotions
 
 **See:** [memory-consolidation skill](../memory-consolidation/SKILL.md) for details
+
+---
+
+## Argument Shorthand (v2.1.19+)
+
+When invoking this skill via commands, use shorthand syntax for cleaner invocations:
+
+| Syntax | Description | Example |
+|--------|-------------|---------|
+| `$0` | First argument | `/autonomous-dev $0` → first word after command |
+| `$1` | Second argument | Access second word |
+| `$ARGUMENTS` | Full argument string | All text after command |
+| `$ARGUMENTS[0]` | Indexed access (bracket syntax) | Same as `$0` |
+
+**Example command definition:**
+```markdown
+/autonomous-dev $0
+# If user types: "/autonomous-dev auth-system"
+# $0 = "auth-system"
+```
+
+---
+
+## Task Cleanup
+
+Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:
+
+```json
+{"taskId": "1", "status": "deleted"}
+```
+
+This prevents task list clutter during long autonomous sessions. Clean up after:
+- All stories pass and feature is complete
+- User cancels a PRD mid-implementation
+- Starting a fresh feature cycle
 
 ---
 
