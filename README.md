@@ -1,190 +1,21 @@
-# Claude Code Skills & Agents
+# Claude Kit
 
-Open source collection of powerful skills and agents for Claude Code CLI.
+Open source toolkit for Claude Code CLI: skills, agents, and memory.
 
-## 🚀 Skills Included
+## What's Included
 
-### 1. **Autonomous Dev** (`autonomous-dev`)
+| Component | Purpose |
+|-----------|---------|
+| **Skills** | Reusable task instructions (`/commit`, `/deploy`, `/test`) |
+| **Agents** | Specialized subagents for complex tasks |
+| **Memory** | Persistent knowledge and context across sessions |
 
-Autonomous coding agent that breaks features into small user stories and implements them iteratively with fresh context per iteration.
-
-**Features:**
-- PRD generation from feature ideas
-- JSON conversion for machine-readable task lists
-- Autonomous implementation loop
-- Cross-codebase learning with Memory MCP
-- Worktree integration for parallel development
-- Smart delegation to specialized agents (optional)
-
-**Usage:**
-```
-"Build a user authentication system"
-"Create a PRD for dashboard feature"
-"Continue autonomous implementation"
-```
-
-**Dependencies:**
-- frontend-agent, api-agent, database-agent, devops-agent, orchestrator-fullstack (optional for delegation)
-- worktree-scaffold skill (optional for parallel development)
-
----
-
-### 2. **Claude Setup Optimizer** (`claude-setup-optimizer`)
-
-Analyzes Claude Code changelog, reviews your current agents/skills setup, and recommends improvements based on new features.
-
-**Features:**
-- Fetches latest Claude Code changelog
-- Analyzes your current skill/agent setup
-- Identifies optimization opportunities
-- Provides prioritized recommendations
-- Auto-implements approved changes
-
-**Usage:**
-```
-"Optimize my claude setup"
-"Check for claude updates"
-"/optimize-setup"
-```
-
----
-
-### 3. **Full-Spectrum Testing** (`fulltest-skill`)
-
-Unified full-spectrum testing for websites and applications. Maps sites, spawns parallel testers, analyzes failures, auto-fixes issues.
-
-**Features:**
-- Site structure mapping
-- Parallel page testing
-- Console error detection
-- Network failure analysis
-- Broken link checking (404s)
-- Auto-fix capabilities
-- Re-test loops (max 3 iterations)
-- Comprehensive reports
-
-**Usage:**
-```
-"Test http://localhost:3000 and fix issues"
-"/fulltest"
-```
-
-**Dependencies:**
-- fulltesting-agent
-- Chrome DevTools MCP
-
----
-
-### 4. **Worktree Scaffold** (`worktree-scaffold`)
-
-Parallel feature development automation using git worktrees with project scaffolding.
-
-**Features:**
-- Feature workspace creation
-- Project scaffolding
-- Parallel development support
-- Workspace cleanup
-
-**Usage:**
-```
-"Create worktree for feature-name"
-"List active workspaces"
-"Remove workspace feature-name"
-```
-
----
-
-### 5. **CTO Advisor** (`cto`)
-
-Universal AI CTO advisor for any project. Provides full technical leadership: architecture, code quality, security, performance, and testing strategy.
-
-**Features:**
-- Architecture review and ADR creation
-- Code quality assessment and refactoring recommendations
-- Security audit (OWASP Top 10)
-- Performance analysis and optimization
-- Tech stack evaluation with scoring
-- Technical roadmap planning
-
-**Usage:**
-```
-/cto
-"Review this codebase as a CTO"
-"Do a security audit"
-"Should we migrate to microservices?"
-```
-
-**Configuration:**
-Create `cto-requirements.md` in your project to focus reviews on specific areas.
-
----
-
-### 6. **Skill Loader** (`skill-loader`)
-
-Load and manage Claude Code skills from external GitHub repositories.
-
-**Features:**
-- Load skills from any GitHub repository
-- Save repositories as persistent skill sources
-- Update skills from all configured sources
-- Smart detection of skills and agents
-
-**Usage:**
-```
-"Load skills from https://github.com/escotilha/skills"
-"Always load skills from github.com/owner/repo"
-"Update my skills"
-"List skill sources"
-```
-
----
-
-### 7. **CPO AI** (`cpo-ai-skill`)
-
-Chief Product Officer AI that orchestrates entire product lifecycles. Goes from idea to production-ready application.
-
-**Features:**
-- Product discovery with strategic questions
-- Strategic planning with epics and stages
-- Stage-by-stage implementation with testing
-- Full project validation
-- Documentation and deployment
-
-**Usage:**
-```
-/cpo-go my-app Create a task management application
-"Build this product from scratch"
-```
-
-**Dependencies:**
-- autonomous-dev, fulltest-skill
-- Specialized subagents: product-research, cto-advisor, frontend-design, backend-api, database-setup, deployment
-
----
-
-## 🤖 Agents Included
-
-### Core Agents
-
-- **fulltesting-agent** - Full E2E testing with Chrome DevTools
-- **frontend-agent** - React, Vue, Angular, Next.js, Svelte development
-- **api-agent** - REST/GraphQL API design and implementation
-- **database-agent** - Schema design, migrations, query optimization
-- **devops-agent** - CI/CD, Docker, cloud deployments
-- **orchestrator-fullstack** - Multi-layer feature coordination
-
----
-
-## 📦 Installation
-
-### Quick Install (Recommended)
-
-Copy skills and agents to your Claude Code directory:
+## Quick Install
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/claude-code-skills.git
-cd claude-code-skills
+git clone https://github.com/escotilha/claude-kit.git
+cd claude-kit
 
 # Install skills
 cp -r skills/* ~/.claude/skills/
@@ -192,241 +23,218 @@ cp -r skills/* ~/.claude/skills/
 # Install agents
 cp -r agents/* ~/.claude/agents/
 
-# Verify installation
-ls ~/.claude/skills/
-ls ~/.claude/agents/
-```
-
-### Manual Install
-
-Install individual skills/agents:
-
-```bash
-# Install specific skill
-cp -r skills/autonomous-dev ~/.claude/skills/
-
-# Install specific agent
-cp agents/fulltesting-agent.md ~/.claude/agents/
+# Install memory templates
+mkdir -p ~/.claude/memory
+cp memory/core-memory-template.json ~/.claude/memory/core-memory.json
+cp memory/session-context-template.json ~/.claude/memory/session-context.json
 ```
 
 ---
 
-## 🔧 Configuration
+## Skills
 
-### Autonomous Dev Setup
+### Autonomous Dev (`autonomous-dev`)
 
-1. **Enable Memory MCP** (for cross-codebase learning):
-   ```json
-   // Add to ~/.claude/settings.json
-   {
-     "mcp": {
-       "servers": {
-         "memory": {
-           "command": "npx",
-           "args": ["-y", "@anthropic-ai/memory-server"]
-         }
-       }
-     }
-   }
-   ```
-
-2. **Enable Smart Delegation** (optional):
-   ```json
-   // In your project's prd.json
-   {
-     "delegation": {
-       "enabled": true,
-       "fallbackToDirect": true
-     }
-   }
-   ```
-
-3. **Configure Worktrees** (optional):
-   ```bash
-   # Initialize worktree config in your project
-   # Run autonomous-dev, it will prompt to create .worktree-scaffold.json
-   ```
-
-### Full-Spectrum Testing Setup
-
-1. **Install Chrome DevTools MCP**:
-   ```json
-   // Add to ~/.claude/settings.json
-   {
-     "mcp": {
-       "servers": {
-         "chrome-devtools": {
-           "command": "npx",
-           "args": ["-y", "chrome-devtools-mcp"]
-         }
-       }
-     }
-   }
-   ```
-
----
-
-## 📖 Usage Examples
-
-### Example 1: Build Feature Autonomously
+Autonomous coding agent that breaks features into user stories and implements them iteratively.
 
 ```
-User: "Build a dark mode toggle feature"
-
-Claude: [autonomous-dev activates]
-- Asks clarifying questions
-- Generates PRD with user stories
-- Creates prd.json
-- Implements each story iteratively
-- Runs verification after each story
-- Commits changes
-- Creates PR when done
+"Build a user authentication system"
+"Create a PRD for dashboard feature"
 ```
 
-### Example 2: Test Website
+### Claude Setup Optimizer (`claude-setup-optimizer`)
+
+Analyzes Claude Code changelog and recommends improvements to your setup.
 
 ```
-User: "Test http://localhost:3000 and fix any issues"
-
-Claude: [fulltest-skill activates]
-- Maps site structure
-- Tests all pages in parallel
-- Finds console errors and broken links
-- Auto-fixes issues
-- Re-tests until all pass
-- Generates report
+"Optimize my claude setup"
+"/optimize-setup"
 ```
 
-### Example 3: Optimize Setup
+### Full-Spectrum Testing (`fulltest-skill`)
+
+Maps sites, spawns parallel testers, auto-fixes issues.
 
 ```
-User: "Check for claude updates"
+"Test http://localhost:3000 and fix issues"
+"/fulltest"
+```
 
-Claude: [claude-setup-optimizer activates]
-- Fetches latest changelog
-- Analyzes your skills/agents
-- Recommends HIGH priority: "Add parallel tool calls"
-- Implements approved changes
-- Creates backup and commits
+### CTO Advisor (`cto`)
+
+Technical leadership: architecture, security, performance, code quality.
+
+```
+/cto
+"Do a security audit"
+"Review this codebase"
+```
+
+### CPO AI (`cpo-ai-skill`)
+
+Chief Product Officer AI - from idea to production-ready application.
+
+```
+/cpo-go my-app Create a task management application
+```
+
+### Skill Loader (`skill-loader`)
+
+Load skills from external GitHub repositories.
+
+```
+"Load skills from github.com/owner/repo"
+"Update my skills"
+```
+
+### Worktree Scaffold (`worktree-scaffold`)
+
+Parallel feature development with git worktrees.
+
+```
+"Create worktree for feature-name"
 ```
 
 ---
 
-## 🎯 Skill Triggers
+## Agents
 
-Each skill activates automatically when you mention relevant keywords:
-
-**Autonomous Dev:**
-- "autonomous agent", "build autonomously", "create prd", "user stories"
-
-**Claude Setup Optimizer:**
-- "optimize claude setup", "check claude updates", "improve my agents"
-
-**Full-Spectrum Testing:**
-- "test the website", "run e2e tests", "test and fix"
-
-**Worktree Scaffold:**
-- "create worktree", "checkout feature", "parallel features"
+| Agent | Purpose |
+|-------|---------|
+| `fulltesting-agent` | Full E2E testing with Chrome DevTools |
+| `frontend-agent` | React, Vue, Angular, Next.js, Svelte |
+| `api-agent` | REST/GraphQL API design and implementation |
+| `database-agent` | Schema design, migrations, query optimization |
+| `devops-agent` | CI/CD, Docker, cloud deployments |
+| `orchestrator-fullstack` | Multi-layer feature coordination |
 
 ---
 
-## 🔗 Dependencies
+## Memory
 
-### Required MCP Servers
+Memory provides persistent knowledge across Claude Code sessions.
 
-- **Memory MCP** (for autonomous-dev cross-codebase learning)
-  ```bash
-  npx -y @anthropic-ai/memory-server
-  ```
+### Components
 
-- **Chrome DevTools MCP** (for fulltest-skill)
-  ```bash
-  npx -y chrome-devtools-mcp
-  ```
+1. **Core Memory** (`core-memory.json`) - Static user profile, preferences, beliefs
+2. **Session Context** (`session-context.json`) - Dynamic session state
+3. **Memory MCP** - Knowledge graph for entities and relations
 
-### Optional but Recommended
+### Setup
 
-- Git (for all features)
-- Node.js/npm (for verification commands)
-- jq (for JSON manipulation in autonomous-dev)
+1. Copy templates to `~/.claude/memory/`
+2. Edit `core-memory.json` with your information
+3. Add session hook to load memory at startup
+
+See [memory/README.md](memory/README.md) for detailed setup instructions.
+
+### Memory vs Skills
+
+| Memory | Skills |
+|--------|--------|
+| Facts and context | Task instructions |
+| "Uses pnpm" | "How to commit" |
+| Nouns | Verbs |
 
 ---
 
-## 📂 Repository Structure
+## Configuration
 
-```
-claude-code-skills/
-├── README.md                           # This file
-├── skills/                             # Skills directory
-│   ├── autonomous-dev/                 # Autonomous coding agent
-│   │   ├── SKILL.md                    # Skill definition
-│   │   ├── README.md                   # Documentation
-│   │   └── references/                 # Examples and docs
-│   ├── claude-setup-optimizer/         # Setup optimizer
-│   │   └── SKILL.md
-│   ├── cto/                            # CTO technical advisor
-│   │   ├── SKILL.md
-│   │   └── README.md
-│   ├── skill-loader/                   # External skill loader
-│   │   ├── SKILL.md
-│   │   ├── README.md
-│   │   └── skill-sources.example.json
-│   ├── cpo-ai-skill/                   # Chief Product Officer AI
-│   │   ├── SKILL.md
-│   │   ├── README.md
-│   │   ├── subagents/                  # Specialized subagents
-│   │   └── references/                 # Templates and docs
-│   ├── fulltest-skill/                 # Full-spectrum testing
-│   │   └── SKILL.md
-│   └── worktree-scaffold/              # Worktree management
-│       └── SKILL.md
-├── agents/                             # Agents directory
-│   ├── fulltesting-agent.md            # E2E testing agent
-│   ├── frontend-agent.md               # Frontend specialist
-│   ├── api-agent.md                    # API specialist
-│   ├── database-agent.md               # Database specialist
-│   ├── devops-agent.md                 # DevOps specialist
-│   └── orchestrator-fullstack.md       # Fullstack orchestrator
-└── LICENSE                             # Open source license
+### Memory Hook
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat ~/.claude/memory/core-memory.json"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
+### Memory MCP
+
+```json
+{
+  "mcp": {
+    "mcpServers": {
+      "memory": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-memory"]
+      }
+    }
+  }
+}
+```
+
+### Chrome DevTools MCP (for testing)
+
+```json
+{
+  "mcp": {
+    "mcpServers": {
+      "chrome-devtools": {
+        "command": "npx",
+        "args": ["-y", "chrome-devtools-mcp"]
+      }
+    }
+  }
+}
+```
+
 ---
 
-## 🤝 Contributing
+## Repository Structure
 
-Contributions welcome! Please:
+```
+claude-kit/
+├── README.md
+├── skills/
+│   ├── autonomous-dev/
+│   ├── claude-setup-optimizer/
+│   ├── cto/
+│   ├── skill-loader/
+│   ├── cpo-ai-skill/
+│   ├── fulltest-skill/
+│   └── worktree-scaffold/
+├── agents/
+│   ├── fulltesting-agent.md
+│   ├── frontend-agent.md
+│   ├── api-agent.md
+│   ├── database-agent.md
+│   ├── devops-agent.md
+│   └── orchestrator-fullstack.md
+├── memory/
+│   ├── README.md
+│   ├── core-memory-template.json
+│   └── session-context-template.json
+└── LICENSE
+```
+
+---
+
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Submit a pull request
 
 ---
 
-## 📄 License
+## License
 
-MIT License - see LICENSE file for details
-
----
-
-## 🙏 Acknowledgments
-
-Built for the Claude Code community. Special thanks to Anthropic for the amazing Claude Code CLI.
+MIT License - see LICENSE file.
 
 ---
 
-## 📞 Support
-
-- Issues: [GitHub Issues](https://github.com/yourusername/claude-code-skills/issues)
-- Discussions: [GitHub Discussions](https://github.com/yourusername/claude-code-skills/discussions)
-
----
-
-## 🔄 Updates
-
-Check the [CHANGELOG.md](CHANGELOG.md) for version history and updates.
-
-**Current Version:** 1.0.0
-
-**Last Updated:** January 2026
+**Repository:** [github.com/escotilha/claude-kit](https://github.com/escotilha/claude-kit)

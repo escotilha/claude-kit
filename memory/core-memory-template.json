@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": null,
+  "lastConsolidation": null,
+
+  "criticalContext": {
+    "description": "Essential context that should always be loaded"
+  },
+
+  "userProfile": {
+    "name": "",
+    "username": "",
+    "role": "",
+    "expertise": [],
+    "workContext": "",
+    "communicationStyle": ""
+  },
+
+  "preferences": {
+    "packageManager": "npm | pnpm | yarn | bun",
+    "deployment": {
+      "primary": "",
+      "static": "",
+      "alternatives": []
+    },
+    "database": {
+      "primary": "",
+      "alternatives": []
+    },
+    "codeStyle": {
+      "principle": "",
+      "avoidPatterns": [],
+      "preferPatterns": []
+    },
+    "testing": {
+      "e2e": "",
+      "unit": "",
+      "approach": ""
+    },
+    "documentation": "",
+    "styling": {
+      "css": "",
+      "components": "",
+      "icons": ""
+    },
+    "stateManagement": {
+      "prefer": "",
+      "avoid": ""
+    }
+  },
+
+  "stablePatterns": {
+    "projectStructure": "",
+    "apiDesign": "",
+    "authentication": "",
+    "errorHandling": "",
+    "gitWorkflow": ""
+  },
+
+  "beliefs": [],
+
+  "projectContext": {
+    "activeProjects": [],
+    "techStack": {}
+  },
+
+  "toolIntegrations": {},
+
+  "mcpServers": {
+    "available": [],
+    "memoryServer": {
+      "name": "memory",
+      "type": "knowledge-graph",
+      "tools": ["create_entities", "search_nodes", "open_nodes", "delete_entities", "add_observations", "create_relations"]
+    }
+  },
+
+  "memoryConfig": {
+    "relevanceThreshold": 5,
+    "decayThresholdDays": 90,
+    "minUsesToRetain": 3,
+    "consolidationFrequency": "weekly",
+    "maxMemoriesBeforeConsolidation": 200
+  }
+}
