@@ -74,12 +74,12 @@
       "memory": {
         "command": "node",
         "args": [
-          "/Users/psm2/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/mcp-servers/memory-turso/dist/index.js"
+          "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/mcp-servers/memory-turso/dist/index.js"
         ],
         "env": {
           "TURSO_DATABASE_URL": "libsql://claude-memory-escotilha.aws-us-east-1.turso.io",
           "TURSO_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Njk2MDg3ODIsImlkIjoiZDUyM2I3OWEtZjA1My00M2U4LThhOGQtNjYwZTc1MmE0ZTY5IiwicmlkIjoiYTI3NDM2NWEtOWY3ZS00MTVlLTgxNTYtYzQxYzk2MWY4YTM0In0._TaT30NMCijZJhWyPmx_EGSzntWpyawyLoGh_JgASaHbrPkPNabsLsCfrArwLCCK1VBK9jE3NhSr9WLe_38gDg",
-          "TURSO_LOCAL_REPLICA_PATH": "/Users/psm2/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/turso-replica.db"
+          "TURSO_LOCAL_REPLICA_PATH": "$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/turso-replica.db"
         },
         "description": "Knowledge graph for persistent memory (Turso-backed)"
       },
@@ -205,12 +205,15 @@
   },
   "model": "opus",
   "spinnerVerbs": {
-    "mna-swarm-orchestrator": "Analyzing deal",
-    "financial-data-extractor": "Extracting financials",
-    "triage-analyzer": "Scoring deal",
-    "cto": "Reviewing codebase",
-    "fulltesting-agent": "Running E2E tests",
-    "code-review-agent": "Reviewing code",
-    "project-orchestrator": "Orchestrating project"
+    "mode": "append",
+    "verbs": [
+      "Analyzing deal",
+      "Extracting financials",
+      "Scoring deal",
+      "Reviewing codebase",
+      "Running E2E tests",
+      "Reviewing code",
+      "Orchestrating project"
+    ]
   }
 }

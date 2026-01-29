@@ -4,8 +4,18 @@
   "lastConsolidation": null,
 
   "criticalContext": {
-    "iCloudSetup": "ALL Claude setup files (agents, skills, rules, memory, hooks, plans) are stored in iCloud at ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/",
+    "iCloudSetup": "ALL Claude setup files are stored in iCloud. Always check these paths first.",
     "importance": "This is the source of truth for all Claude Code configuration"
+  },
+
+  "paths": {
+    "root": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup",
+    "skills": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/skills",
+    "agents": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/agents",
+    "memory": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory",
+    "hooks": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/hooks",
+    "rules": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/rules",
+    "plans": "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/plans"
   },
 
   "userProfile": {
