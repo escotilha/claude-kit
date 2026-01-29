@@ -2,6 +2,11 @@
   "$schema": "https://claude.ai/schemas/mcp.json",
   "_comment": "Project-level MCP configuration. Copy to your project root as .mcp.json",
   "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "description": "Knowledge graph for persistent memory across sessions"
+    },
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],

@@ -1,10 +1,16 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-01-27",
+  "lastUpdated": "2026-01-28",
   "lastConsolidation": null,
 
+  "criticalContext": {
+    "iCloudSetup": "ALL Claude setup files (agents, skills, rules, memory, hooks, plans) are stored in iCloud at ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/",
+    "importance": "This is the source of truth for all Claude Code configuration"
+  },
+
   "userProfile": {
-    "name": "psm2",
+    "name": "Pierre Schurmann",
+    "username": "psm2",
     "role": "Software developer / M&A analyst at Nuvini Group",
     "expertise": ["TypeScript", "React", "Next.js", "Supabase", "Claude Code"],
     "workContext": "Building AI-powered tools, M&A analysis systems, and autonomous coding agents",
@@ -67,6 +73,57 @@
       "Contably": "Next.js + Supabase + Brazil accounting integrations",
       "AgentCreator": "Agent orchestration platform",
       "MnA": "Financial analysis and document extraction"
+    }
+  },
+
+  "toolIntegrations": {
+    "notion": {
+      "configured": true,
+      "workspaceUrl": "https://www.notion.so/e984f53558554276979c043254936e82",
+      "usage": "Documentation, project planning, knowledge base",
+      "mcpServer": "@modelcontextprotocol/server-notion"
+    },
+    "slack": {
+      "configured": true,
+      "usage": "Team communication, notifications",
+      "mcpServer": "@modelcontextprotocol/server-slack"
+    },
+    "github": {
+      "configured": true,
+      "username": "escotilha",
+      "usage": "Code repositories, PRs, issues",
+      "mcpServer": "@modelcontextprotocol/server-github"
+    },
+    "supabase": {
+      "configured": true,
+      "usage": "Database, auth, storage for projects",
+      "projects": ["Contably", "AgentCreator"]
+    },
+    "railway": {
+      "configured": true,
+      "usage": "Primary deployment platform"
+    },
+    "vercel": {
+      "configured": true,
+      "usage": "Static site deployments"
+    },
+    "digitalocean": {
+      "configured": true,
+      "usage": "App Platform, Databases, Spaces",
+      "mcpServer": "@digitalocean/mcp"
+    }
+  },
+
+  "mcpServers": {
+    "available": [
+      "memory", "filesystem", "git", "github", "notion", "slack",
+      "postgres", "brave-search", "fetch", "playwright", "puppeteer",
+      "chrome-devtools", "digitalocean", "resend", "sequential-thinking"
+    ],
+    "memoryServer": {
+      "name": "memory",
+      "type": "knowledge-graph",
+      "tools": ["create_entities", "search_nodes", "open_nodes", "delete_entities", "add_observations", "create_relations"]
     }
   },
 
