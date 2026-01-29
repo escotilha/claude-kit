@@ -3,13 +3,14 @@ name: cpo-ai-skill
 description: "Chief Product Officer AI that orchestrates entire product lifecycles. Receives product ideas, qualifies scope through discovery questions, creates strategic plans with epics/stages/stories, implements stage-by-stage with testing, and delivers production-ready products with documentation. Use when asked to: build a product from scratch, create a complete application, plan and implement a full project, orchestrate product development, go from idea to production. Triggers on: build this product, cpo mode, chief product officer, product lifecycle, idea to production, full product build, strategic planning, product roadmap."
 user-invocable: true
 context: fork
-version: 2.2.0
+version: 2.3.0
 tools:
   - Task
   - TeammateTool
   - TaskCreate
   - TaskUpdate
   - TaskList
+  - mcp__memory__*
 model: opus
 color: "#6366f1"
 triggers:
@@ -547,6 +548,117 @@ This ensures all project-specific instructions are loaded when orchestrating acr
 - AI-powered cost optimization suggestions
 - Automated monitoring setup post-deployment
 - Multi-environment deployment (staging/prod)
+
+---
+
+## Memory Integration
+
+This skill uses Memory MCP to cache research, remember decisions, and improve over time.
+
+### Memory Entity Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| `research-cache` | Cached competitor/market research | `research-cache:task-management-competitors` |
+| `product-decision` | Key product decisions made | `product-decision:contably-auth-strategy` |
+| `epic-pattern` | Epic/stage patterns that worked well | `epic-pattern:saas-mvp-stages` |
+| `tech-stack-decision` | Tech stack choices per project | `tech-stack-decision:contably-stack` |
+
+### When to Query Memory
+
+**Phase 1 - Discovery:**
+```javascript
+// Check for similar product research
+mcp__memory__search_nodes({ query: "research-cache:{vertical}" })
+mcp__memory__search_nodes({ query: "research-cache:{product-type}" })
+```
+
+**Phase 2 - Planning:**
+```javascript
+// Load successful epic patterns for similar products
+mcp__memory__search_nodes({ query: "epic-pattern:{product-type}" })
+
+// Check past tech stack decisions
+mcp__memory__search_nodes({ query: "tech-stack-decision" })
+```
+
+### When to Save to Memory
+
+**After Phase 1 Research:**
+```javascript
+// Cache competitor research (expensive to regenerate)
+mcp__memory__create_entities({
+  entities: [{
+    name: "research-cache:{vertical}-{date}",
+    entityType: "research-cache",
+    observations: [
+      "Vertical: {vertical}",
+      "Competitors: {list}",
+      "Key findings: {summary}",
+      "Design patterns: {patterns}",
+      "Researched: {date}"
+    ]
+  }]
+})
+```
+
+**After Phase 2 Planning:**
+```javascript
+// Save epic structure that was approved
+mcp__memory__create_entities({
+  entities: [{
+    name: "epic-pattern:{product-type}",
+    entityType: "epic-pattern",
+    observations: [
+      "Product type: {type}",
+      "Epic count: {count}",
+      "Stage breakdown: {stages}",
+      "Proven in: {project}",
+      "Created: {date}"
+    ]
+  }]
+})
+```
+
+**After Phase 5 Delivery:**
+```javascript
+// Save successful project as reference
+mcp__memory__create_entities({
+  entities: [{
+    name: "product-decision:{project}-summary",
+    entityType: "product-decision",
+    observations: [
+      "Project: {name}",
+      "Type: {product-type}",
+      "Stack: {tech-stack}",
+      "Epics: {epic-count}",
+      "Duration: {time-to-deliver}",
+      "Lessons: {key-learnings}",
+      "Completed: {date}"
+    ]
+  }]
+})
+```
+
+### Research Cache Strategy
+
+To avoid redundant research:
+
+1. **Before invoking Product Research Agent**, check memory:
+   ```javascript
+   const cached = await mcp__memory__search_nodes({
+     query: "research-cache:{vertical}"
+   })
+
+   // If cache exists and < 30 days old, use it
+   if (cached && daysSince(cached.researched) < 30) {
+     return cached.observations
+   }
+   ```
+
+2. **After fresh research**, cache results with TTL context
+
+3. **Memory consolidation** will prune stale research (>90 days)
 
 ---
 

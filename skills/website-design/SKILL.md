@@ -1,6 +1,6 @@
 ---
 name: website-design
-version: 1.0.0
+version: 1.1.0
 color: "#8b5cf6"
 description: Create professional B2B SaaS websites, dashboards, landing pages, and web applications with modern UX/UI best practices. Use when Claude needs to design marketing websites, product dashboards, admin panels, landing pages, or any B2B-focused web interface. Covers full-stack design from hero sections to pricing pages, with emphasis on conversion optimization, data visualization, and professional aesthetics using Tailwind CSS, React, and modern web standards.
 user-invocable: true
@@ -14,6 +14,7 @@ allowed-tools:
   - Bash
   - WebFetch
   - WebSearch
+  - mcp__memory__*
 ---
 
 # Website Design Skill
@@ -38,6 +39,94 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 5. **Implement** - Code with Tailwind CSS + React (or HTML/CSS)
 6. **Refine** - Add micro-interactions, polish details
 7. **Deliver** - Output to `/mnt/user-data/outputs/`
+
+---
+
+## Memory Integration
+
+This skill uses Memory MCP to learn and improve across design sessions.
+
+### Memory Entity Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| `design-decision` | Color, typography, layout choices per project | `design-decision:contably-colors` |
+| `component-pattern` | Reusable component patterns that worked well | `component-pattern:dashboard-stats-card` |
+| `client-preference` | Client/project-specific preferences | `client-preference:nuvini-brand` |
+| `design-insight` | General learnings about design | `design-insight:dark-mode-contrast` |
+
+### When to Query Memory
+
+**At project start:**
+```javascript
+// Check for existing project preferences
+mcp__memory__search_nodes({ query: "client-preference:{project}" })
+mcp__memory__search_nodes({ query: "design-decision:{project}" })
+
+// Load successful patterns
+mcp__memory__search_nodes({ query: "component-pattern:dashboard" })
+mcp__memory__search_nodes({ query: "design-insight" })
+```
+
+### When to Save to Memory
+
+**After successful design delivery:**
+```javascript
+// Save project-specific decisions
+mcp__memory__create_entities({
+  entities: [{
+    name: "design-decision:{project}-{aspect}",
+    entityType: "design-decision",
+    observations: [
+      "Project: {project_name}",
+      "Decision: {what was chosen}",
+      "Rationale: {why}",
+      "Colors: {palette}",
+      "Typography: {fonts}",
+      "Delivered: {date}"
+    ]
+  }]
+})
+
+// Save reusable component patterns
+mcp__memory__create_entities({
+  entities: [{
+    name: "component-pattern:{component-name}",
+    entityType: "component-pattern",
+    observations: [
+      "Component: {name}",
+      "Use case: {when to use}",
+      "Key classes: {tailwind classes}",
+      "Variations: {light/dark, sizes}",
+      "Proven in: {project_name}"
+    ]
+  }]
+})
+```
+
+**After learning something new:**
+```javascript
+// Save design insights
+mcp__memory__create_entities({
+  entities: [{
+    name: "design-insight:{topic}",
+    entityType: "design-insight",
+    observations: [
+      "Insight: {what was learned}",
+      "Context: {when it applies}",
+      "Source: {how discovered}",
+      "Discovered: {date}"
+    ]
+  }]
+})
+```
+
+### Memory-Enhanced Workflow
+
+1. **Start** - Query memory for project/client preferences
+2. **Design** - Apply learned patterns, reference successful components
+3. **Deliver** - Save decisions, patterns, and insights to memory
+4. **Improve** - Patterns become more refined with each use
 
 ---
 
