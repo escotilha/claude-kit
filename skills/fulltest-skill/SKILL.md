@@ -1,11 +1,8 @@
 ---
 name: fulltest-skill
 description: "Swarm-enabled full-spectrum testing for websites and applications. Uses TeammateTool for true parallel page testers that share failure patterns in real-time. Maps sites, spawns concurrent testers, detects cross-page patterns, auto-fixes with parallel fixers, generates comprehensive reports."
-version: 4.0.0
-tools:
-  - Task
-  - TeammateTool
-  - AskUserQuestion
+version: 4.0.1
+user-invocable: true
 model: sonnet
 color: "#22c55e"
 triggers:
@@ -15,25 +12,23 @@ triggers:
   - "test and fix"
   - "fulltest"
   - "swarm test"
-dependencies:
-  mcp:
-    - chrome-devtools
-    - memory
+allowed-tools:
+  - Task
+  - TeammateTool
+  - AskUserQuestion
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - mcp__chrome-devtools__*
+  - mcp__memory__*
 ---
 
 # Full-Spectrum Testing Skill (v4.0 - Swarm Mode)
 
 Comprehensive website testing with **true parallel execution** via TeammateTool, real-time failure sharing, and cross-page pattern detection.
-
-## MCP Tool Loading
-
-MCP tools are deferred and must be loaded via ToolSearch before use:
-- Keyword search: `ToolSearch({ query: "memory" })` - loads matching tools
-- Direct select: `ToolSearch({ query: "select:mcp__chrome-devtools__navigate_page" })`
-
-**Required tools to load:**
-- `mcp__chrome-devtools__*` - Browser automation (navigate, click, screenshot, etc.)
-- `mcp__memory__*` - Pattern storage and cross-session learning
 
 ## What It Does
 

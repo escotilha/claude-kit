@@ -1,3 +1,31 @@
+---
+name: parallel-dev
+description: "Parallel feature development using git worktrees and specialized agents. Orchestrates multiple features in isolation with progress monitoring and progressive merge."
+user-invocable: true
+context: fork
+model: opus
+version: 1.0.0
+color: "#f97316"
+triggers:
+  - "/parallel-dev"
+  - "parallel development"
+  - "parallel features"
+  - "worktree development"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - Task
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - AskUserQuestion
+---
+
 # Parallel Feature Development Skill
 
 Orchestrates parallel feature development using git worktrees and specialized agents. Can work standalone or integrate with CPO-AI-Skill as the planning brain.
