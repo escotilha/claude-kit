@@ -49,10 +49,106 @@ observations: [
   "Project: {project-name}",   // If project-specific
   "Applies to: {contexts}",    // Technologies, situations
 
-  // For tracking
-  "Applied in: {project} - {HELPFUL|NOT HELPFUL}",  // Usage tracking
-  "Last used: {YYYY-MM-DD}",   // For decay calculation
+  // Usage tracking (auto-added when pattern is applied)
+  "Applied in: {project} - {date} - {HELPFUL|NOT HELPFUL|MODIFIED}",
+  "Last used: {YYYY-MM-DD}",
+  "Use count: {N}",
 ]
+```
+
+---
+
+## Usage Tracking
+
+The Agent-native principle: memories must track when they're used to identify which patterns are effective vs stale.
+
+### When Retrieving a Memory
+
+**Always add an observation after applying a memory:**
+
+```javascript
+mcp__memory__add_observations({
+  observations: [{
+    entityName: "pattern:early-returns",
+    contents: [
+      "Applied in: contably - 2026-01-30 - HELPFUL",
+      "Last used: 2026-01-30"
+    ]
+  }]
+})
+```
+
+### Track Effectiveness
+
+Use these three states to track how well a memory applied:
+
+- **HELPFUL** - Pattern was useful, led to good outcome, worked as expected
+- **NOT HELPFUL** - Pattern didn't apply well to this case, wasn't relevant
+- **MODIFIED** - Pattern needed adjustment for this context, partially applied
+
+### Usage Metrics to Track
+
+Every memory should accumulate these data points:
+
+1. **Last used date** - When was this memory most recently applied?
+2. **Total application count** - How many times has this been used?
+3. **Helpful vs not helpful ratio** - What's the success rate?
+4. **Projects where applied** - Which codebases benefited from this?
+
+Example of a well-tracked memory:
+
+```javascript
+observations: [
+  "Discovered: 2025-12-01",
+  "Source: mistake",
+  "Applies to: React, Vue, Angular",
+  "Applied in: contably - 2025-12-15 - HELPFUL",
+  "Applied in: cashflow - 2026-01-10 - HELPFUL",
+  "Applied in: agentcreator - 2026-01-20 - MODIFIED",
+  "Last used: 2026-01-20",
+  "Use count: 3"
+]
+```
+
+### Consolidation Uses This Data
+
+The `/consolidate` skill uses usage tracking to maintain memory health:
+
+- **Promote to core**: Patterns with 5+ HELPFUL uses → high-value, stable memories
+- **Candidate for pruning**: Patterns with 90+ days unused → potentially stale
+- **Review and refine**: Patterns with >50% NOT HELPFUL → need improvement or deletion
+- **Archive project-specific**: Patterns only used in one project → move to project memory
+
+### Best Practices for Tracking
+
+1. **Track immediately after use** - Don't wait, add the observation right away
+2. **Be honest about effectiveness** - NOT HELPFUL data is valuable for pruning
+3. **Note modifications** - If you had to adapt the pattern, mark it MODIFIED
+4. **Update use count** - Increment the counter each time
+5. **Update last used** - Keep the date current
+
+### Example Workflow
+
+```javascript
+// 1. Retrieve memory at session start
+const memories = await mcp__memory__search_nodes({
+  query: "pattern:early-returns"
+})
+
+// 2. Apply the pattern in your code
+// ... implement early returns pattern ...
+
+// 3. Track the usage
+await mcp__memory__add_observations({
+  observations: [{
+    entityName: "pattern:early-returns",
+    contents: [
+      "Applied in: new-project - 2026-01-30 - HELPFUL",
+      "Last used: 2026-01-30",
+      "Use count: 4"  // Incremented from 3
+    ]
+  }]
+})
 ```
 
 ---
@@ -203,7 +299,9 @@ Session Learning
 ## Best Practices
 
 1. **Be Specific** - "pattern:react-useEffect-cleanup" not "pattern:react-tip"
-2. **Track Usage** - Add "Applied in:" observations when using memories
-3. **Include Context** - Why this matters, when it applies
-4. **Link Related** - Use `create_relations` for connected concepts
-5. **Prune Regularly** - Run consolidation to keep memory healthy
+2. **Track Usage** - ALWAYS add "Applied in:" observations when using memories
+3. **Track Effectiveness** - Mark each use as HELPFUL, NOT HELPFUL, or MODIFIED
+4. **Update Metrics** - Increment use count and update last used date
+5. **Include Context** - Why this matters, when it applies
+6. **Link Related** - Use `create_relations` for connected concepts
+7. **Prune Regularly** - Run consolidation to keep memory healthy and accurate

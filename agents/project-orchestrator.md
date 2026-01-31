@@ -94,6 +94,49 @@ Focus on the minimal steps needed to get the project running and all tests passi
 
 Review the plan and adjust if needed.
 
+## Approval Gates
+
+Before taking actions, evaluate stakes and reversibility:
+
+| Action | Stakes | Reversibility | Approval Required |
+|--------|--------|---------------|-------------------|
+| Read files | Low | N/A | None |
+| Create files | Low | Easy | None |
+| Modify code | Medium | Medium | Show diff, auto-proceed |
+| Delete files | High | Hard | **Explicit approval** |
+| Git commit | Medium | Easy | Show summary, auto-proceed |
+| Git push | Medium | Medium | **Quick confirm** |
+| Force push | High | Hard | **Explicit approval + warning** |
+| Create GitHub repo | Medium | Medium | **Quick confirm** |
+| Deploy to Railway | High | Hard | **Explicit approval** |
+| Run migrations | High | Hard | **Explicit approval** |
+| Modify env vars | High | Medium | **Explicit approval** |
+
+### Approval Patterns
+
+**None**: Proceed automatically
+
+**Show and proceed**:
+```
+Making these changes: [summary]
+Proceeding in 3s... (say "stop" to cancel)
+```
+
+**Quick confirm**:
+```
+Ready to [action]. Proceed? (y/n)
+```
+
+**Explicit approval**:
+```
+⚠️ This action [description of risk]
+
+Details:
+- [specifics]
+
+Type "confirm [action]" to proceed, or "cancel" to abort.
+```
+
 ## Phase 3: Coordinated Implementation
 
 Execute the plan by spawning specialized agents. Follow this order:
@@ -229,6 +272,21 @@ Once ALL tests pass, deploy the project:
 
 ### Step 5.1: Git Commit
 
+**Approval Gate**: Show summary, auto-proceed
+
+Show the user what will be committed:
+
+```
+Making these changes:
+- Committing all implementation files
+- Message: "Project ready for deployment"
+- Files changed: [count]
+
+Proceeding with git commit in 3s... (say "stop" to cancel)
+```
+
+Then commit:
+
 ```bash
 # Initialize git if not already
 git init 2>/dev/null || true
@@ -253,6 +311,16 @@ EOF
 
 ### Step 5.2: Create GitHub Repository
 
+**Approval Gate**: Quick confirm
+
+Ask the user:
+
+```
+Ready to create GitHub repository "{project-name}" and push code. Proceed? (y/n)
+```
+
+Wait for affirmative response, then:
+
 ```bash
 # Create new GitHub repo (public by default, use --private for private)
 gh repo create {project-name} --source=. --push --public
@@ -264,6 +332,25 @@ git push -u origin main
 **Naming convention**: Use the project directory name or derive from package.json name.
 
 ### Step 5.3: Deploy to Railway
+
+**Approval Gate**: Explicit approval
+
+Get explicit confirmation for deployment:
+
+```
+⚠️ This action will deploy the application to Railway production environment
+
+Details:
+- Project: {project-name}
+- Deployment target: Railway
+- This will create a publicly accessible URL
+- May incur usage costs on your Railway account
+- Environment variables: [list if any]
+
+Type "confirm deploy" to proceed, or "cancel" to abort.
+```
+
+Wait for "confirm deploy" response, then:
 
 ```bash
 # Login to Railway (if not already)
@@ -283,6 +370,21 @@ railway open
 ```
 
 **Environment Variables**: If the project needs environment variables:
+
+**Approval Gate**: Explicit approval (for each variable containing sensitive data)
+
+```
+⚠️ This action will set environment variables on Railway
+
+Details:
+- Variables to set: DATABASE_URL, API_KEY, etc.
+- These will be stored in Railway's environment
+- Sensitive credentials will be transmitted
+
+Type "confirm env vars" to proceed, or "cancel" to abort.
+```
+
+Then:
 
 ```bash
 # Set required env vars on Railway

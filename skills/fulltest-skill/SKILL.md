@@ -415,6 +415,190 @@ const items = cart?.items || []
 
 ---
 
+## Completion Signals
+
+This skill explicitly signals completion via structured status returns. Never rely on heuristics like "consecutive iterations without tool calls" to detect completion.
+
+### Completion Signal Format
+
+At the end of testing, return:
+
+```json
+{
+  "status": "complete|partial|blocked|failed",
+  "testingMode": "sequential|swarm",
+  "summary": "Brief description of test results",
+  "testMetrics": {
+    "pagesTotal": 0,
+    "pagesTested": 0,
+    "pagesPassed": 0,
+    "pagesFailed": 0
+  },
+  "reports": ["List of generated reports"],
+  "userActionRequired": "What user should do next (if any)"
+}
+```
+
+### Success Signal (All Tests Pass)
+```json
+{
+  "status": "complete",
+  "testingMode": "swarm",
+  "summary": "All 15 pages tested successfully with no failures",
+  "testMetrics": {
+    "pagesTotal": 15,
+    "pagesTested": 15,
+    "pagesPassed": 15,
+    "pagesFailed": 0,
+    "duration": "52 seconds",
+    "visualIssues": 0,
+    "consoleErrors": 0,
+    "brokenLinks": 0
+  },
+  "reports": [
+    ".testing/reports/fulltest-report-2026-01-30.md",
+    ".testing/screenshots/"
+  ],
+  "siteCoverage": "100%",
+  "allTestsPassing": true
+}
+```
+
+### Success Signal (Tests Complete with Fixes Applied)
+```json
+{
+  "status": "complete",
+  "testingMode": "swarm",
+  "summary": "Testing complete - found and fixed 3 issues",
+  "testMetrics": {
+    "pagesTotal": 15,
+    "pagesTested": 15,
+    "pagesPassed": 15,
+    "pagesFailed": 0,
+    "duration": "3 minutes 15 seconds",
+    "issuesFound": 3,
+    "issuesFixed": 3,
+    "retestsPassed": true
+  },
+  "fixesSummary": {
+    "css": 1,
+    "js": 1,
+    "assets": 1
+  },
+  "reports": [
+    ".testing/reports/fulltest-report-2026-01-30.md",
+    ".testing/screenshots/"
+  ],
+  "allTestsPassing": true
+}
+```
+
+### Partial Completion Signal
+```json
+{
+  "status": "partial",
+  "testingMode": "swarm",
+  "summary": "Testing complete but 2 pages still failing",
+  "testMetrics": {
+    "pagesTotal": 15,
+    "pagesTested": 15,
+    "pagesPassed": 13,
+    "pagesFailed": 2,
+    "duration": "2 minutes 45 seconds"
+  },
+  "failedPages": [
+    {
+      "url": "/products",
+      "issues": ["JS error: Cannot read property 'items' of null"],
+      "severity": "high"
+    },
+    {
+      "url": "/checkout",
+      "issues": ["CSS not loading - 404"],
+      "severity": "critical"
+    }
+  ],
+  "fixAttempts": 3,
+  "fixesSuccessful": 1,
+  "fixesFailed": 2,
+  "reports": [".testing/reports/fulltest-report-2026-01-30.md"],
+  "userActionRequired": "Review failed pages and approve manual intervention"
+}
+```
+
+### Blocked Signal
+```json
+{
+  "status": "blocked",
+  "testingMode": "swarm",
+  "summary": "Cannot access website - connection refused",
+  "blockers": [
+    "Website not accessible at http://localhost:3000",
+    "Connection refused - is dev server running?",
+    "Chrome DevTools cannot connect"
+  ],
+  "testedSoFar": 0,
+  "userInputRequired": "Please start development server and ensure it's running on port 3000"
+}
+```
+
+### Failed Signal
+```json
+{
+  "status": "failed",
+  "testingMode": "swarm",
+  "summary": "Testing failed - critical error in test infrastructure",
+  "errors": [
+    "Chrome DevTools MCP not available",
+    "TeammateTool spawn failed - cannot create parallel testers",
+    "Memory allocation error during screenshot capture"
+  ],
+  "pagesTestedBeforeFailure": 5,
+  "partialResults": ".testing/reports/partial-results.json",
+  "recoverySuggestions": [
+    "Retry with sequential mode instead of swarm",
+    "Check Chrome DevTools MCP connection",
+    "Reduce number of parallel testers",
+    "Clear .testing/ directory and restart"
+  ]
+}
+```
+
+### When to Signal
+
+- **After all pages tested successfully**: Signal "complete" with all tests passing
+- **After fixes applied and retests pass**: Signal "complete" with fix summary
+- **After max fix iterations with failures**: Signal "partial" with failed pages list
+- **Website not accessible**: Signal "blocked" immediately with connection details
+- **Infrastructure failure**: Signal "failed" with errors and recovery suggestions
+- **Before asking user**: Signal status THEN ask for input, don't wait in "running" state
+
+### Special Cases
+
+**Max iterations reached:**
+```json
+{
+  "status": "partial",
+  "summary": "Reached max 3 test/fix iterations with 2 persistent failures",
+  "iterationsCompleted": 3,
+  "persistentFailures": ["Page /products", "Page /checkout"],
+  "userActionRequired": "Manual review needed for complex issues"
+}
+```
+
+**Swarm mode unavailable:**
+```json
+{
+  "status": "complete",
+  "testingMode": "sequential",
+  "summary": "Completed testing in sequential mode (swarm unavailable)",
+  "fallbackReason": "TeammateTool not available - used sequential testing",
+  "testMetrics": { /* normal metrics */ }
+}
+```
+
+---
+
 ## Task Cleanup
 
 Use `TaskUpdate` with `status: "deleted"` to clean up completed or stale task chains:

@@ -1376,6 +1376,212 @@ Update features.json with report timestamp:
 
 ---
 
+## Completion Signals
+
+This skill explicitly signals completion via structured status returns. Never rely on heuristics like "consecutive iterations without tool calls" to detect completion.
+
+### Completion Signal Format
+
+At the end of testing, return:
+
+```json
+{
+  "status": "complete|partial|blocked|failed",
+  "summary": "Brief description of test results",
+  "testMetrics": {
+    "totalFeatures": 0,
+    "testedFeatures": 0,
+    "passedFeatures": 0,
+    "failedFeatures": 0,
+    "testCoverage": "0%"
+  },
+  "reports": ["List of generated reports"],
+  "userActionRequired": "What user should do next (if any)"
+}
+```
+
+### Success Signal (All Tests Pass)
+```json
+{
+  "status": "complete",
+  "summary": "All 32 AgentCreator features tested successfully",
+  "testMetrics": {
+    "totalFeatures": 32,
+    "testedFeatures": 32,
+    "passedFeatures": 32,
+    "failedFeatures": 0,
+    "testCoverage": "100%",
+    "duration": "45 minutes"
+  },
+  "categoryResults": {
+    "public": "4/4 passed",
+    "auth": "3/3 passed",
+    "dashboard": "1/1 passed",
+    "interviews": "3/3 passed",
+    "agents": "5/5 passed",
+    "marketplace": "2/2 passed",
+    "admin": "9/9 passed"
+  },
+  "bugs": {
+    "total": 0,
+    "open": 0,
+    "fixed": 0
+  },
+  "reports": [".testing/reports/2026-01-30-test-report.md"],
+  "allTestsPassing": true
+}
+```
+
+### Success Signal (Tests Complete with Fixes)
+```json
+{
+  "status": "complete",
+  "summary": "Testing complete - found and fixed 3 bugs",
+  "testMetrics": {
+    "totalFeatures": 32,
+    "testedFeatures": 32,
+    "passedFeatures": 32,
+    "failedFeatures": 0,
+    "testCoverage": "100%",
+    "duration": "52 minutes"
+  },
+  "bugs": {
+    "total": 3,
+    "open": 0,
+    "fixed": 3
+  },
+  "fixesSummary": [
+    "BUG-001: Login redirect - Fixed auth callback",
+    "BUG-002: Chat input - Added Enter key handler",
+    "BUG-003: Deploy status - Fixed polling logic"
+  ],
+  "reports": [".testing/reports/2026-01-30-test-report.md"],
+  "allTestsPassing": true
+}
+```
+
+### Partial Completion Signal
+```json
+{
+  "status": "partial",
+  "summary": "Testing complete but 2 features still failing",
+  "testMetrics": {
+    "totalFeatures": 32,
+    "testedFeatures": 32,
+    "passedFeatures": 30,
+    "failedFeatures": 2,
+    "testCoverage": "93.8%",
+    "duration": "48 minutes"
+  },
+  "failedFeatures": [
+    {
+      "id": "F007",
+      "name": "Interview Chat Interface",
+      "bug": "BUG-002: Chat input not submitting",
+      "severity": "high",
+      "fixAttempts": 3
+    },
+    {
+      "id": "F012",
+      "name": "Agent Deploy",
+      "bug": "BUG-003: Deploy status stuck pending",
+      "severity": "medium",
+      "fixAttempts": 3
+    }
+  ],
+  "bugs": {
+    "total": 2,
+    "open": 2,
+    "fixed": 0
+  },
+  "reports": [".testing/reports/2026-01-30-test-report.md"],
+  "userActionRequired": "Review failed features - auto-fix unsuccessful after 3 attempts"
+}
+```
+
+### Blocked Signal
+```json
+{
+  "status": "blocked",
+  "summary": "Cannot access application - server not running",
+  "blockers": [
+    "Base URL http://localhost:3000 not accessible",
+    "Connection refused - development server not running",
+    "Chrome DevTools cannot navigate to site"
+  ],
+  "testedSoFar": 0,
+  "userInputRequired": "Please start the development server and ensure it's running on port 3000"
+}
+```
+
+### Failed Signal
+```json
+{
+  "status": "failed",
+  "summary": "Testing failed - Chrome DevTools MCP unavailable",
+  "errors": [
+    "Chrome DevTools MCP not loaded",
+    "Browser automation tools not available",
+    "Cannot spawn browser sessions"
+  ],
+  "featuresTestedBeforeFailure": 8,
+  "partialResults": ".testing/test-runs/partial-run.json",
+  "recoverySuggestions": [
+    "Load Chrome DevTools MCP via ToolSearch",
+    "Verify Chrome DevTools MCP is configured",
+    "Check browser connection settings",
+    "Restart testing session"
+  ]
+}
+```
+
+### When to Signal
+
+- **After all features tested successfully**: Signal "complete" with full metrics
+- **After fixes applied and retests pass**: Signal "complete" with fix summary
+- **After max fix iterations with persistent failures**: Signal "partial" with failed features
+- **Application not accessible**: Signal "blocked" immediately with connection details
+- **MCP tools unavailable**: Signal "failed" with tool loading instructions
+- **Before asking user**: Signal status THEN ask for input, don't wait in "running" state
+
+### Special Cases
+
+**Feature discovery phase:**
+```json
+{
+  "status": "complete",
+  "phase": "discovery",
+  "summary": "Feature discovery complete - identified 32 testable features",
+  "categories": {
+    "public": 4,
+    "auth": 3,
+    "dashboard": 1,
+    "interviews": 3,
+    "agents": 5,
+    "marketplace": 2,
+    "admin": 9
+  },
+  "nextPhase": "Testing will begin with priority 1 features"
+}
+```
+
+**Re-test after fixes:**
+```json
+{
+  "status": "complete",
+  "summary": "Re-test complete - all previously failed features now passing",
+  "retestMetrics": {
+    "featuresRetested": 2,
+    "nowPassing": 2,
+    "stillFailing": 0
+  },
+  "fixedBugs": ["BUG-002", "BUG-003"],
+  "overallStatus": "All 32 features passing"
+}
+```
+
+---
+
 ## Browser Automation Tips
 
 ### Reliable Element Finding

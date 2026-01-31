@@ -831,6 +831,147 @@ options:
 
 ---
 
+## Completion Signals
+
+This skill explicitly signals completion via structured status returns. Never rely on heuristics like "consecutive iterations without tool calls" to detect completion.
+
+### Completion Signal Format
+
+At the end of analysis, return:
+
+```json
+{
+  "status": "complete|partial|blocked|failed",
+  "analysisType": "sequential|swarm",
+  "summary": "Brief description of findings",
+  "findings": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "reports": ["List of generated reports"],
+  "userActionRequired": "What user should do next (if any)"
+}
+```
+
+### Success Signal (Sequential Mode)
+```json
+{
+  "status": "complete",
+  "analysisType": "sequential",
+  "summary": "Completed focused security audit of authentication system",
+  "findings": {
+    "critical": 1,
+    "high": 2,
+    "medium": 3,
+    "low": 5
+  },
+  "reports": [".testing/reports/cto-security-audit-2026-01-30.md"],
+  "topPriorities": [
+    "Fix hardcoded JWT secret (CRITICAL)",
+    "Add rate limiting to login endpoint (HIGH)",
+    "Implement CSRF protection (HIGH)"
+  ],
+  "userActionRequired": "Review findings and approve implementation"
+}
+```
+
+### Success Signal (Swarm Mode)
+```json
+{
+  "status": "complete",
+  "analysisType": "swarm",
+  "summary": "Completed full codebase review with 5 parallel analysts",
+  "swarmMetrics": {
+    "analysts": 5,
+    "duration": "3m 42s",
+    "crossConcerns": 2,
+    "emergingPatterns": 3
+  },
+  "findings": {
+    "critical": 1,
+    "high": 4,
+    "medium": 8,
+    "low": 7
+  },
+  "reports": [".testing/reports/cto-full-review-2026-01-30.md"],
+  "analystSummaries": {
+    "security": "1 critical, 3 high findings",
+    "architecture": "0 critical, 1 high, 3 medium findings",
+    "performance": "0 critical, 2 medium findings",
+    "quality": "0 critical, 5 low findings",
+    "stack": "0 critical, 3 medium findings"
+  },
+  "userActionRequired": "Review prioritized action items and approve fixes"
+}
+```
+
+### Partial Completion Signal
+```json
+{
+  "status": "partial",
+  "analysisType": "swarm",
+  "summary": "3 of 5 analysts completed, 2 timed out",
+  "completedAnalysts": ["security", "architecture", "performance"],
+  "incompleteAnalysts": ["quality", "stack"],
+  "partialFindings": {
+    "critical": 1,
+    "high": 3,
+    "medium": 4,
+    "low": 0
+  },
+  "reason": "Quality and stack analysts exceeded timeout",
+  "reports": [".testing/reports/cto-partial-review-2026-01-30.md"],
+  "userActionRequired": "Review partial findings or re-run incomplete analysts"
+}
+```
+
+### Blocked Signal
+```json
+{
+  "status": "blocked",
+  "analysisType": "sequential",
+  "summary": "Cannot access codebase - directory not readable",
+  "blockers": [
+    "Project directory not found at specified path",
+    "No package.json or requirements.txt detected",
+    "Missing read permissions for source files"
+  ],
+  "userInputRequired": "Please navigate to project root directory or specify correct path"
+}
+```
+
+### Failed Signal
+```json
+{
+  "status": "failed",
+  "analysisType": "swarm",
+  "summary": "Swarm analysis failed - unable to spawn analysts",
+  "errors": [
+    "TeammateTool not available in current environment",
+    "Insufficient context window for parallel analysis"
+  ],
+  "fallbackAction": "Retry with sequential mode",
+  "recoverySuggestions": [
+    "Use 'sequential' mode instead of 'swarm'",
+    "Enable TeammateTool support",
+    "Reduce scope to specific area (e.g., security only)"
+  ]
+}
+```
+
+### When to Signal
+
+- **After sequential analysis**: Signal "complete" when report is generated and user prompt shown
+- **After swarm analysis**: Signal "complete" when all analysts finish and synthesis is done
+- **During swarm**: Signal "partial" if some analysts timeout but others complete
+- **Any blocker**: Signal "blocked" immediately (e.g., codebase not found, permissions issue)
+- **Any failure**: Signal "failed" with clear error and recovery path
+- **Before implementation**: Always signal "complete" and wait for user approval before invoking autonomous-dev
+
+---
+
 ## Configuration File: cto-requirements.md
 
 Create this file in your project to guide CTO reviews:

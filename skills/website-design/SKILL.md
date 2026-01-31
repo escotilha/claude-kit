@@ -42,6 +42,169 @@ Create professional, conversion-optimized B2B SaaS websites and dashboards with 
 
 ---
 
+## Atomic Tools vs Outcomes
+
+### Agent-Native Design Principle
+
+This skill follows the **Agent-native principle**: "Tools should be atomic primitives. Features are outcomes achieved by an agent operating in a loop."
+
+### Atomic Tools Used
+
+The website-design skill uses these atomic primitives:
+
+- **Read** - Read existing design files, brand guidelines, inspiration references
+- **Write** - Generate HTML/JSX components, CSS/Tailwind classes
+- **Edit** - Refine components, adjust styling, fix issues
+- **Glob/Grep** - Search for existing components, find design patterns in codebase
+- **Bash** - Run dev servers, build processes, optimization tools
+- **WebFetch** - Analyze competitor sites, gather design inspiration
+- **WebSearch** - Research design trends, accessibility guidelines, component libraries
+- **mcp__memory__*** - Save design decisions, component patterns, client preferences
+
+**Key insight**: This skill does NOT provide a `design_website(specs)` tool that outputs finished HTML. Instead, it uses atomic tools iteratively to achieve the design outcome.
+
+### Outcomes Achieved via Prompts
+
+The workflow steps are **outcomes**, not hardcoded procedures:
+
+1. **Understand Context** - Outcome: "Gather requirements about industry, audience, brand, and goals"
+   - Agent asks clarifying questions, uses Read to check existing brand docs, searches web for industry examples
+   - The questions asked vary based on project type (dashboard vs landing page), guided by context prompts
+
+2. **Select Page Type** - Outcome: "Determine the optimal page structure for the use case"
+   - Agent considers conversion goals, content needs, technical constraints
+   - Selection emerges from prompts about purpose, not from a fixed menu
+
+3. **Choose Design System** - Outcome: "Define cohesive visual identity matching brand and industry"
+   - Agent queries memory for client preferences, references color/typography guides, adapts to project
+   - Design system emerges from aesthetic prompts and brand guidelines, not templates
+
+4. **Build Structure** - Outcome: "Create semantic component hierarchy with proper layout"
+   - Agent uses Write to create components, follows accessibility prompts, implements responsive patterns
+   - Structure decisions guided by UX best practices in prompts
+
+5. **Implement** - Outcome: "Write production-ready code with modern standards"
+   - Agent writes JSX/HTML/CSS using atomic tools, following coding prompts and standards
+   - Implementation adapts to tech stack, not locked to React
+
+6. **Refine** - Outcome: "Add polish, micro-interactions, and accessibility improvements"
+   - Agent uses Edit iteratively, checks against accessibility prompts, tests responsiveness
+   - Refinement is prompt-guided, not a checklist
+
+7. **Deliver** - Outcome: "Output optimized, documented code ready for integration"
+   - Agent uses Write for final files, Bash for optimization, creates documentation
+   - Delivery format adapts to project needs
+
+### How to Modify Behavior via Prompts
+
+**Want different design aesthetics?**
+
+Edit the color palette section or add new palettes to the skill documentation. The agent will adapt its color selections based on these new aesthetic prompts.
+
+**Want different component patterns?**
+
+Modify the component examples section or add new patterns. The agent learns from these examples and applies them contextually.
+
+**Want industry-specific design guidelines?**
+
+Add vertical-specific prompts to the skill documentation:
+
+```markdown
+### Industry Design Guidelines
+
+**Financial Services**
+- Use conservative color palette (navy, gray, white)
+- Emphasize security badges and trust signals prominently
+- Include disclaimer text and regulatory information
+- Minimize flashy animations, prioritize clarity
+
+**Healthcare Tech**
+- Use calming colors (soft blue, green, white)
+- Large, readable typography (min 16px body)
+- High contrast for accessibility (WCAG AAA)
+- Patient testimonials with photos for trust
+
+**Developer Tools**
+- Dark mode as default
+- Code syntax highlighting in examples
+- Terminal/CLI-style components
+- Technical accuracy over marketing fluff
+```
+
+The agent will adapt designs based on industry context from these prompts.
+
+**Want different dashboard layouts?**
+
+Add new layout patterns to the skill's dashboard section. The agent will reference these patterns when creating dashboards.
+
+**Want to change typography philosophy?**
+
+Update the font pairing section with new design philosophies and the agent will adapt its typography selections accordingly.
+
+### Contrast: Workflow-Shaped Anti-Pattern
+
+**What this skill does NOT do:**
+
+```javascript
+// Anti-pattern: Hardcoded design generator
+function generate_website(pageType, industry) {
+  const template = TEMPLATES[pageType]; // Locked templates
+  const colors = INDUSTRY_COLORS[industry]; // Fixed palettes
+  const components = template.map(component => {
+    return renderComponent(component, colors); // Hardcoded rendering
+  });
+  return assembleHTML(components); // Fixed assembly
+}
+```
+
+**What this skill DOES:**
+
+The agent receives outcome-oriented design prompts:
+- "Create a B2B SaaS homepage that builds trust and drives demo bookings"
+- "Design a financial dashboard emphasizing key metrics and actionable insights"
+- "Build a landing page optimized for conversion with clear value proposition"
+
+The agent uses atomic tools (Write, Edit, Read, WebFetch) to achieve these outcomes. Design decisions emerge from:
+- Best practice prompts in the skill definition
+- Industry context from user input
+- Inspiration from WebFetch competitor analysis
+- Learned patterns from Memory MCP
+- Iterative refinement based on requirements
+
+### Example: Adapting to Design Trends
+
+**Scenario**: Glassmorphism becomes popular in Q2 2026.
+
+**Without code changes**, add glassmorphism patterns to the visual effects section of the skill documentation. The agent immediately incorporates glassmorphism into designs where appropriate, guided by these new aesthetic prompts.
+
+### Memory-Driven Design Evolution
+
+Save successful design patterns to evolve behavior:
+
+```javascript
+// After delivering a high-performing dashboard
+mcp__memory__create_entities({
+  entities: [{
+    name: "component-pattern:analytics-dashboard-header",
+    entityType: "component-pattern",
+    observations: [
+      "Component: Dashboard header with time range selector",
+      "Use case: Analytics dashboards needing date filtering",
+      "Key classes: sticky top-0 z-40 backdrop-blur-xl bg-white/80",
+      "Features: Integrated time range picker, export button, real-time status badge",
+      "Proven in: Contably analytics, MNA portfolio reporter",
+      "User feedback: Sticky header with blur was highly praised",
+      "Variation: Light/dark mode with automatic theme detection",
+      "Accessibility: Keyboard shortcuts for common date ranges (Alt+T)"
+    ]
+  }]
+})
+```
+
+Next time the agent designs an analytics dashboard, it queries memory and reuses this proven header pattern, applying learned improvements without any code modification.
+
+---
+
 ## Memory Integration
 
 This skill uses Memory MCP to learn and improve across design sessions.
@@ -577,6 +740,184 @@ See `references/` folder for:
 - `inspiration-sites.md` - Curated B2B SaaS examples
 - `color-palettes.md` - 20+ tested color combinations
 - `typography-pairings.md` - Font combination guide
+
+---
+
+## Completion Signals
+
+This skill explicitly signals completion via structured status returns. Never rely on heuristics like "consecutive iterations without tool calls" to detect completion.
+
+### Completion Signal Format
+
+At the end of design work, return:
+
+```json
+{
+  "status": "complete|partial|blocked|failed",
+  "deliveryType": "homepage|landing-page|dashboard|full-site",
+  "summary": "Brief description of what was designed",
+  "deliverables": ["List of files created"],
+  "designSystem": {
+    "colors": "palette-name",
+    "typography": "font-pairing",
+    "components": 0
+  },
+  "userActionRequired": "What user should do next (if any)"
+}
+```
+
+### Success Signal (Complete Design)
+```json
+{
+  "status": "complete",
+  "deliveryType": "full-site",
+  "summary": "Professional B2B SaaS marketing site with 5 pages",
+  "deliverables": [
+    "/mnt/user-data/outputs/homepage.tsx",
+    "/mnt/user-data/outputs/features.tsx",
+    "/mnt/user-data/outputs/pricing.tsx",
+    "/mnt/user-data/outputs/about.tsx",
+    "/mnt/user-data/outputs/contact.tsx",
+    "/mnt/user-data/outputs/design-system.md"
+  ],
+  "designSystem": {
+    "colors": "Professional Trust (Blue-based)",
+    "typography": "Plus Jakarta Sans + Inter",
+    "components": 15
+  },
+  "pageCount": 5,
+  "responsive": true,
+  "accessible": "WCAG AA compliant",
+  "outputLocation": "/mnt/user-data/outputs/"
+}
+```
+
+### Success Signal (Dashboard Design)
+```json
+{
+  "status": "complete",
+  "deliveryType": "dashboard",
+  "summary": "Analytics dashboard with data visualization components",
+  "deliverables": [
+    "/mnt/user-data/outputs/DashboardLayout.tsx",
+    "/mnt/user-data/outputs/StatsCards.tsx",
+    "/mnt/user-data/outputs/ChartComponents.tsx",
+    "/mnt/user-data/outputs/DataTable.tsx"
+  ],
+  "designSystem": {
+    "colors": "Dark Mode Dashboard",
+    "typography": "Satoshi + DM Sans",
+    "chartLibrary": "Recharts"
+  },
+  "componentCount": 12,
+  "dataVisualizationTypes": ["line-chart", "bar-chart", "stat-cards", "data-table"],
+  "darkMode": true,
+  "outputLocation": "/mnt/user-data/outputs/"
+}
+```
+
+### Partial Completion Signal
+```json
+{
+  "status": "partial",
+  "deliveryType": "landing-page",
+  "summary": "Hero and features sections complete, pricing section in progress",
+  "completedSections": [
+    "Hero section with CTA",
+    "Feature grid (6 features)",
+    "Social proof section",
+    "Testimonial carousel"
+  ],
+  "remainingSections": [
+    "Pricing cards",
+    "FAQ accordion",
+    "Footer"
+  ],
+  "deliverables": [
+    "/mnt/user-data/outputs/HeroSection.tsx",
+    "/mnt/user-data/outputs/FeatureGrid.tsx",
+    "/mnt/user-data/outputs/Testimonials.tsx"
+  ],
+  "userActionRequired": "Review completed sections before proceeding with pricing design"
+}
+```
+
+### Blocked Signal
+```json
+{
+  "status": "blocked",
+  "deliveryType": "homepage",
+  "summary": "Cannot proceed without brand guidelines and content",
+  "blockers": [
+    "Missing brand colors and logo",
+    "No product screenshots or visuals provided",
+    "Headline and copy not finalized",
+    "Target audience not clearly defined"
+  ],
+  "userInputRequired": "Please provide: 1) Brand colors/logo, 2) Product screenshots, 3) Headline/copy preferences, 4) Target audience description"
+}
+```
+
+### Failed Signal
+```json
+{
+  "status": "failed",
+  "deliveryType": "dashboard",
+  "summary": "Design generation failed - requirements conflict",
+  "errors": [
+    "Requested both minimalist design and feature-rich dashboard",
+    "Color palette conflicts with accessibility requirements",
+    "Component count exceeds reasonable dashboard complexity"
+  ],
+  "recoverySuggestions": [
+    "Clarify design priorities: minimalist vs feature-rich",
+    "Adjust color palette for WCAG AA compliance",
+    "Break dashboard into multiple views/tabs",
+    "Prioritize top 5 metrics for initial view"
+  ]
+}
+```
+
+### When to Signal
+
+- **After complete design delivery**: Signal "complete" with all deliverables and design system details
+- **After section completion**: Signal "partial" if some sections done but awaiting feedback
+- **Missing requirements**: Signal "blocked" immediately with clear list of needed inputs
+- **Conflicting requirements**: Signal "failed" with specific conflicts and suggestions
+- **Before user review**: Signal status and list deliverables THEN ask for feedback
+
+### Special Cases
+
+**Iterative design:**
+```json
+{
+  "status": "complete",
+  "summary": "Homepage design iteration 2 - incorporated user feedback",
+  "iterationNumber": 2,
+  "changes": [
+    "Simplified hero section",
+    "Updated color scheme to warmer tones",
+    "Added client logo section",
+    "Refined CTA copy"
+  ],
+  "deliverables": ["/mnt/user-data/outputs/homepage-v2.tsx"]
+}
+```
+
+**Design system only:**
+```json
+{
+  "status": "complete",
+  "deliveryType": "design-system",
+  "summary": "Complete design system with color palette, typography, and component library",
+  "deliverables": [
+    "/mnt/user-data/outputs/design-system.md",
+    "/mnt/user-data/outputs/tailwind.config.js",
+    "/mnt/user-data/outputs/color-swatches.md"
+  ],
+  "readyForImplementation": true
+}
+```
 
 ---
 

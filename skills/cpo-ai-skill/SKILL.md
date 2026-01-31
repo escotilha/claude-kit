@@ -150,6 +150,133 @@ The CPO AI orchestrates **six specialized subagents** for best-in-class results:
 
 ---
 
+## Atomic Tools vs Outcomes
+
+### Agent-Native Design Principle
+
+This skill follows the **Agent-native principle**: "Tools should be atomic primitives. Features are outcomes achieved by an agent operating in a loop."
+
+### Atomic Tools Used
+
+The CPO AI skill uses these atomic primitives:
+
+- **Read/Write/Edit** - File system operations
+- **Glob/Grep** - Code search and discovery
+- **Bash** - Execute commands (git, npm, test runners)
+- **TaskCreate/TaskUpdate/TaskList** - Progress tracking
+- **TeammateTool** - Swarm coordination for parallel work
+- **mcp__memory__*** - Research caching and pattern learning
+
+**Key insight**: The skill does NOT implement custom workflow tools like `analyze_and_plan_product()` or `implement_stage()`. Instead, it uses atomic tools in a loop.
+
+### Outcomes Achieved via Prompts
+
+The five phases (Discovery, Planning, Implementation, Validation, Delivery) are **outcomes**, not hardcoded workflows. The agent achieves these outcomes by:
+
+1. **Discovery** - The agent uses Read to check for existing state, asks questions via natural language prompts, and uses Write to create definition documents
+2. **Planning** - The agent invokes specialized subagents (also prompt-based), synthesizes their outputs, and writes `master-project.json`
+3. **Implementation** - The agent delegates to `autonomous-dev` skill (prompt-based), monitors progress via TaskList, and tests via `fulltest-skill` (prompt-based)
+4. **Validation** - The agent runs test commands via Bash, analyzes results, and fixes issues iteratively
+5. **Delivery** - The agent generates docs via prompts, commits via Bash, and invokes deployment agent (prompt-based)
+
+### How to Modify Behavior via Prompts
+
+**Want to change discovery questions?**
+
+Edit the prompt in `references/phase-details.md` lines 24-83. The questions are part of the agent's instructions, not hardcoded logic.
+
+**Want different epic patterns?**
+
+Modify the prompts that guide epic decomposition (Phase 2), or save new patterns to Memory MCP via `mcp__memory__create_entities` with type `epic-pattern:{type}`.
+
+**Want to customize stage implementation?**
+
+The implementation strategy is controlled by prompts in:
+- The subagent definitions in `subagents/` directory
+- The `autonomous-dev` skill invocation parameters
+- Environment variables and project-specific prompts
+
+**Want different testing strategies?**
+
+Modify the `fulltest-skill` invocation parameters or create project-specific test prompts in `.claude.md`.
+
+**Want custom swarm behavior?**
+
+Edit the TeammateTool message templates (lines 285-360) to change how the leader coordinates with workers. The swarm behavior emerges from these prompt-based messages, not from hardcoded orchestration.
+
+### Contrast: Workflow-Shaped Anti-Pattern
+
+**What this skill does NOT do:**
+
+```javascript
+// Anti-pattern: Hardcoded workflow
+function cpo_workflow(productIdea) {
+  const questions = askDiscoveryQuestions(); // Hardcoded Q&A
+  const plan = generatePlan(questions);       // Hardcoded planning
+  for (const stage of plan.stages) {
+    implementStage(stage);                   // Hardcoded implementation
+    runTests(stage);                         // Hardcoded testing
+  }
+  deploy();                                  // Hardcoded deployment
+}
+```
+
+**What this skill DOES:**
+
+The agent receives outcome-oriented instructions like:
+- "Transform the product idea into a qualified definition by asking strategic questions"
+- "Create a staged implementation plan with epics and stories"
+- "Implement each stage, test it, and commit if passing"
+
+The agent uses atomic tools (Read, Write, Bash, TaskList, etc.) to achieve these outcomes. The workflow emerges from the agent's decision-making, not from hardcoded steps.
+
+### Example: Changing Planning Strategy
+
+**Current behavior** (defined in prompts):
+- Break product into 3-6 epics
+- Decompose epics into stages (1-2 days each)
+- Generate stories per stage
+
+**To change to feature-first planning**:
+
+Edit the Phase 2 prompt in `references/phase-details.md` to say:
+```
+Instead of epic-based planning, decompose the product into independent features.
+Each feature should be a vertical slice with UI, API, and database components.
+Prioritize features by user value and dependencies.
+```
+
+The agent will adapt its planning behavior to this new outcome description, using the same atomic tools (Write, mcp__memory__search_nodes, etc.) in different ways.
+
+### Memory-Driven Behavior Modification
+
+Behavior evolves through Memory MCP without code changes:
+
+```javascript
+// Save a new pattern after successful delivery
+mcp__memory__create_entities({
+  entities: [{
+    name: "epic-pattern:marketplace-mvp",
+    entityType: "epic-pattern",
+    observations: [
+      "Product type: Two-sided marketplace",
+      "Epic 1: Seller onboarding and profiles",
+      "Epic 2: Product catalog and search",
+      "Epic 3: Transaction and payment flow",
+      "Epic 4: Buyer discovery and reviews",
+      "Stages: 8 total, foundation-first approach",
+      "Proven in: artmarket project",
+      "Duration: 5 days",
+      "Key insight: Build payment flow before reviews to validate revenue model early"
+    ]
+  }]
+})
+```
+
+Next time the agent builds a marketplace, it queries memory and adapts its plan based on learned patterns, without any code modification.
+
+---
+
 ## Entry Point Detection
 
 When this skill activates, check for existing project state:
@@ -430,6 +557,109 @@ This prevents task list clutter during long sessions. Clean up task chains after
 - All stages complete and verified
 - User cancels a workflow
 - Starting a fresh PRD cycle
+
+---
+
+## Completion Signals
+
+This skill explicitly signals completion via structured status returns. Never rely on heuristics like "consecutive iterations without tool calls" to detect completion.
+
+### Completion Signal Format
+
+At the end of each phase or when blocked, return:
+
+```json
+{
+  "status": "complete|partial|blocked|failed",
+  "phase": "discovery|planning|implementation|validation|delivery",
+  "summary": "Brief description of what was accomplished",
+  "deliverables": ["List of files/artifacts created"],
+  "nextSteps": ["What should happen next (if partial)"],
+  "blockers": ["Issues preventing completion (if blocked)"],
+  "errors": ["Error details (if failed)"]
+}
+```
+
+### Success Signal
+```json
+{
+  "status": "complete",
+  "phase": "delivery",
+  "summary": "Product successfully delivered and deployed",
+  "deliverables": [
+    "master-project.json",
+    "cpo-progress.md",
+    "docs/user-guide.md",
+    "docs/technical-docs.md",
+    "Live URL: https://..."
+  ],
+  "metrics": {
+    "totalStages": 12,
+    "completedStages": 12,
+    "testsPassing": true,
+    "deploymentStatus": "live"
+  }
+}
+```
+
+### Partial Completion Signal
+```json
+{
+  "status": "partial",
+  "phase": "implementation",
+  "summary": "Completed 8 of 12 stages",
+  "completedItems": ["Stage 1.1", "Stage 1.2", "Stage 2.1", ...],
+  "remainingItems": ["Stage 3.1", "Stage 3.2", "Stage 4.1", ...],
+  "nextSteps": ["Resume with Stage 3.1 implementation"],
+  "canResume": true
+}
+```
+
+### Blocked Signal
+```json
+{
+  "status": "blocked",
+  "phase": "implementation",
+  "summary": "Cannot proceed with Stage 2.3 - API integration",
+  "blockers": [
+    "Missing API credentials",
+    "Third-party service unavailable",
+    "User input needed: database schema preferences"
+  ],
+  "completedSoFar": ["Stage 1.1", "Stage 1.2", "Stage 2.1", "Stage 2.2"],
+  "userInputRequired": "Please provide API key for service X"
+}
+```
+
+### Failed Signal
+```json
+{
+  "status": "failed",
+  "phase": "implementation",
+  "summary": "Stage 2.3 implementation failed after 3 attempts",
+  "errors": [
+    "Database connection timeout",
+    "Authentication module compile error"
+  ],
+  "completedStages": ["Stage 1.1", "Stage 1.2"],
+  "failedStage": "Stage 2.3",
+  "recoverySuggestions": [
+    "Review database configuration",
+    "Check authentication dependencies",
+    "Consider simplifying authentication approach"
+  ]
+}
+```
+
+### When to Signal
+
+- **After Phase 1**: Signal "complete" when product definition is approved
+- **After Phase 2**: Signal "complete" when master-project.json is created and plan approved
+- **During Phase 3**: Signal "partial" after each stage completion, "complete" when all stages done
+- **After Phase 4**: Signal "complete" when all tests pass
+- **After Phase 5**: Signal "complete" when deployed and documentation ready
+- **Any blocker**: Signal "blocked" immediately with clear user action needed
+- **Any failure**: Signal "failed" with errors and recovery options
 
 ---
 
