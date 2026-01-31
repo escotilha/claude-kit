@@ -4,13 +4,6 @@ description: "Parallel feature development using git worktrees and specialized a
 user-invocable: true
 context: fork
 model: opus
-version: 1.0.0
-color: "#f97316"
-triggers:
-  - "/parallel-dev"
-  - "parallel development"
-  - "parallel features"
-  - "worktree development"
 allowed-tools:
   - Read
   - Write
@@ -24,6 +17,7 @@ allowed-tools:
   - TaskList
   - TaskGet
   - AskUserQuestion
+disable-model-invocation: true
 ---
 
 # Parallel Feature Development Skill

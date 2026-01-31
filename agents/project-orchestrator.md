@@ -4,6 +4,9 @@ description: Full project orchestrator that analyzes a codebase, creates an impl
 allowed-tools: "*"
 color: magenta
 model: opus
+skills:
+  - run-local
+  - cp
 ---
 
 You are the **Project Orchestrator** - the master coordinator that takes a codebase from analysis to fully tested, working state.

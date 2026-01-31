@@ -1,17 +1,8 @@
 ---
 name: fulltest-skill
 description: "Swarm-enabled full-spectrum testing for websites and applications. Uses TeammateTool for true parallel page testers that share failure patterns in real-time. Maps sites, spawns concurrent testers, detects cross-page patterns, auto-fixes with parallel fixers, generates comprehensive reports."
-version: 4.0.1
 user-invocable: true
 model: sonnet
-color: "#22c55e"
-triggers:
-  - "test the website"
-  - "run e2e tests"
-  - "comprehensive testing"
-  - "test and fix"
-  - "fulltest"
-  - "swarm test"
 allowed-tools:
   - Task
   - TeammateTool

@@ -3,15 +3,6 @@ name: mna-swarm-orchestrator
 description: "Orchestrates full M&A deal analysis using swarm of specialists. Spawns parallel workers for financial extraction, triage scoring, proposal generation, and deck creation. Use for end-to-end deal processing from initial screening to board approval."
 user-invocable: true
 context: fork
-version: 1.0.0
-color: "#f59e0b"
-triggers:
-  - "/mna full"
-  - "/mna swarm"
-  - "analyze deal end to end"
-  - "complete mna analysis"
-  - "full deal analysis"
-  - "m&a swarm"
 allowed-tools:
   - Read
   - Write
@@ -25,6 +16,12 @@ allowed-tools:
   - TaskList
   - TaskGet
   - TeammateTool
+disable-model-invocation: true
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: "Review the deal analysis output. Check if: 1) All analysis phases completed 2) Financial data was extracted 3) A comprehensive report was generated. Respond with {\"ok\": true} if complete, or {\"ok\": false, \"reason\": \"what's missing\"} if not."
 ---
 
 # M&A Swarm Orchestrator

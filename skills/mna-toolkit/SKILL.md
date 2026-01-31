@@ -9,11 +9,10 @@ description: |
   - /mna deck - Create board approval PowerPoint presentations
   - /mna aimpact - AI cost reduction analysis for targets
   Use for end-to-end M&A deal processing from initial screening to board approval.
+argument-hint: "[triage|extract|proposal|analysis|deck|aimpact] [target]"
 user-invocable: true
 context: fork
 model: opus
-version: 1.0.0
-color: "#f59e0b"
 allowed-tools:
   - Read
   - Write

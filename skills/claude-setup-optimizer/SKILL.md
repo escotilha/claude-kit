@@ -1,7 +1,5 @@
 ---
 name: claude-setup-optimizer
-version: 1.1.0
-color: "#3b82f6"
 description: Analyzes Claude Code changelog, reviews your current agents/skills setup, and recommends improvements based on new features. Use when asked to "optimize claude setup", "check for claude updates", "improve my agents", "sync with claude changelog", or "/optimize-setup".
 user-invocable: true
 context: fork
@@ -14,6 +12,7 @@ allowed-tools:
   - Glob
   - Grep
   - Bash
+  - Task
   - AskUserQuestion
   - TaskCreate
   - TaskUpdate
@@ -115,59 +114,22 @@ Extract key information:
 - Breaking changes
 - Best practice updates
 
-### Step 2: Analyze Current Setup
+### Step 2: Analyze Current Setup (Parallel)
 
-**IMPORTANT:** Always define the portable path variable first:
+**IMPORTANT:** Always use the iCloud path as the source of truth:
+`~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup`
 
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-```
+**Use parallel Task agents to inventory everything concurrently.** Launch these in a single message:
 
-**Inventory all skills:**
+1. **Skills inventory agent** - Read all SKILL.md frontmatter from every skill directory under `skills/`. Extract name, description, allowed-tools, context, model, and any other frontmatter fields. Return the complete frontmatter for each skill.
 
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-find "$ICLOUD_SETUP/skills" -maxdepth 2 \( -name "SKILL.md" -o -name "skill.md" \) 2>/dev/null
-```
+2. **Agents inventory agent** - Read all agent .md files from `agents/` (including subdirectories like `review/`). Extract name, description, allowed-tools, disallowedTools, model, color, skills, and any other frontmatter fields. Return the complete frontmatter for each agent.
 
-For each skill, read and extract:
+3. **Config inventory agent** - Read settings.json from the iCloud path and ~/.claude.json. Also list all commands in `commands/`. Return the full configuration content.
 
-- Name and description
-- Allowed tools
-- Triggers/activation patterns
-- Dependencies
+All three agents should use `subagent_type="Explore"` and `run_in_background=true`.
 
-**Inventory all agents:**
-
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-find "$ICLOUD_SETUP/agents" -name "*.md" 2>/dev/null
-```
-
-For each agent, read and extract:
-
-- Name and purpose
-- Tools it uses
-- Subagent relationships
-
-**Inventory all commands:**
-
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-ls "$ICLOUD_SETUP/commands/"*.md 2>/dev/null
-```
-
-**Read configuration files:**
-
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-
-# Settings in iCloud
-cat "$ICLOUD_SETUP/settings.json"
-
-# Global Claude config
-cat ~/.claude.json
-```
+Wait for all agents to complete, then proceed to Step 3 with the combined inventory data.
 
 ### Step 3: Compare and Identify Opportunities
 
@@ -262,13 +224,13 @@ Would you like me to:
 5. Skip implementation (just review)
 ```
 
-### Step 6: Implement Improvements
+### Step 6: Implement Improvements with Parallel Agents
 
 **IMPORTANT: iCloud is the source of truth.** All changes MUST be made directly in the iCloud path to ensure they sync across devices.
 
-For approved changes:
+**CRITICAL: Use parallel Task agents to implement changes concurrently.** Group approved changes into independent work streams and launch them as parallel agents. This dramatically speeds up implementation.
 
-1. **Back up affected files first (in iCloud):**
+#### 6a. Back up affected files first
 
 ```bash
 ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
@@ -276,25 +238,47 @@ mkdir -p "$ICLOUD_SETUP/backups/$(date +%Y%m%d-%H%M%S)"
 cp <file> "$ICLOUD_SETUP/backups/$(date +%Y%m%d-%H%M%S)/"
 ```
 
-2. **Apply changes using Edit or Write tools to the iCloud path directly**
-   - Use the portable path: `~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/...`
-   - Do NOT edit via symlinks (`~/.claude/`) to ensure changes are persisted to iCloud
+#### 6b. Group changes into independent work streams
 
-3. **Validate changes:**
+Categorize approved changes into groups that can run in parallel without conflicts (no two agents should edit the same file):
 
-- Check syntax/format is valid
-- Ensure no breaking changes to existing functionality
+- **Skills agent**: All SKILL.md frontmatter and body changes
+- **Agents agent**: All agent .md file changes
+- **Config agent**: settings.json, hooks, and other config changes
+- **Filesystem agent**: Directory moves, file deletions, archive operations
 
-4. **Verify files exist in iCloud:**
+If a group touches too many files, split further (e.g., separate M&A skills from dev skills).
 
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-ls -la "$ICLOUD_SETUP/skills/<skill-name>/"
+#### 6c. Launch parallel agents
+
+Use the Task tool to launch multiple agents in a **single message** with multiple tool calls. Each agent gets a detailed prompt listing exactly which files to change and what to do.
+
+Example pattern:
+
+```
+# In a SINGLE message, launch all these Task calls simultaneously:
+
+Task(subagent_type="general-purpose", description="Fix skill frontmatter", prompt="Read and edit these SKILL.md files: [list]. For each: [specific changes]...", run_in_background=true)
+
+Task(subagent_type="general-purpose", description="Update agent files", prompt="Read and edit these agent .md files: [list]. For each: [specific changes]...", run_in_background=true)
+
+Task(subagent_type="general-purpose", description="Update config files", prompt="Read and edit settings.json: [specific changes]...", run_in_background=true)
 ```
 
-5. **Auto-commit and push to GitHub:**
+**Rules for parallel agents:**
+- Each agent prompt must be self-contained with ALL context needed (file paths, exact changes)
+- No agent should edit a file that another agent is also editing
+- Use `run_in_background=true` to launch them concurrently
+- Wait for all agents to complete, then verify results
+- If a change depends on another change, put them in the same agent or run sequentially
 
-After all approved changes are made, automatically commit and push to the backup repo. The iCloud folder IS a git repo linked to GitHub:
+#### 6d. Verify all changes
+
+After all agents complete, spot-check key files to confirm changes were applied correctly. Read the frontmatter of a few modified files to verify.
+
+#### 6e. Auto-commit and push to GitHub
+
+After all approved changes are verified, automatically commit and push to the backup repo:
 
 ```bash
 ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"

@@ -1,7 +1,5 @@
 ---
 name: investment-analysis-generator
-version: 1.0.0
-color: "#f59e0b"
 description: Generate professional 18-page Investment Analysis PDFs for M&A deals. Use when creating comprehensive investment reports, preparing board presentations, or documenting acquisition opportunities.
 user-invocable: true
 context: fork

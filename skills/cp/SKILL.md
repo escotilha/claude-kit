@@ -1,12 +1,12 @@
 ---
 name: cp
-version: 1.0.0
-color: "#3b82f6"
 description: Quick commit and push. Use when asked to commit and push, or just "cp".
+argument-hint: "[commit message]"
 user-invocable: true
 model: haiku
 allowed-tools:
   - Bash
+disable-model-invocation: true
 ---
 
 # CP - Commit and Push

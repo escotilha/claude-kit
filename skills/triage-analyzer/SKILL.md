@@ -1,11 +1,10 @@
 ---
 name: triage-analyzer
 description: Analyze M&A opportunities and score them 0-10 against investment criteria. Use when evaluating acquisition targets, identifying red flags, or generating triage reports.
+argument-hint: "[company name or PDF path]"
 user-invocable: true
 model: sonnet
 context: fork
-version: 1.0.0
-color: "#f59e0b"
 allowed-tools:
   - Read
   - Write
@@ -21,6 +20,9 @@ allowed-tools:
 ---
 
 # M&A Triage Analyzer
+
+## Current Environment
+- Recent deals: !`ls ~/deals/ 2>/dev/null | tail -5 || echo "No deals directory found"`
 
 ## Session Tracking
 

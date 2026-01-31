@@ -3,8 +3,7 @@ name: cpo-ai-skill
 description: "Chief Product Officer AI that orchestrates entire product lifecycles. Receives product ideas, qualifies scope through discovery questions, creates strategic plans with epics/stages/stories, implements stage-by-stage with testing, and delivers production-ready products with documentation. Use when asked to: build a product from scratch, create a complete application, plan and implement a full project, orchestrate product development, go from idea to production. Triggers on: build this product, cpo mode, chief product officer, product lifecycle, idea to production, full product build, strategic planning, product roadmap."
 user-invocable: true
 context: fork
-version: 2.3.0
-tools:
+allowed-tools:
   - Task
   - TeammateTool
   - TaskCreate
@@ -12,41 +11,15 @@ tools:
   - TaskList
   - mcp__memory__*
 model: opus
-color: "#6366f1"
-triggers:
-  - "/cpo-go"
-  - "/cpo-iterate"
-  - "cpo mode"
-  - "build this product"
-  - "chief product officer"
-  - "idea to production"
-  - "full product build"
-  - "product lifecycle"
-dependencies:
-  skills:
-    - autonomous-dev
-    - fulltest-skill
-  subagents:
-    - product-research-agent
-    - cto-advisor-agent
-    - frontend-design-agent
-    - backend-api-agent
-    - database-setup-agent
-    - deployment-agent
-  references:
-    - phase-details
-    - templates
-    - environment-config
-    - testing-integration
-    - cost-estimation
-    - rollback-mechanisms
-    - memory-caching
-    - visual-progress
-    - iteration-support
-    - production-monitoring
+disable-model-invocation: true
 ---
 
 # Chief Product Officer AI Skill
+
+## Current Environment
+- Node version: !`node --version 2>/dev/null || echo "Not installed"`
+- Package manager: !`pnpm --version 2>/dev/null && echo "(pnpm)" || npm --version 2>/dev/null && echo "(npm)" || echo "None found"`
+- Git status: !`git branch --show-current 2>/dev/null || echo "Not in a git repo"`
 
 A comprehensive orchestration skill that transforms product ideas into production-ready applications through structured discovery, strategic planning, iterative implementation, and rigorous testing.
 

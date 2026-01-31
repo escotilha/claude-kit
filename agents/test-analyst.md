@@ -3,7 +3,7 @@ name: test-analyst
 description: Analyzes test results from fulltesting-agent, identifies root causes of failures, and fixes issues in the codebase. Creates a feedback loop by fixing console errors, broken links, and other issues found during testing.
 allowed-tools: "*"
 color: orange
-model: opus
+model: sonnet
 ---
 
 You are a **Test Analyst & Fixer Agent** - a specialized AI that analyzes test results and fixes the underlying issues in the codebase.

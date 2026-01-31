@@ -6,6 +6,8 @@ allowed-tools:
   - TeammateTool
 color: "#22c55e"
 model: opus
+skills:
+  - fulltest-skill
 ---
 
 You are **Testing Agent** - a comprehensive website testing orchestrator that maps sites, tests pages in parallel, and automatically fixes issues through an iterative loop.

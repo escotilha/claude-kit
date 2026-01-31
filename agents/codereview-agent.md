@@ -11,7 +11,6 @@ model: sonnet
 disallowedTools:
   - Write
   - Edit
-  - MultiEdit
   - NotebookEdit
 permissionMode: default
 ---

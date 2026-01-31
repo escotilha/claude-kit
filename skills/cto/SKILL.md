@@ -4,20 +4,6 @@ description: "Swarm-enabled AI CTO advisor for any project. Uses TeammateTool fo
 user-invocable: true
 context: fork
 model: opus
-version: 1.0.0
-color: "#8b5cf6"
-triggers:
-  - "/cto"
-  - "cto advice"
-  - "architecture review"
-  - "tech stack decision"
-  - "system design"
-  - "code quality review"
-  - "security audit"
-  - "performance review"
-  - "technical roadmap"
-  - "refactoring strategy"
-  - "swarm review"
 allowed-tools:
   - Read
   - Write

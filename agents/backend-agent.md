@@ -6,7 +6,6 @@ allowed-tools:
   - Read
   - Write
   - Edit
-  - MultiEdit
   - Glob
   - Grep
 color: #60A5FA
