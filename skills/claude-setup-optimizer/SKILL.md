@@ -17,6 +17,11 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: "cd \"$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup\" && { git diff --quiet && git diff --cached --quiet && [ -z \"$(git ls-files --others --exclude-standard)\" ] && echo 'No changes to commit'; } || { git add -A && git commit -m 'feat: apply claude-setup-optimizer recommendations' && git push origin master && echo 'Committed and pushed to GitHub'; }"
 ---
 
 # Claude Setup Optimizer
@@ -276,32 +281,9 @@ Task(subagent_type="general-purpose", description="Update config files", prompt=
 
 After all agents complete, spot-check key files to confirm changes were applied correctly. Read the frontmatter of a few modified files to verify.
 
-#### 6e. Auto-commit and push to GitHub
+#### 6e. Git commit and push (automatic)
 
-After all approved changes are verified, automatically commit and push to the backup repo:
-
-```bash
-ICLOUD_SETUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup"
-cd "$ICLOUD_SETUP"
-
-# Stage all changes
-git add -A
-
-# Commit with descriptive message
-git commit -m "feat: apply claude-setup-optimizer recommendations
-
-Changes applied:
-- [list of changes made]
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
-
-# Push to GitHub backup repo
-git push origin master
-```
-
-**GitHub Backup Repo:** https://github.com/escotilha/claude
-
-This step runs automatically after implementing approved changes - no user confirmation needed.
+A `Stop` hook in this skill's frontmatter automatically commits and pushes all changes to the GitHub backup repo (`github.com/escotilha/claude`) when the skill finishes. No manual git commands needed.
 
 ## Example Recommendations
 
