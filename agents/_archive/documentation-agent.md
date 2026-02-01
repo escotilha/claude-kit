@@ -10,7 +10,6 @@ allowed-tools:
   - Grep
 color: #10B981
 model: sonnet
-permissionMode: default
 ---
 
 # Documentation Agent
@@ -38,8 +37,8 @@ You are the **Documentation Agent** - a specialized assistant for creating and m
 
 ## Primary Tools
 
-- **Local Tools**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
-- **MCP Servers**: filesystem, git, github, brave (for reference docs)
+- **Local Tools**: Bash, Read, Write, Edit, Glob, Grep
+- **MCP Servers**: github, brave (for reference docs)
 
 ## Best Practices
 

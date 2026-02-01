@@ -24,13 +24,24 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/hooks/format-file.sh\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Working directory: '$(pwd)"
+            "command": "echo '{\"additionalContext\": \"Working directory: '$(pwd)'. Git branch: '$(git branch --show-current 2>/dev/null || echo none)'. Project: '$(basename $(git rev-parse --show-toplevel 2>/dev/null) 2>/dev/null || basename $(pwd))'\"}'"
           }
         ]
       }
@@ -38,6 +49,10 @@
     "Stop": [
       {
         "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before ending: If you made code changes, did you verify they compile/pass tests? If not, consider running /verify."
+          },
           {
             "type": "command",
             "command": "\"$HOME/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/hooks/session-end.sh\""
@@ -54,15 +69,6 @@
   ],
   "mcp": {
     "mcpServers": {
-      "filesystem": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-filesystem",
-          "$HOME"
-        ],
-        "description": "Access to local filesystem"
-      },
       "sequential-thinking": {
         "command": "npx",
         "args": [
@@ -90,30 +96,6 @@
           "@anthropic/mcp-playwright"
         ],
         "description": "Browser automation with Playwright"
-      },
-      "puppeteer": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-puppeteer"
-        ],
-        "description": "Browser automation"
-      },
-      "fetch": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-fetch"
-        ],
-        "description": "Web content fetching"
-      },
-      "git": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-git"
-        ],
-        "description": "Git repository operations"
       },
       "github": {
         "command": "npx",

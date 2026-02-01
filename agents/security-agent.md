@@ -6,13 +6,13 @@ allowed-tools:
   - Glob
   - Grep
   - Bash
+  - LSP
 color: #F87171
 model: sonnet
 disallowedTools:
   - Write
   - Edit
   - NotebookEdit
-permissionMode: default
 ---
 
 # Security Agent
@@ -40,7 +40,7 @@ You are the **Security Agent** - a specialized assistant for security testing, c
 ## Primary Tools
 
 - **Local Tools**: Read, Glob, Grep, Bash (for running scanners)
-- **MCP Servers**: filesystem, git, github, brave (threat intel), puppeteer (auth flow testing)
+- **MCP Servers**: github, brave (threat intel), chrome-devtools (for browser testing)
 
 ## Security Scanners (run when available)
 

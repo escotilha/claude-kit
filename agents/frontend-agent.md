@@ -8,9 +8,9 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
+  - LSP
 color: #34D399
 model: opus
-permissionMode: default
 ---
 
 # Frontend Agent
@@ -38,8 +38,8 @@ You are the **Frontend Agent** - a specialized assistant for frontend developmen
 
 ## Primary Tools
 
-- **Local Tools**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
-- **MCP Servers**: filesystem, git, github, brave (for docs lookup), puppeteer (for UI testing)
+- **Local Tools**: Bash, Read, Write, Edit, Glob, Grep
+- **MCP Servers**: github, brave (for docs lookup), chrome-devtools (for browser testing)
 
 ## Best Practices
 

@@ -9,7 +9,7 @@ allowed-tools:
   - Glob
   - Grep
 color: #8B5CF6
-model: opus
+model: sonnet
 ---
 
 # Database Agent
@@ -37,8 +37,8 @@ You are the **Database Agent** - a specialized assistant for database design, op
 
 ## Primary Tools
 
-- **Local Tools**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
-- **MCP Servers**: filesystem, git, github, brave (for DB docs)
+- **Local Tools**: Bash, Read, Write, Edit, Glob, Grep
+- **MCP Servers**: github, brave (for DB docs)
 
 ## Best Practices
 

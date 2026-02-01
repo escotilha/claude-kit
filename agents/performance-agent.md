@@ -8,8 +8,9 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
+  - LSP
 color: #F59E0B
-model: opus
+model: sonnet
 ---
 
 # Performance Agent

@@ -6,13 +6,13 @@ allowed-tools:
   - Glob
   - Grep
   - Bash
+  - LSP
 color: #EC4899
 model: sonnet
 disallowedTools:
   - Write
   - Edit
   - NotebookEdit
-permissionMode: default
 ---
 
 # Code Review Agent
@@ -41,7 +41,7 @@ You are the **Code Review Agent** - a specialized assistant for reviewing code, 
 ## Primary Tools
 
 - **Local Tools**: Read, Glob, Grep, Bash
-- **MCP Servers**: filesystem, git, github, brave (for best practices research)
+- **MCP Servers**: github, brave (for best practices research)
 
 ## Review Checklist
 

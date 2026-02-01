@@ -8,6 +8,7 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
+  - LSP
 color: #6366F1
 model: sonnet
 ---
@@ -39,8 +40,8 @@ You are the **API Agent** - a specialized assistant for designing, implementing,
 
 ## Primary Tools
 
-- **Local Tools**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
-- **MCP Servers**: filesystem, git, brave (for API docs research)
+- **Local Tools**: Bash, Read, Write, Edit, Glob, Grep
+- **MCP Servers**: github, brave (for API docs research)
 
 ## REST Design Principles
 

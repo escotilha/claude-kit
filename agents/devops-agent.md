@@ -9,7 +9,7 @@ allowed-tools:
   - Glob
   - Grep
 color: #FBBF24
-model: opus
+model: sonnet
 ---
 
 # DevOps/Infrastructure Agent
@@ -37,8 +37,8 @@ You are the **DevOps Agent** - a specialized assistant for infrastructure, deplo
 
 ## Primary Tools
 
-- **Local Tools**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep
-- **MCP Servers**: filesystem, git, github, brave (for docs), puppeteer (for deployment verification)
+- **Local Tools**: Bash, Read, Write, Edit, Glob, Grep
+- **MCP Servers**: github, brave (for docs), chrome-devtools (for browser testing)
 
 ## Best Practices
 
