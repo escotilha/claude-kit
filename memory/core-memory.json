@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-01-28",
-  "lastConsolidation": null,
+  "lastUpdated": "2026-02-02",
+  "lastConsolidation": "2026-02-02T22:30:00Z",
 
   "criticalContext": {
     "iCloudSetup": "ALL Claude setup files are stored in iCloud. Always check these paths first.",
@@ -40,8 +40,16 @@
     },
     "codeStyle": {
       "principle": "minimal, no over-engineering",
-      "avoidPatterns": ["premature abstraction", "unnecessary comments", "feature flags for simple changes"],
-      "preferPatterns": ["early returns", "explicit over implicit", "composition over inheritance"]
+      "avoidPatterns": [
+        "premature abstraction",
+        "unnecessary comments",
+        "feature flags for simple changes"
+      ],
+      "preferPatterns": [
+        "early returns",
+        "explicit over implicit",
+        "composition over inheritance"
+      ]
     },
     "testing": {
       "e2e": "Playwright",
@@ -121,19 +129,61 @@
       "configured": true,
       "usage": "App Platform, Databases, Spaces",
       "mcpServer": "@digitalocean/mcp"
+    },
+    "resend": {
+      "configured": true,
+      "usage": "Transactional email sending",
+      "verifiedDomains": ["nuvini.ai", "contably.ai"],
+      "fromAddresses": [
+        "claudia@nuvini.ai",
+        "cris@nuvini.ai",
+        "julia@nuvini.ai",
+        "notifications@nuvini.ai"
+      ]
+    },
+    "agentmail": {
+      "configured": true,
+      "usage": "AI agent email inboxes (receiving)",
+      "inboxes": [
+        "xurman@agentmail.to",
+        "marcopolo@agentmail.to",
+        "cris@agentmail.to"
+      ],
+      "plan": "Free (3 inboxes, 3000 emails/month)"
+    },
+    "cloudflare": {
+      "configured": true,
+      "usage": "DNS management",
+      "profiles": ["business", "personal"],
+      "managedDomains": ["contably.ai", "nuvini.ai"]
     }
   },
 
   "mcpServers": {
     "available": [
-      "memory", "filesystem", "git", "github", "notion", "slack",
-      "postgres", "brave-search", "fetch", "playwright", "puppeteer",
-      "chrome-devtools", "digitalocean", "resend", "sequential-thinking"
+      "memory",
+      "github",
+      "notion",
+      "slack",
+      "postgres",
+      "brave-search",
+      "playwright",
+      "chrome-devtools",
+      "digitalocean",
+      "resend",
+      "sequential-thinking"
     ],
     "memoryServer": {
       "name": "memory",
       "type": "knowledge-graph",
-      "tools": ["create_entities", "search_nodes", "open_nodes", "delete_entities", "add_observations", "create_relations"]
+      "tools": [
+        "create_entities",
+        "search_nodes",
+        "open_nodes",
+        "delete_entities",
+        "add_observations",
+        "create_relations"
+      ]
     }
   },
 

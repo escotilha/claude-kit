@@ -23,22 +23,6 @@ A human-inspired memory maintenance system that implements the cognitive process
 
 Based on: [Towards Human-like Memory for AI Agents](https://manthanguptaa.in/posts/towards_human_like_memory_for_ai_agents/)
 
-## MCP Tool Loading
-
-MCP tools are deferred and must be loaded via ToolSearch before use:
-- Keyword search: `ToolSearch({ query: "memory" })` - loads matching tools
-- Direct select: `ToolSearch({ query: "select:mcp__memory__search_nodes" })`
-
-**Required tools to load:**
-- `mcp__memory__search_nodes` - Query existing memories
-- `mcp__memory__create_entities` - Create new memories
-- `mcp__memory__delete_entities` - Remove memories
-- `mcp__memory__add_observations` - Add to existing memories
-- `mcp__memory__create_relations` - Link memories together
-- `mcp__memory__open_nodes` - Get full memory details
-
----
-
 ## Core Concepts
 
 ### Memory Hierarchy
@@ -78,10 +62,10 @@ MCP tools are deferred and must be loaded via ToolSearch before use:
 
 When this skill activates:
 
-| Condition | Action |
-|-----------|--------|
-| `/consolidate` invoked | Run full consolidation cycle |
-| `memory health` asked | Generate health report only |
+| Condition                | Action                             |
+| ------------------------ | ---------------------------------- |
+| `/consolidate` invoked   | Run full consolidation cycle       |
+| `memory health` asked    | Generate health report only        |
 | Automatic (post-project) | Run if 10+ new memories since last |
 
 **First Action:** Load current state:
@@ -104,7 +88,9 @@ const allMemories = await mcp__memory__search_nodes({ query: "" });
 // Also query by specific types
 const patterns = await mcp__memory__search_nodes({ query: "pattern:" });
 const mistakes = await mcp__memory__search_nodes({ query: "mistake:" });
-const techInsights = await mcp__memory__search_nodes({ query: "tech-insight:" });
+const techInsights = await mcp__memory__search_nodes({
+  query: "tech-insight:",
+});
 const preferences = await mcp__memory__search_nodes({ query: "preference:" });
 const research = await mcp__memory__search_nodes({ query: "research:" });
 const competitors = await mcp__memory__search_nodes({ query: "competitor:" });
@@ -121,10 +107,14 @@ function analyzeMemory(entity) {
   const observations = entity.observations || [];
 
   // Extract metadata from observations (stored as structured strings)
-  const discoveredAt = observations.find(o => o.startsWith("Researched:") || o.startsWith("Discovered:"));
-  const appliedIn = observations.filter(o => o.startsWith("Applied in"));
-  const helpfulCount = appliedIn.filter(o => o.includes("HELPFUL")).length;
-  const notHelpfulCount = appliedIn.filter(o => o.includes("NOT HELPFUL")).length;
+  const discoveredAt = observations.find(
+    (o) => o.startsWith("Researched:") || o.startsWith("Discovered:"),
+  );
+  const appliedIn = observations.filter((o) => o.startsWith("Applied in"));
+  const helpfulCount = appliedIn.filter((o) => o.includes("HELPFUL")).length;
+  const notHelpfulCount = appliedIn.filter((o) =>
+    o.includes("NOT HELPFUL"),
+  ).length;
 
   return {
     name: entity.name,
@@ -134,12 +124,11 @@ function analyzeMemory(entity) {
     useCount: appliedIn.length,
     helpfulCount,
     notHelpfulCount,
-    effectiveness: appliedIn.length > 0
-      ? helpfulCount / appliedIn.length
-      : null,
+    effectiveness:
+      appliedIn.length > 0 ? helpfulCount / appliedIn.length : null,
     ageInDays: daysSince(parseDate(discoveredAt)),
     lastUsed: findLastUsed(appliedIn),
-    daysSinceLastUse: daysSince(findLastUsed(appliedIn))
+    daysSinceLastUse: daysSince(findLastUsed(appliedIn)),
   };
 }
 ```
@@ -154,25 +143,25 @@ function analyzeMemory(entity) {
 
 ### Summary Statistics
 
-| Metric | Value |
-|--------|-------|
-| Total memories | X |
-| Patterns | Y |
-| Mistakes | Z |
-| Tech insights | A |
-| Research cache | B |
-| Avg age (days) | C |
-| Avg effectiveness | D% |
+| Metric            | Value |
+| ----------------- | ----- |
+| Total memories    | X     |
+| Patterns          | Y     |
+| Mistakes          | Z     |
+| Tech insights     | A     |
+| Research cache    | B     |
+| Avg age (days)    | C     |
+| Avg effectiveness | D%    |
 
 ### Health Indicators
 
-| Indicator | Status | Details |
-|-----------|--------|---------|
-| Memory count | OK/WARN | X memories (threshold: 200) |
-| Stale memories | OK/WARN | Y unused >90 days |
-| Low effectiveness | OK/WARN | Z memories <30% effective |
-| Duplicates | OK/WARN | A potential duplicates |
-| Orphaned | OK/WARN | B memories with no relations |
+| Indicator         | Status  | Details                      |
+| ----------------- | ------- | ---------------------------- |
+| Memory count      | OK/WARN | X memories (threshold: 200)  |
+| Stale memories    | OK/WARN | Y unused >90 days            |
+| Low effectiveness | OK/WARN | Z memories <30% effective    |
+| Duplicates        | OK/WARN | A potential duplicates       |
+| Orphaned          | OK/WARN | B memories with no relations |
 
 ### Recommendations
 
@@ -218,22 +207,24 @@ function calculateRelevance(learning, existingMemories, coreMemory) {
 
   // 3. SEVERITY - How important is this?
   const severityScores = {
-    'critical': 5,
-    'high': 3,
-    'medium': 2,
-    'low': 1
+    critical: 5,
+    high: 3,
+    medium: 2,
+    low: 1,
   };
   if (learning.severity) {
     score += severityScores[learning.severity] || 1;
-    reasons.push(`Severity: ${learning.severity} (+${severityScores[learning.severity]})`);
+    reasons.push(
+      `Severity: ${learning.severity} (+${severityScores[learning.severity]})`,
+    );
   }
 
   // 4. SOURCE - How was this learned?
-  if (learning.source === 'mistake' || learning.source === 'failure') {
+  if (learning.source === "mistake" || learning.source === "failure") {
     score += 2;
     reasons.push("Learned from failure (+2)");
   }
-  if (learning.source === 'explicit_user_feedback') {
+  if (learning.source === "explicit_user_feedback") {
     score += 3;
     reasons.push("User explicitly shared (+3)");
   }
@@ -245,7 +236,7 @@ function calculateRelevance(learning, existingMemories, coreMemory) {
   }
 
   // 6. FREQUENCY POTENTIAL - Will encounter often?
-  if (learning.frequencyHint === 'common') {
+  if (learning.frequencyHint === "common") {
     score += 2;
     reasons.push("Common scenario (+2)");
   }
@@ -256,7 +247,7 @@ function calculateRelevance(learning, existingMemories, coreMemory) {
     score,
     reasons,
     save: score >= threshold,
-    threshold
+    threshold,
   };
 }
 
@@ -267,22 +258,23 @@ function findSimilarMemories(learning, existingMemories) {
   const learningText = [
     learning.name,
     learning.summary,
-    ...(learning.observations || [])
-  ].join(' ').toLowerCase();
+    ...(learning.observations || []),
+  ]
+    .join(" ")
+    .toLowerCase();
 
   return existingMemories
-    .map(memory => {
-      const memoryText = [
-        memory.name,
-        ...(memory.observations || [])
-      ].join(' ').toLowerCase();
+    .map((memory) => {
+      const memoryText = [memory.name, ...(memory.observations || [])]
+        .join(" ")
+        .toLowerCase();
 
       return {
         memory,
-        similarity: calculateTextSimilarity(learningText, memoryText)
+        similarity: calculateTextSimilarity(learningText, memoryText),
       };
     })
-    .filter(m => m.similarity > 0.3)
+    .filter((m) => m.similarity > 0.3)
     .sort((a, b) => b.similarity - a.similarity);
 }
 ```
@@ -295,15 +287,23 @@ Other skills should call this before saving:
 // In autonomous-dev, cto, cpo-ai-skill, etc.
 async function saveToMemoryWithFilter(learning) {
   const coreMemory = JSON.parse(
-    await readFile('~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json')
+    await readFile(
+      "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json",
+    ),
   );
   const existingMemories = await mcp__memory__search_nodes({ query: "" });
 
-  const relevance = calculateRelevance(learning, existingMemories.entities, coreMemory);
+  const relevance = calculateRelevance(
+    learning,
+    existingMemories.entities,
+    coreMemory,
+  );
 
   if (!relevance.save) {
-    console.log(`Skipping memory save: score ${relevance.score} < ${relevance.threshold}`);
-    console.log(`Reasons: ${relevance.reasons.join(', ')}`);
+    console.log(
+      `Skipping memory save: score ${relevance.score} < ${relevance.threshold}`,
+    );
+    console.log(`Reasons: ${relevance.reasons.join(", ")}`);
     return { saved: false, relevance };
   }
 
@@ -312,10 +312,10 @@ async function saveToMemoryWithFilter(learning) {
     ...learning,
     observations: [
       ...(learning.observations || []),
-      `Discovered: ${new Date().toISOString().split('T')[0]}`,
+      `Discovered: ${new Date().toISOString().split("T")[0]}`,
       `Relevance score: ${relevance.score}`,
-      `Source: ${learning.source || 'implementation'}`
-    ]
+      `Source: ${learning.source || "implementation"}`,
+    ],
   };
 
   await mcp__memory__create_entities({ entities: [enrichedLearning] });
@@ -345,7 +345,7 @@ function findMergeCandidates(memories) {
           memory1: memories[i],
           memory2: memories[j],
           similarity,
-          recommendation: similarity > 0.85 ? 'merge' : 'review'
+          recommendation: similarity > 0.85 ? "merge" : "review",
         });
       }
     }
@@ -361,16 +361,12 @@ function findMergeCandidates(memories) {
 async function mergeMemories(memory1, memory2) {
   // Combine observations, deduplicating
   const combinedObservations = [
-    ...new Set([
-      ...memory1.observations,
-      ...memory2.observations
-    ])
+    ...new Set([...memory1.observations, ...memory2.observations]),
   ];
 
   // Keep the more descriptive name
-  const mergedName = memory1.name.length > memory2.name.length
-    ? memory1.name
-    : memory2.name;
+  const mergedName =
+    memory1.name.length > memory2.name.length ? memory1.name : memory2.name;
 
   // Calculate combined stats
   const useCount1 = extractUseCount(memory1);
@@ -378,21 +374,23 @@ async function mergeMemories(memory1, memory2) {
 
   // Add merge note
   combinedObservations.push(
-    `Merged from: ${memory1.name}, ${memory2.name} on ${new Date().toISOString().split('T')[0]}`
+    `Merged from: ${memory1.name}, ${memory2.name} on ${new Date().toISOString().split("T")[0]}`,
   );
 
   // Delete old memories
   await mcp__memory__delete_entities({
-    entityNames: [memory1.name, memory2.name]
+    entityNames: [memory1.name, memory2.name],
   });
 
   // Create merged memory
   await mcp__memory__create_entities({
-    entities: [{
-      name: mergedName,
-      entityType: memory1.entityType,
-      observations: combinedObservations
-    }]
+    entities: [
+      {
+        name: mergedName,
+        entityType: memory1.entityType,
+        observations: combinedObservations,
+      },
+    ],
   });
 
   return { merged: mergedName, from: [memory1.name, memory2.name] };
@@ -416,26 +414,33 @@ async function promoteToCore(memory, coreMemory) {
   if (!shouldPromote) return false;
 
   // Determine where in core memory this belongs
-  if (memory.entityType === 'pattern') {
-    coreMemory.stablePatterns[memory.name.replace('pattern:', '')] =
+  if (memory.entityType === "pattern") {
+    coreMemory.stablePatterns[memory.name.replace("pattern:", "")] =
       extractSummary(memory);
-  } else if (memory.entityType === 'preference') {
+  } else if (memory.entityType === "preference") {
     // Parse and add to preferences
-    const prefKey = memory.name.replace('preference:', '');
+    const prefKey = memory.name.replace("preference:", "");
     coreMemory.preferences[prefKey] = extractPreferenceValue(memory);
   }
 
   // Mark as promoted in observations
   await mcp__memory__add_observations({
-    observations: [{
-      entityName: memory.name,
-      contents: [`Promoted to core memory: ${new Date().toISOString().split('T')[0]}`]
-    }]
+    observations: [
+      {
+        entityName: memory.name,
+        contents: [
+          `Promoted to core memory: ${new Date().toISOString().split("T")[0]}`,
+        ],
+      },
+    ],
   });
 
   // Update core memory file
-  coreMemory.lastUpdated = new Date().toISOString().split('T')[0];
-  await writeFile('~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json', JSON.stringify(coreMemory, null, 2));
+  coreMemory.lastUpdated = new Date().toISOString().split("T")[0];
+  await writeFile(
+    "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/core-memory.json",
+    JSON.stringify(coreMemory, null, 2),
+  );
 
   return true;
 }
@@ -451,14 +456,14 @@ async function promoteToCore(memory, coreMemory) {
 function identifyStaleMemories(memories, coreMemory) {
   const config = coreMemory.memoryConfig || {
     decayThresholdDays: 90,
-    minUsesToRetain: 3
+    minUsesToRetain: 3,
   };
 
-  return memories.filter(memory => {
+  return memories.filter((memory) => {
     const stats = analyzeMemory(memory);
 
     // Never forget critical memories
-    if (memory.observations?.some(o => o.includes('critical: true'))) {
+    if (memory.observations?.some((o) => o.includes("critical: true"))) {
       return false;
     }
 
@@ -470,7 +475,8 @@ function identifyStaleMemories(memories, coreMemory) {
     // Forget if: old AND rarely used
     const isOld = stats.daysSinceLastUse > config.decayThresholdDays;
     const isRarelyUsed = stats.useCount < config.minUsesToRetain;
-    const isIneffective = stats.effectiveness !== null && stats.effectiveness < 0.3;
+    const isIneffective =
+      stats.effectiveness !== null && stats.effectiveness < 0.3;
 
     return isOld && (isRarelyUsed || isIneffective);
   });
@@ -481,8 +487,9 @@ function identifyStaleMemories(memories, coreMemory) {
 
 ```javascript
 async function archiveMemories(memories) {
-  const archiveDir = '~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/archive';
-  const archiveFile = `${archiveDir}/${new Date().toISOString().split('T')[0]}-forgotten.json`;
+  const archiveDir =
+    "~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/archive";
+  const archiveFile = `${archiveDir}/${new Date().toISOString().split("T")[0]}-forgotten.json`;
 
   // Read existing archive or create new
   let archive = [];
@@ -493,11 +500,13 @@ async function archiveMemories(memories) {
   }
 
   // Add memories to archive
-  archive.push(...memories.map(m => ({
-    ...m,
-    forgottenAt: new Date().toISOString(),
-    reason: 'decay'
-  })));
+  archive.push(
+    ...memories.map((m) => ({
+      ...m,
+      forgottenAt: new Date().toISOString(),
+      reason: "decay",
+    })),
+  );
 
   await writeFile(archiveFile, JSON.stringify(archive, null, 2));
 
@@ -513,7 +522,7 @@ async function forgetMemories(memories) {
   const archiveFile = await archiveMemories(memories);
 
   // Delete from Memory MCP
-  const names = memories.map(m => m.name);
+  const names = memories.map((m) => m.name);
 
   for (const name of names) {
     await mcp__memory__delete_entities({ entityNames: [name] });
@@ -521,7 +530,7 @@ async function forgetMemories(memories) {
 
   return {
     forgotten: names.length,
-    archived: archiveFile
+    archived: archiveFile,
   };
 }
 ```
@@ -546,7 +555,7 @@ async function createMemoryWithRelations(memory, relatedMemories) {
     relations.push({
       from: memory.name,
       relationType: related.relation, // 'related_to', 'supersedes', 'applies_to', 'derived_from'
-      to: related.name
+      to: related.name,
     });
   }
 
@@ -560,35 +569,35 @@ async function createMemoryWithRelations(memory, relatedMemories) {
 
 ### Step 5.2: Standard Relationship Types
 
-| Relation | Meaning | Example |
-|----------|---------|---------|
-| `related_to` | Conceptually similar | pattern:early-returns → pattern:guard-clauses |
-| `supersedes` | Replaces older memory | pattern:v2 → pattern:v1 |
-| `applies_to` | Works with technology | pattern:rls → tech-insight:supabase |
-| `derived_from` | Based on another | mistake:auth-bug → pattern:auth-validation |
-| `competes_in` | Competitor in market | competitor:linear → research:task-management |
-| `part_of` | Component of larger | design:button-styles → design:dashboard-patterns |
+| Relation       | Meaning               | Example                                          |
+| -------------- | --------------------- | ------------------------------------------------ |
+| `related_to`   | Conceptually similar  | pattern:early-returns → pattern:guard-clauses    |
+| `supersedes`   | Replaces older memory | pattern:v2 → pattern:v1                          |
+| `applies_to`   | Works with technology | pattern:rls → tech-insight:supabase              |
+| `derived_from` | Based on another      | mistake:auth-bug → pattern:auth-validation       |
+| `competes_in`  | Competitor in market  | competitor:linear → research:task-management     |
+| `part_of`      | Component of larger   | design:button-styles → design:dashboard-patterns |
 
 ### Step 5.3: Find Orphaned Memories
 
 ```javascript
 async function findOrphanedMemories(memories) {
   const allRelations = await mcp__memory__open_nodes({
-    names: memories.map(m => m.name)
+    names: memories.map((m) => m.name),
   });
 
   const connectedNames = new Set();
   for (const node of allRelations.nodes || []) {
     if (node.relations?.length > 0) {
       connectedNames.add(node.name);
-      node.relations.forEach(r => {
+      node.relations.forEach((r) => {
         connectedNames.add(r.to);
         connectedNames.add(r.from);
       });
     }
   }
 
-  return memories.filter(m => !connectedNames.has(m.name));
+  return memories.filter((m) => !connectedNames.has(m.name));
 }
 ```
 
@@ -609,38 +618,38 @@ async function findOrphanedMemories(memories) {
 
 ## Summary
 
-| Action | Count |
-|--------|-------|
-| Memories analyzed | X |
-| Merged | Y |
-| Promoted to core | Z |
-| Forgotten (archived) | A |
-| Relationships created | B |
-| Orphans identified | C |
+| Action                | Count |
+| --------------------- | ----- |
+| Memories analyzed     | X     |
+| Merged                | Y     |
+| Promoted to core      | Z     |
+| Forgotten (archived)  | A     |
+| Relationships created | B     |
+| Orphans identified    | C     |
 
 ---
 
 ## Merges Performed
 
-| Original Memories | Merged Into | Similarity |
-|-------------------|-------------|------------|
-| pattern:a, pattern:b | pattern:combined | 87% |
+| Original Memories    | Merged Into      | Similarity |
+| -------------------- | ---------------- | ---------- |
+| pattern:a, pattern:b | pattern:combined | 87%        |
 
 ---
 
 ## Promoted to Core Memory
 
-| Memory | Use Count | Effectiveness | Promoted As |
-|--------|-----------|---------------|-------------|
-| pattern:early-returns | 23 | 95% | stablePatterns.earlyReturns |
+| Memory                | Use Count | Effectiveness | Promoted As                 |
+| --------------------- | --------- | ------------- | --------------------------- |
+| pattern:early-returns | 23        | 95%           | stablePatterns.earlyReturns |
 
 ---
 
 ## Forgotten (Archived)
 
-| Memory | Age (days) | Last Used | Use Count | Reason |
-|--------|------------|-----------|-----------|--------|
-| mistake:old-api | 180 | 150 days ago | 1 | Decay threshold |
+| Memory          | Age (days) | Last Used    | Use Count | Reason          |
+| --------------- | ---------- | ------------ | --------- | --------------- |
+| mistake:old-api | 180        | 150 days ago | 1         | Decay threshold |
 
 **Archive location:** ~/Library/Mobile Documents/com~apple~CloudDocs/claude-setup/memory/archive/2026-01-27-forgotten.json
 
@@ -657,12 +666,12 @@ Consider adding relationships or reviewing:
 
 ## Health After Consolidation
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Total memories | 150 | 142 | -8 |
-| Avg effectiveness | 68% | 72% | +4% |
-| Orphaned | 12 | 8 | -4 |
-| Stale (>90d unused) | 15 | 0 | -15 |
+| Metric              | Before | After | Change |
+| ------------------- | ------ | ----- | ------ |
+| Total memories      | 150    | 142   | -8     |
+| Avg effectiveness   | 68%    | 72%   | +4%    |
+| Orphaned            | 12     | 8     | -4     |
+| Stale (>90d unused) | 15     | 0     | -15    |
 
 ---
 
@@ -686,28 +695,31 @@ Consider adding relationships or reviewing:
 ## Quick Commands
 
 ### Consolidation
-| Command | Action |
-|---------|--------|
-| `/consolidate` | Full consolidation cycle |
-| `/consolidate --dry-run` | Preview changes without applying |
-| `/consolidate --health` | Health report only |
-| `/consolidate --forget-only` | Only run forgetting phase |
-| `/consolidate --merge-only` | Only run merge phase |
+
+| Command                      | Action                           |
+| ---------------------------- | -------------------------------- |
+| `/consolidate`               | Full consolidation cycle         |
+| `/consolidate --dry-run`     | Preview changes without applying |
+| `/consolidate --health`      | Health report only               |
+| `/consolidate --forget-only` | Only run forgetting phase        |
+| `/consolidate --merge-only`  | Only run merge phase             |
 
 ### Reflection (Metacognition)
-| Command | Action |
-|---------|--------|
-| `/reflect` | Deep reflection cycle (what worked, what didn't) |
-| `/reflect --quick` | Quick reflection on current session |
-| `/reflect --beliefs` | Validate core beliefs against evidence |
-| `/reflect --memories` | Show memory effectiveness rankings |
+
+| Command               | Action                                           |
+| --------------------- | ------------------------------------------------ |
+| `/reflect`            | Deep reflection cycle (what worked, what didn't) |
+| `/reflect --quick`    | Quick reflection on current session              |
+| `/reflect --beliefs`  | Validate core beliefs against evidence           |
+| `/reflect --memories` | Show memory effectiveness rankings               |
 
 ### Attention
-| Command | Action |
-|---------|--------|
-| `/attention` | Show current attention weights |
-| `/attention --focus [topic]` | Manually set focus topic |
-| `/attention --reset` | Reset attention weights |
+
+| Command                      | Action                         |
+| ---------------------------- | ------------------------------ |
+| `/attention`                 | Show current attention weights |
+| `/attention --focus [topic]` | Manually set focus topic       |
+| `/attention --reset`         | Reset attention weights        |
 
 ---
 
@@ -773,15 +785,212 @@ await createMemoryWithRelations(
 
 ## Reference Documents
 
-| Document | Purpose |
-|----------|---------|
-| [memory-utils.md](references/memory-utils.md) | Reusable functions for memory operations |
-| [attention-system.md](references/attention-system.md) | Short-term attention and focus tracking |
-| [metacognition.md](references/metacognition.md) | Self-reflection and effectiveness tracking |
+| Document                                              | Purpose                                    |
+| ----------------------------------------------------- | ------------------------------------------ |
+| [memory-utils.md](references/memory-utils.md)         | Reusable functions for memory operations   |
+| [attention-system.md](references/attention-system.md) | Short-term attention and focus tracking    |
+| [metacognition.md](references/metacognition.md)       | Self-reflection and effectiveness tracking |
+
+---
+
+---
+
+## Self-Learning System
+
+The memory system now includes automated learning capabilities that extract patterns from sessions and git history.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    LEARNING SOURCES                          │
+├─────────────────────────────────────────────────────────────┤
+│  Session Hooks          Git History         Existing Memory  │
+│  (learning-log.jsonl)   (commits)           (usage tracking) │
+└──────────┬────────────────────┬────────────────────┬────────┘
+           │                    │                    │
+           ▼                    ▼                    ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    EXTRACTORS                                │
+├─────────────────────────────────────────────────────────────┤
+│  session-analyzer.py    git-pattern-extractor.py             │
+│  - Pattern detection    - Commit analysis                    │
+│  - Language usage       - Code pattern extraction            │
+│  - Success/failure      - Commit type analysis               │
+└──────────┬────────────────────┬────────────────────┬────────┘
+           │                    │                    │
+           ▼                    ▼                    ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 EXTRACTED CANDIDATES                         │
+│            ~/...claude-setup/memory/extracted/*.json         │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  RELEVANCE FILTER                            │
+│  memory-importer.py - Score >= threshold (default: 5)        │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   MEMORY MCP                                 │
+│  Long-term storage with graph relationships                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+#### 1. Learning Capture Hook (`hooks/learning-capture.sh`)
+
+Captures file changes during sessions:
+
+- Detects patterns in code (early-returns, async, react-hooks, etc.)
+- Tracks success/failure of operations
+- Identifies project and language
+- Writes to `learning-log.jsonl`
+
+#### 2. Session Analyzer (`bin/session-analyzer.py`)
+
+Processes the learning log:
+
+```bash
+# Analyze all unprocessed entries
+python3 ~/Library/Mobile\ Documents/com~apple~CloudDocs/claude-setup/bin/session-analyzer.py
+
+# Preview without saving
+python3 session-analyzer.py --dry-run
+
+# Only last 24 hours
+python3 session-analyzer.py --last-24h
+
+# Filter by project
+python3 session-analyzer.py --project Contably
+```
+
+#### 3. Git Pattern Extractor (`bin/git-pattern-extractor.py`)
+
+Learns from git commits:
+
+```bash
+# Analyze specific repo
+python3 git-pattern-extractor.py /path/to/repo
+
+# Analyze all known projects
+python3 git-pattern-extractor.py --all-projects
+
+# Since specific time
+python3 git-pattern-extractor.py --since="1 month ago"
+```
+
+#### 4. Memory Importer (`bin/memory-importer.py`)
+
+Imports qualified candidates:
+
+```bash
+# Import all pending extractions
+python3 memory-importer.py
+
+# Lower threshold for more imports
+python3 memory-importer.py --threshold 3
+
+# Preview only
+python3 memory-importer.py --dry-run
+```
+
+#### 5. Auto-Consolidation (`bin/memory-auto-consolidate.sh`)
+
+Orchestrates the full pipeline:
+
+```bash
+# Check if consolidation needed
+./memory-auto-consolidate.sh --check
+
+# Force consolidation
+./memory-auto-consolidate.sh --force
+
+# Normal run (consolidates if needed)
+./memory-auto-consolidate.sh
+```
+
+### Automated Triggers
+
+#### Weekly Consolidation (launchd)
+
+Install the launchd agent:
+
+```bash
+cp ~/Library/Mobile\ Documents/com~apple~CloudDocs/claude-setup/launchd/com.claude.memory-consolidation.plist \
+   ~/Library/LaunchAgents/
+
+launchctl load ~/Library/LaunchAgents/com.claude.memory-consolidation.plist
+```
+
+Runs every Sunday at 3:00 AM.
+
+#### Threshold-Based Triggers
+
+Consolidation triggers automatically when:
+
+- 7+ days since last consolidation
+- 50+ unprocessed learning entries
+- Any pending extractions exist
+
+### Learning Flow
+
+1. **During Sessions**
+   - `learning-capture.sh` hook logs all Edit/Write operations
+   - Patterns detected in code changes
+   - Success/failure tracked
+
+2. **Periodically (Manual or Cron)**
+   - `session-analyzer.py` processes learning log
+   - `git-pattern-extractor.py` analyzes commits
+   - Candidates written to `extracted/` directory
+
+3. **Import Phase**
+   - `memory-importer.py` filters by relevance
+   - Qualified candidates prepared for MCP import
+   - Run `/consolidate` in Claude to complete import
+
+4. **Memory Evolution**
+   - Usage tracked with "Applied in:" observations
+   - Effectiveness measured (HELPFUL/NOT HELPFUL)
+   - High-usage patterns promoted to core memory
+   - Stale memories archived and forgotten
+
+### File Locations
+
+| File                        | Purpose                             |
+| --------------------------- | ----------------------------------- |
+| `memory/learning-log.jsonl` | Raw learning entries from sessions  |
+| `memory/extracted/*.json`   | Extracted candidates pending import |
+| `memory/imported/*.json`    | Successfully imported extractions   |
+| `memory/archive/*.json`     | Archived/forgotten memories         |
+| `memory/sessions/*.json`    | Session metadata                    |
+| `memory/consolidation.log`  | Auto-consolidation log              |
+
+### Manual Workflow
+
+If you prefer manual control:
+
+```bash
+# 1. Extract patterns from git (run after coding sessions)
+python3 ~/...claude-setup/bin/git-pattern-extractor.py --all-projects
+
+# 2. Analyze session logs
+python3 ~/...claude-setup/bin/session-analyzer.py
+
+# 3. Review candidates
+cat ~/...claude-setup/memory/extracted/*.json | jq '.candidates[].name'
+
+# 4. Import in Claude session
+# Run /consolidate or manually call mcp__memory__create_entities
+```
 
 ---
 
 ## Version History
 
+- **2.0.0** (2026-02-02): Added self-learning system with hooks, analyzers, and automated consolidation
 - **1.1.0** (2026-01-27): Added attention system and metacognition
 - **1.0.0** (2026-01-27): Initial release with full consolidation, forgetting, and graph support
